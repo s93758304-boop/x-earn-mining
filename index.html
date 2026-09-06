@@ -1,23 +1,799 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X Earn Mining</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>X Earn Mining</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at 50% -10%, #4d168f 0%, transparent 38%),
+        linear-gradient(180deg, #09060d 0%, #050308 100%);
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    button {
+      font-family: inherit;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+      margin: auto;
+      min-height: 100vh;
+      padding-bottom: 90px;
+    }
+
+    .loading {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      text-align: center;
+      padding: 25px;
+    }
+
+    .logo {
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(145deg, #b45cff, #6818c9);
+      box-shadow: 0 0 35px rgba(154, 55, 255, .55);
+      font-size: 43px;
+      font-weight: 900;
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(255,255,255,.15);
+      border-top-color: #b95cff;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error {
+      display: none;
+      min-height: 100vh;
+      padding: 35px 22px;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .error-box {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 22px;
+      padding: 25px;
+      width: 100%;
+    }
+
+    .error-box h2 {
+      margin-bottom: 10px;
+    }
+
+    .error-box p {
+      color: #aaa;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    #dashboard {
+      display: none;
+    }
+
+    .top {
+      padding: 20px 17px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #24102f;
+      border: 2px solid rgba(190, 94, 255, .5);
+    }
+
+    .avatar-fallback {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(145deg,#9e43ff,#451080);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 19px;
+    }
+
+    .welcome {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 3px;
+    }
+
+    .username {
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .tier {
+      background: rgba(164, 66, 255, .14);
+      border: 1px solid rgba(174, 77, 255, .35);
+      color: #c879ff;
+      border-radius: 20px;
+      padding: 7px 11px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .hero {
+      margin: 12px 15px;
+      padding: 24px 20px;
+      border-radius: 25px;
+      background:
+        radial-gradient(circle at 85% 15%, rgba(170,75,255,.35), transparent 35%),
+        linear-gradient(145deg, #171020, #0c0811);
+      border: 1px solid rgba(186, 93, 255, .18);
+      box-shadow: 0 15px 45px rgba(0,0,0,.35);
+      text-align: center;
+    }
+
+    .coin {
+      width: 75px;
+      height: 75px;
+      margin: 0 auto 13px;
+      border-radius: 50%;
+      background: linear-gradient(145deg,#d08aff,#7219ce);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 37px;
+      font-weight: 900;
+      box-shadow:
+        0 0 30px rgba(161, 61, 255, .45),
+        inset 0 2px 5px rgba(255,255,255,.35);
+    }
+
+    .balance-label {
+      color: #999;
+      font-size: 13px;
+    }
+
+    .balance {
+      margin-top: 5px;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -.7px;
+    }
+
+    .usdt {
+      margin-top: 5px;
+      color: #a96be0;
+      font-size: 14px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 9px;
+      padding: 0 15px;
+    }
+
+    .stat {
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 17px;
+      padding: 14px 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .stat-label {
+      margin-top: 5px;
+      color: #888;
+      font-size: 10px;
+    }
+
+    .section {
+      padding: 18px 15px 0;
+    }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 11px;
+    }
+
+    .action-card {
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 19px;
+      padding: 17px;
+      margin-bottom: 10px;
+    }
+
+    .action-top {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .action-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(166, 70, 255, .15);
+      font-size: 21px;
+    }
+
+    .action-info {
+      flex: 1;
+    }
+
+    .action-info strong {
+      font-size: 14px;
+    }
+
+    .action-info p {
+      color: #858585;
+      font-size: 11px;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .primary {
+      width: 100%;
+      margin-top: 13px;
+      padding: 13px;
+      border-radius: 13px;
+      color: #fff;
+      font-weight: 800;
+      background: linear-gradient(135deg,#a846ff,#6816c7);
+      box-shadow: 0 8px 25px rgba(126,35,205,.25);
+    }
+
+    .primary:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .checkin {
+      display: grid;
+      grid-template-columns: repeat(7,1fr);
+      gap: 5px;
+      margin-top: 13px;
+    }
+
+    .day {
+      text-align: center;
+      background: rgba(255,255,255,.035);
+      border-radius: 10px;
+      padding: 9px 2px;
+      font-size: 9px;
+      color: #777;
+    }
+
+    .day span {
+      display: block;
+      margin-top: 4px;
+      color: #bbb;
+      font-weight: 700;
+    }
+
+    .notice {
+      color: #777;
+      font-size: 11px;
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 520px;
+      height: 72px;
+      display: grid;
+      grid-template-columns: repeat(5,1fr);
+      background: rgba(10,7,14,.94);
+      backdrop-filter: blur(18px);
+      border-top: 1px solid rgba(255,255,255,.07);
+      z-index: 20;
+    }
+
+    .nav-item {
+      background: transparent;
+      color: #666;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      font-size: 10px;
+    }
+
+    .nav-item.active {
+      color: #bd69ff;
+    }
+
+    .nav-icon {
+      font-size: 20px;
+    }
+  </style>
 </head>
+
 <body>
 
-    <h1>🚀 X Earn Mining</h1>
-    <p>Mini App is working!</p>
+  <div id="loading" class="loading">
+    <div class="logo">X</div>
+    <strong>X Earn Mining</strong>
+    <div class="spinner"></div>
+    <span style="color:#777;font-size:12px;">Connecting securely...</span>
+  </div>
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <div id="error" class="error">
+    <div class="error-box">
+      <h2>Unable to connect</h2>
+      <p id="errorText">
+        Please open X Earn Mining from Telegram and try again.
+      </p>
+    </div>
+  </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
+  <main id="dashboard" class="app">
 
-        tg.ready();
-        tg.expand();
-    </script>
+    <header class="top">
+      <div class="profile">
+        <div id="avatarContainer"></div>
+
+        <div>
+          <div class="welcome">Welcome back</div>
+          <div id="username" class="username">Loading...</div>
+        </div>
+      </div>
+
+      <div id="tier" class="tier">FREE</div>
+    </header>
+
+    <section class="hero">
+      <div class="coin">X</div>
+
+      <div class="balance-label">Your XCOIN Balance</div>
+      <div id="balance" class="balance">0 XCOIN</div>
+      <div id="usdt" class="usdt">≈ $0.00 USDT</div>
+    </section>
+
+    <section class="stats">
+      <div class="stat">
+        <div id="totalEarned" class="stat-value">0</div>
+        <div class="stat-label">TOTAL EARNED</div>
+      </div>
+
+      <div class="stat">
+        <div id="referralEarnings" class="stat-value">0</div>
+        <div class="stat-label">REFERRALS</div>
+      </div>
+
+      <div class="stat">
+        <div id="tierStat" class="stat-value">FREE</div>
+        <div class="stat-label">CURRENT TIER</div>
+      </div>
+    </section>
+
+    <section class="section">
+
+      <div class="section-title">Earn XCOIN</div>
+
+      <div class="action-card">
+        <div class="action-top">
+          <div class="action-icon">⛏️</div>
+
+          <div class="action-info">
+            <strong>Mine XCOIN</strong>
+            <p>Your mining limits and rewards are controlled by your current tier.</p>
+          </div>
+        </div>
+
+        <button class="primary" disabled>
+          Mining System
+        </button>
+
+        <div class="notice">
+          Mining will be activated after the secure mining backend is connected.
+        </div>
+      </div>
+
+      <div class="action-card">
+        <div class="action-top">
+          <div class="action-icon">🎬</div>
+
+          <div class="action-info">
+            <strong>Watch Ads & Earn</strong>
+            <p>Complete an eligible AdsGram reward ad to earn XCOIN.</p>
+          </div>
+        </div>
+
+        <button class="primary" disabled>
+          Ads System
+        </button>
+
+        <div class="notice">
+          AdsGram rewards will be enabled after the server-side reward protection is connected.
+        </div>
+      </div>
+
+      <div class="action-card">
+        <div class="action-top">
+          <div class="action-icon">🎁</div>
+
+          <div class="action-info">
+            <strong>Complete Offer</strong>
+            <p>Complete an eligible offer and receive the configured XCOIN reward.</p>
+          </div>
+        </div>
+
+        <button id="offerButton" class="primary">
+          Complete Offer
+        </button>
+
+        <div class="notice">
+          Reward: 1.24 XCOIN after a verified conversion.
+        </div>
+      </div>
+
+    </section>
+
+    <section class="section">
+
+      <div class="section-title">Daily Check-in</div>
+
+      <div class="action-card">
+
+        <p style="color:#999;font-size:12px;">
+          Earn 3 XCOIN each day for 7 consecutive check-ins.
+        </p>
+
+        <div class="checkin">
+          <div class="day">DAY<span>1</span></div>
+          <div class="day">DAY<span>2</span></div>
+          <div class="day">DAY<span>3</span></div>
+          <div class="day">DAY<span>4</span></div>
+          <div class="day">DAY<span>5</span></div>
+          <div class="day">DAY<span>6</span></div>
+          <div class="day">DAY<span>7</span></div>
+        </div>
+
+        <button class="primary" disabled>
+          Check-in System
+        </button>
+
+        <div class="notice">
+          Daily check-in will be enabled after its secure backend endpoint is connected.
+        </div>
+
+      </div>
+
+    </section>
+
+    <nav class="bottom-nav">
+      <button class="nav-item active">
+        <span class="nav-icon">⌂</span>
+        Home
+      </button>
+
+      <button class="nav-item">
+        <span class="nav-icon">⛏️</span>
+        Mining
+      </button>
+
+      <button class="nav-item">
+        <span class="nav-icon">⬆️</span>
+        Upgrade
+      </button>
+
+      <button class="nav-item">
+        <span class="nav-icon">💰</span>
+        Wallet
+      </button>
+
+      <button class="nav-item">
+        <span class="nav-icon">👤</span>
+        Profile
+      </button>
+    </nav>
+
+  </main>
+
+<script>
+  const tg = window.Telegram.WebApp;
+
+  const SUPABASE_AUTH_URL =
+    "https://ynrqdbdgjzmucqcfsyvi.supabase.co/functions/v1/telegram-auth";
+
+  const ZEYDOO_FUNCTION_URL =
+    "https://ynrqdbdgjzmucqcfsyvi.supabase.co/functions/v1/start-zeydoo-offer";
+
+  let currentUser = null;
+
+  function showError(message) {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("error").style.display = "flex";
+    document.getElementById("errorText").textContent = message;
+  }
+
+  function formatXcoin(value) {
+    const number = Number(value || 0);
+
+    return number.toLocaleString(undefined, {
+      maximumFractionDigits: 2
+    });
+  }
+
+  function updateDashboard(user) {
+    currentUser = user;
+
+    const firstName =
+      user.first_name ||
+      user.username ||
+      "User";
+
+    document.getElementById("username").textContent =
+      firstName;
+
+    const tier =
+      String(user.tier || "FREE").toUpperCase();
+
+    document.getElementById("tier").textContent = tier;
+    document.getElementById("tierStat").textContent = tier;
+
+    const balance =
+      Number(user.balance_xcoin || 0);
+
+    const total =
+      Number(user.total_earned_xcoin || 0);
+
+    const referral =
+      Number(user.referral_earnings_xcoin || 0);
+
+    document.getElementById("balance").textContent =
+      formatXcoin(balance) + " XCOIN";
+
+    document.getElementById("usdt").textContent =
+      "≈ $" + (balance / 1300).toFixed(2) + " USDT";
+
+    document.getElementById("totalEarned").textContent =
+      formatXcoin(total);
+
+    document.getElementById("referralEarnings").textContent =
+      formatXcoin(referral);
+
+    const avatarContainer =
+      document.getElementById("avatarContainer");
+
+    if (user.photo_url) {
+      avatarContainer.innerHTML =
+        '<img class="avatar" src="' +
+        escapeHtml(user.photo_url) +
+        '" alt="Profile">';
+    } else {
+      const initial =
+        firstName.charAt(0).toUpperCase();
+
+      avatarContainer.innerHTML =
+        '<div class="avatar-fallback">' +
+        escapeHtml(initial) +
+        "</div>";
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  async function authenticate() {
+    try {
+      tg.ready();
+      tg.expand();
+
+      const initData = tg.initData;
+
+      if (!initData) {
+        showError(
+          "This app must be opened from Telegram. Please open X Earn Mining using your Telegram Mini App link."
+        );
+        return;
+      }
+
+      const response = await fetch(
+        SUPABASE_AUTH_URL,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            initData: initData
+          })
+        }
+      );
+
+      const text = await response.text();
+
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(text || "Authentication failed");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+          data.message ||
+          "Telegram authentication failed"
+        );
+      }
+
+      /*
+        The authentication function returns the safe
+        Telegram user/account information.
+
+        This supports either:
+        { user: {...} }
+        or directly returned user data.
+      */
+      const user =
+        data.user ||
+        data;
+
+      if (!user.telegram_id) {
+        throw new Error(
+          "Authentication succeeded but no user account was returned."
+        );
+      }
+
+      updateDashboard(user);
+
+      document.getElementById("loading").style.display =
+        "none";
+
+      document.getElementById("dashboard").style.display =
+        "block";
+
+    } catch (error) {
+      console.error(error);
+
+      showError(
+        error.message ||
+        "Unable to connect to X Earn Mining."
+      );
+    }
+  }
+
+  async function openZeydooOffer() {
+    if (!tg.initData) {
+      tg.showAlert(
+        "Please open X Earn Mining from Telegram."
+      );
+      return;
+    }
+
+    const button =
+      document.getElementById("offerButton");
+
+    button.disabled = true;
+    button.textContent = "Preparing offer...";
+
+    try {
+      const response = await fetch(
+        ZEYDOO_FUNCTION_URL,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            initData: tg.initData
+          })
+        }
+      );
+
+      const text = await response.text();
+
+      if (!response.ok) {
+        throw new Error(
+          text || "Unable to start offer."
+        );
+      }
+
+      const data = JSON.parse(text);
+
+      if (
+        !data.success ||
+        !data.offer_url
+      ) {
+        throw new Error(
+          "Offer URL was not returned."
+        );
+      }
+
+      tg.openLink(data.offer_url);
+
+    } catch (error) {
+      console.error(error);
+
+      tg.showAlert(
+        error.message ||
+        "Unable to open the offer."
+      );
+
+    } finally {
+      button.disabled = false;
+      button.textContent = "Complete Offer";
+    }
+  }
+
+  document
+    .getElementById("offerButton")
+    .addEventListener(
+      "click",
+      openZeydooOffer
+    );
+
+  authenticate();
+</script>
 
 </body>
-</html>
+    </html>
