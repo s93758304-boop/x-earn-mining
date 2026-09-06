@@ -73,7 +73,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .error {
@@ -409,6 +411,7 @@
     </section>
 
     <section class="stats">
+
       <div class="stat">
         <div id="totalEarned" class="stat-value">0</div>
         <div class="stat-label">TOTAL EARNED</div>
@@ -423,6 +426,7 @@
         <div id="tierStat" class="stat-value">FREE</div>
         <div class="stat-label">CURRENT TIER</div>
       </div>
+
     </section>
 
     <section class="section">
@@ -430,13 +434,19 @@
       <div class="section-title">Earn XCOIN</div>
 
       <div class="action-card">
+
         <div class="action-top">
+
           <div class="action-icon">⛏️</div>
 
           <div class="action-info">
             <strong>Mine XCOIN</strong>
-            <p>Your mining limits and rewards are controlled by your current tier.</p>
+
+            <p>
+              Your mining limits and rewards are controlled by your current tier.
+            </p>
           </div>
+
         </div>
 
         <button class="primary" disabled>
@@ -446,16 +456,23 @@
         <div class="notice">
           Mining will be activated after the secure mining backend is connected.
         </div>
+
       </div>
 
       <div class="action-card">
+
         <div class="action-top">
+
           <div class="action-icon">🎬</div>
 
           <div class="action-info">
             <strong>Watch Ads & Earn</strong>
-            <p>Complete an eligible AdsGram reward ad to earn XCOIN.</p>
+
+            <p>
+              Complete an eligible AdsGram reward ad to earn XCOIN.
+            </p>
           </div>
+
         </div>
 
         <button class="primary" disabled>
@@ -465,16 +482,23 @@
         <div class="notice">
           AdsGram rewards will be enabled after the server-side reward protection is connected.
         </div>
+
       </div>
 
       <div class="action-card">
+
         <div class="action-top">
+
           <div class="action-icon">🎁</div>
 
           <div class="action-info">
             <strong>Complete Offer</strong>
-            <p>Complete an eligible offer and receive the configured XCOIN reward.</p>
+
+            <p>
+              Complete an eligible offer and receive the configured XCOIN reward.
+            </p>
           </div>
+
         </div>
 
         <button id="offerButton" class="primary">
@@ -484,13 +508,16 @@
         <div class="notice">
           Reward: 1.24 XCOIN after a verified conversion.
         </div>
+
       </div>
 
     </section>
 
     <section class="section">
 
-      <div class="section-title">Daily Check-in</div>
+      <div class="section-title">
+        Daily Check-in
+      </div>
 
       <div class="action-card">
 
@@ -499,13 +526,42 @@
         </p>
 
         <div class="checkin">
-          <div class="day">DAY<span>1</span></div>
-          <div class="day">DAY<span>2</span></div>
-          <div class="day">DAY<span>3</span></div>
-          <div class="day">DAY<span>4</span></div>
-          <div class="day">DAY<span>5</span></div>
-          <div class="day">DAY<span>6</span></div>
-          <div class="day">DAY<span>7</span></div>
+
+          <div class="day">
+            DAY
+            <span>1</span>
+          </div>
+
+          <div class="day">
+            DAY
+            <span>2</span>
+          </div>
+
+          <div class="day">
+            DAY
+            <span>3</span>
+          </div>
+
+          <div class="day">
+            DAY
+            <span>4</span>
+          </div>
+
+          <div class="day">
+            DAY
+            <span>5</span>
+          </div>
+
+          <div class="day">
+            DAY
+            <span>6</span>
+          </div>
+
+          <div class="day">
+            DAY
+            <span>7</span>
+          </div>
+
         </div>
 
         <button class="primary" disabled>
@@ -521,6 +577,7 @@
     </section>
 
     <nav class="bottom-nav">
+
       <button class="nav-item active">
         <span class="nav-icon">⌂</span>
         Home
@@ -545,255 +602,291 @@
         <span class="nav-icon">👤</span>
         Profile
       </button>
+
     </nav>
 
   </main>
 
-<script>
-  const tg = window.Telegram.WebApp;
+  <script>
+    const tg = window.Telegram.WebApp;
 
-  const SUPABASE_AUTH_URL =
-    "https://ynrqdbdgjzmucqcfsyvi.supabase.co/functions/v1/telegram-auth";
+    const SUPABASE_AUTH_URL =
+      "https://ynrqdbdgjzmucqcfsyvi.supabase.co/functions/v1/telegram-auth";
 
-  const ZEYDOO_FUNCTION_URL =
-    "https://ynrqdbdgjzmucqcfsyvi.supabase.co/functions/v1/start-zeydoo-offer";
+    const ZEYDOO_FUNCTION_URL =
+      "https://ynrqdbdgjzmucqcfsyvi.supabase.co/functions/v1/start-zeydoo-offer";
 
-  let currentUser = null;
+    let currentUser = null;
 
-  function showError(message) {
-    document.getElementById("loading").style.display = "none";
-    document.getElementById("dashboard").style.display = "none";
-    document.getElementById("error").style.display = "flex";
-    document.getElementById("errorText").textContent = message;
-  }
+    function showError(message) {
+      document.getElementById("loading").style.display = "none";
 
-  function formatXcoin(value) {
-    const number = Number(value || 0);
+      document.getElementById("dashboard").style.display = "none";
 
-    return number.toLocaleString(undefined, {
-      maximumFractionDigits: 2
-    });
-  }
+      document.getElementById("error").style.display = "flex";
 
-  function updateDashboard(user) {
-    currentUser = user;
-
-    const firstName =
-      user.first_name ||
-      user.username ||
-      "User";
-
-    document.getElementById("username").textContent =
-      firstName;
-
-    const tier =
-      String(user.tier || "FREE").toUpperCase();
-
-    document.getElementById("tier").textContent = tier;
-    document.getElementById("tierStat").textContent = tier;
-
-    const balance =
-      Number(user.balance_xcoin || 0);
-
-    const total =
-      Number(user.total_earned_xcoin || 0);
-
-    const referral =
-      Number(user.referral_earnings_xcoin || 0);
-
-    document.getElementById("balance").textContent =
-      formatXcoin(balance) + " XCOIN";
-
-    document.getElementById("usdt").textContent =
-      "≈ $" + (balance / 1300).toFixed(2) + " USDT";
-
-    document.getElementById("totalEarned").textContent =
-      formatXcoin(total);
-
-    document.getElementById("referralEarnings").textContent =
-      formatXcoin(referral);
-
-    const avatarContainer =
-      document.getElementById("avatarContainer");
-
-    if (user.photo_url) {
-      avatarContainer.innerHTML =
-        '<img class="avatar" src="' +
-        escapeHtml(user.photo_url) +
-        '" alt="Profile">';
-    } else {
-      const initial =
-        firstName.charAt(0).toUpperCase();
-
-      avatarContainer.innerHTML =
-        '<div class="avatar-fallback">' +
-        escapeHtml(initial) +
-        "</div>";
+      document.getElementById("errorText").textContent = message;
     }
-  }
 
-  function escapeHtml(value) {
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
+    function formatXcoin(value) {
+      const number = Number(value || 0);
 
-  async function authenticate() {
-    try {
-      tg.ready();
-      tg.expand();
+      return number.toLocaleString(undefined, {
+        maximumFractionDigits: 2
+      });
+    }
 
-      const initData = tg.initData;
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
-      if (!initData) {
-        showError(
-          "This app must be opened from Telegram. Please open X Earn Mining using your Telegram Mini App link."
+    function updateDashboard(user) {
+      currentUser = user;
+
+      const firstName =
+        user.first_name ||
+        user.username ||
+        "User";
+
+      document.getElementById("username").textContent =
+        firstName;
+
+      const tier =
+        String(user.tier || "FREE").toUpperCase();
+
+      document.getElementById("tier").textContent =
+        tier;
+
+      document.getElementById("tierStat").textContent =
+        tier;
+
+      const balance =
+        Number(user.balance_xcoin || 0);
+
+      const total =
+        Number(user.total_earned_xcoin || 0);
+
+      const referral =
+        Number(user.referral_earnings_xcoin || 0);
+
+      document.getElementById("balance").textContent =
+        formatXcoin(balance) + " XCOIN";
+
+      document.getElementById("usdt").textContent =
+        "≈ $" + (balance / 1300).toFixed(2) + " USDT";
+
+      document.getElementById("totalEarned").textContent =
+        formatXcoin(total);
+
+      document.getElementById("referralEarnings").textContent =
+        formatXcoin(referral);
+
+      const avatarContainer =
+        document.getElementById("avatarContainer");
+
+      if (user.photo_url) {
+
+        avatarContainer.innerHTML =
+          '<img class="avatar" src="' +
+          escapeHtml(user.photo_url) +
+          '" alt="Profile">';
+
+      } else {
+
+        const initial =
+          firstName.charAt(0).toUpperCase();
+
+        avatarContainer.innerHTML =
+          '<div class="avatar-fallback">' +
+          escapeHtml(initial) +
+          "</div>";
+      }
+    }
+
+    async function authenticate() {
+
+      try {
+
+        tg.ready();
+        tg.expand();
+
+        const initData = tg.initData;
+
+        if (!initData) {
+
+          showError(
+            "This app must be opened from Telegram. Please open X Earn Mining using your Telegram Mini App link."
+          );
+
+          return;
+        }
+
+        const response = await fetch(
+          SUPABASE_AUTH_URL,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+              initData: initData
+            })
+          }
         );
+
+        const text =
+          await response.text();
+
+        let data;
+
+        try {
+
+          data = JSON.parse(text);
+
+        } catch {
+
+          throw new Error(
+            text || "Authentication failed"
+          );
+        }
+
+        if (!response.ok) {
+
+          throw new Error(
+            data.error ||
+            data.message ||
+            "Telegram authentication failed"
+          );
+        }
+
+        const user =
+          data.user ||
+          data;
+
+        if (!user.telegram_id) {
+
+          throw new Error(
+            "Authentication succeeded but no user account was returned."
+          );
+        }
+
+        updateDashboard(user);
+
+        document.getElementById("loading").style.display =
+          "none";
+
+        document.getElementById("dashboard").style.display =
+          "block";
+
+      } catch (error) {
+
+        console.error(error);
+
+        showError(
+          error.message ||
+          "Unable to connect to X Earn Mining."
+        );
+      }
+    }
+
+    async function openZeydooOffer() {
+
+      if (!tg.initData) {
+
+        tg.showAlert(
+          "Please open X Earn Mining from Telegram."
+        );
+
         return;
       }
 
-      const response = await fetch(
-        SUPABASE_AUTH_URL,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            initData: initData
-          })
-        }
-      );
+      const button =
+        document.getElementById("offerButton");
 
-      const text = await response.text();
+      button.disabled = true;
 
-      let data;
+      button.textContent =
+        "Preparing offer...";
 
       try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error(text || "Authentication failed");
-      }
 
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
-          data.message ||
-          "Telegram authentication failed"
+        const response = await fetch(
+          ZEYDOO_FUNCTION_URL,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+              initData: tg.initData
+            })
+          }
         );
-      }
 
-      /*
-        The authentication function returns the safe
-        Telegram user/account information.
+        const text =
+          await response.text();
 
-        This supports either:
-        { user: {...} }
-        or directly returned user data.
-      */
-      const user =
-        data.user ||
-        data;
+        if (!response.ok) {
 
-      if (!user.telegram_id) {
-        throw new Error(
-          "Authentication succeeded but no user account was returned."
-        );
-      }
-
-      updateDashboard(user);
-
-      document.getElementById("loading").style.display =
-        "none";
-
-      document.getElementById("dashboard").style.display =
-        "block";
-
-    } catch (error) {
-      console.error(error);
-
-      showError(
-        error.message ||
-        "Unable to connect to X Earn Mining."
-      );
-    }
-  }
-
-  async function openZeydooOffer() {
-    if (!tg.initData) {
-      tg.showAlert(
-        "Please open X Earn Mining from Telegram."
-      );
-      return;
-    }
-
-    const button =
-      document.getElementById("offerButton");
-
-    button.disabled = true;
-    button.textContent = "Preparing offer...";
-
-    try {
-      const response = await fetch(
-        ZEYDOO_FUNCTION_URL,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            initData: tg.initData
-          })
+          throw new Error(
+            text ||
+            "Unable to start offer."
+          );
         }
-      );
 
-      const text = await response.text();
+        const data =
+          JSON.parse(text);
 
-      if (!response.ok) {
-        throw new Error(
-          text || "Unable to start offer."
+        if (
+          !data.success ||
+          !data.offer_url
+        ) {
+
+          throw new Error(
+            "Offer URL was not returned."
+          );
+        }
+
+        tg.openLink(
+          data.offer_url
         );
-      }
 
-      const data = JSON.parse(text);
+      } catch (error) {
 
-      if (
-        !data.success ||
-        !data.offer_url
-      ) {
-        throw new Error(
-          "Offer URL was not returned."
+        console.error(error);
+
+        tg.showAlert(
+          error.message ||
+          "Unable to open the offer."
         );
+
+      } finally {
+
+        button.disabled = false;
+
+        button.textContent =
+          "Complete Offer";
       }
-
-      tg.openLink(data.offer_url);
-
-    } catch (error) {
-      console.error(error);
-
-      tg.showAlert(
-        error.message ||
-        "Unable to open the offer."
-      );
-
-    } finally {
-      button.disabled = false;
-      button.textContent = "Complete Offer";
     }
-  }
 
-  document
-    .getElementById("offerButton")
-    .addEventListener(
-      "click",
-      openZeydooOffer
-    );
+    document
+      .getElementById("offerButton")
+      .addEventListener(
+        "click",
+        openZeydooOffer
+      );
 
-  authenticate();
-</script>
+    authenticate();
+  </script>
 
 </body>
-    </html>
+</html>
