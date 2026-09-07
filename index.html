@@ -1,630 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#070910">
-
-  <title>X Earn Mining</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Telegram Mini App -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <!-- Monetag SDK -->
-  <script src="//libtl.com/sdk.js" data-zone="11747212" data-sdk="show_11747212"></script>
-
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050805">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>XEARN</title>
+<link rel="stylesheet" href="style.css">
+<script src="//libtl.com/sdk.js" data-zone="11747212" data-sdk="show_11747212"></script>
 </head>
-
 <body>
-
-  <div class="app-shell">
-
-    <!-- TOP HEADER -->
-    <header class="topbar">
-
-      <div>
-        <div class="brand">
-          X Earn Mining
-          <span>BOT</span>
-        </div>
-
-        <div class="status-line">
-          <i></i>
-          <span id="authStatus">Connecting to Telegram...</span>
-        </div>
-      </div>
-
-      <button class="icon-btn" id="refreshBtn" aria-label="Refresh">
-
-        <svg viewBox="0 0 24 24">
-          <path d="M20 11a8.1 8.1 0 0 0-15.5-2"></path>
-          <path d="M4 5v4h4"></path>
-          <path d="M4 13a8.1 8.1 0 0 0 15.5 2"></path>
-          <path d="M20 19v-4h-4"></path>
-        </svg>
-
-      </button>
-
-    </header>
-
-
-    <main>
-
-      <!-- PROFILE -->
-      <section class="profile-card glass">
-
-        <div class="avatar" id="avatar">
-          X
-        </div>
-
-        <div class="profile-info">
-
-          <div class="profile-name" id="profileName">
-            Loading...
-          </div>
-
-          <div class="profile-id" id="profileId">
-            Telegram ID —
-          </div>
-
-        </div>
-
-        <div class="tier-pill" id="tierPill">
-          FREE
-        </div>
-
-      </section>
-
-
-      <!-- BALANCE -->
-      <section class="balance-card">
-
-        <div class="balance-copy">
-
-          <div class="eyebrow">
-            YOUR BALANCE
-          </div>
-
-          <div class="balance-value" id="balance">
-            0.00
-          </div>
-
-          <div class="coin-label">
-            XCOIN
-          </div>
-
-          <div class="usd-value" id="usdBalance">
-            ≈ $0.00 USDT
-          </div>
-
-          <div class="rate">
-            1,300 XCOIN = $1 USDT
-          </div>
-
-        </div>
-
-        <div class="coin-orb">
-
-          <div class="coin-x">
-            X
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- STATISTICS -->
-      <section class="stats-grid">
-
-        <div class="stat-card">
-
-          <div class="stat-title">
-            MINING
-          </div>
-
-          <strong id="mineStat">
-            0 / 1
-          </strong>
-
-          <span id="mineTimer">
-            Ready
-          </span>
-
-        </div>
-
-
-        <div class="stat-card">
-
-          <div class="stat-title">
-            ADS
-          </div>
-
-          <strong id="adsStat">
-            0 / 10
-          </strong>
-
-          <span>
-            Daily limit
-          </span>
-
-        </div>
-
-
-        <div class="stat-card">
-
-          <div class="stat-title">
-            REFERRALS
-          </div>
-
-          <strong id="refStat">
-            0
-          </strong>
-
-          <span id="refEarned">
-            0 XCOIN
-          </span>
-
-        </div>
-
-
-        <div class="stat-card">
-
-          <div class="stat-title">
-            TOTAL EARNED
-          </div>
-
-          <strong id="totalEarned">
-            0
-          </strong>
-
-          <span>
-            XCOIN
-          </span>
-
-        </div>
-
-
-        <div class="stat-card">
-
-          <div class="stat-title">
-            TASKS
-          </div>
-
-          <strong>
-            Available
-          </strong>
-
-          <span>
-            Complete offers
-          </span>
-
-        </div>
-
-      </section>
-
-
-      <!-- MAIN ACTIONS -->
-      <section class="action-grid">
-
-        <button class="primary-action" id="mineBtn">
-
-          <span class="action-icon">
-            X
-          </span>
-
-          <span>
-
-            <b>
-              MINE XCOIN
-            </b>
-
-            <small id="mineSub">
-              Mine and earn XCOIN
-            </small>
-
-          </span>
-
-        </button>
-
-
-        <button class="secondary-action" id="adsBtn">
-
-          <span class="action-icon">
-            AD
-          </span>
-
-          <span>
-
-            <b>
-              WATCH VIDEO
-            </b>
-
-            <small>
-              Watch a video and earn XCOIN
-            </small>
-
-          </span>
-
-        </button>
-
-      </section>
-
-
-      <!-- UPGRADE -->
-      <section class="upgrade-banner" id="upgradeBtn">
-
-        <div>
-
-          <div class="eyebrow">
-            UPGRADE YOUR TIER
-          </div>
-
-          <h3>
-            More mines. More ads. Higher limits.
-          </h3>
-
-          <p>
-            Choose a tier that matches your earning goals.
-          </p>
-
-        </div>
-
-        <span class="arrow">
-          ›
-        </span>
-
-      </section>
-
-
-      <!-- SHORTCUTS -->
-      <section class="shortcuts">
-
-        <button data-screen="wallet">
-
-          <span class="shortcut-icon">
-            B
-          </span>
-
-          <b>
-            Balance
-          </b>
-
-        </button>
-
-
-        <button data-screen="withdraw">
-
-          <span class="shortcut-icon">
-            W
-          </span>
-
-          <b>
-            Withdraw
-          </b>
-
-        </button>
-
-
-        <button data-screen="referral">
-
-          <span class="shortcut-icon">
-            R
-          </span>
-
-          <b>
-            Referral
-          </b>
-
-        </button>
-
-
-        <button data-screen="leaderboard">
-
-          <span class="shortcut-icon">
-            L
-          </span>
-
-          <b>
-            Leaderboard
-          </b>
-
-        </button>
-
-
-        <button data-screen="tasks">
-
-          <span class="shortcut-icon">
-            T
-          </span>
-
-          <b>
-            Task
-          </b>
-
-        </button>
-
-      </section>
-
-
-      <!-- DAILY CHECK-IN -->
-      <section class="section-head">
-
-        <div>
-
-          <div class="eyebrow">
-            DAILY CHECK-IN
-          </div>
-
-          <h2>
-            Keep your streak active
-          </h2>
-
-        </div>
-
-        <span class="day-badge" id="checkinDay">
-          DAY 1
-        </span>
-
-      </section>
-
-
-      <section class="checkin-card glass">
-
-        <div class="checkin-days">
-
-          <div class="check-day active">
-            <b>1</b>
-            <span>Today</span>
-          </div>
-
-          <div class="check-day">
-            <b>2</b>
-            <span>Next</span>
-          </div>
-
-          <div class="check-day">
-            <b>3</b>
-            <span>Next</span>
-          </div>
-
-          <div class="check-day">
-            <b>4</b>
-            <span>Next</span>
-          </div>
-
-          <div class="check-day">
-            <b>5</b>
-            <span>Next</span>
-          </div>
-
-          <div class="check-day">
-            <b>6</b>
-            <span>Next</span>
-          </div>
-
-          <div class="check-day">
-            <b>7</b>
-            <span>Next</span>
-          </div>
-
-        </div>
-
-
-        <p class="checkin-note">
-          Open today's content to continue your daily activity.
-        </p>
-
-
-        <a
-          class="checkin-btn"
-          id="smartLinkBtn"
-          href="https://www.profitableratecpmnetwork.com/skzazzs529?key=b1a6eab3a3ea4f3a76a00dc123bde88f"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-
-          OPEN DAILY CONTENT
-
-          <span>
-            ›
-          </span>
-
-        </a>
-
-      </section>
-
-
-      <!-- WATCH ADS -->
-      <section class="section-head">
-
-        <div>
-
-          <div class="eyebrow">
-            WATCH VIDEOS & EARN
-          </div>
-
-          <h2>
-            Daily video progress
-          </h2>
-
-        </div>
-
-        <span class="progress-text" id="adProgress">
-          0 / 10
-        </span>
-
-      </section>
-
-
-      <section class="progress-card glass">
-
-        <div class="progress-track">
-
-          <div
-            id="adProgressBar"
-            class="progress-fill"
-          ></div>
-
-        </div>
-
-
-        <div class="progress-meta">
-
-          <span>
-            Completed videos
-          </span>
-
-          <span>
-            Reward: 1.04 XCOIN
-          </span>
-
-        </div>
-
-      </section>
-
-
-      <!-- TASK CENTER -->
-      <section class="info-card glass">
-
-        <div class="eyebrow">
-          TASK CENTER
-        </div>
-
-        <h3>
-          Complete available tasks
-        </h3>
-
-        <p>
-          Open the task center to view available tasks and earn XCOIN.
-        </p>
-
-        <button
-          class="outline-btn"
-          data-screen="tasks"
-        >
-          OPEN TASK CENTER
-        </button>
-
-      </section>
-
-
-      <!-- NOTICE -->
-      <section class="notice">
-
-        <b>
-          Important
-        </b>
-
-        <p>
-          X Earn Mining processes earning rewards through secure server-side systems.
-        </p>
-
-      </section>
-
-    </main>
-
-
-    <!-- BOTTOM NAVIGATION -->
-    <nav class="bottom-nav">
-
-      <button
-        class="nav-item active"
-        data-screen="home"
-      >
-        <span>
-          HOME
-        </span>
-      </button>
-
-
-      <button
-        class="nav-item"
-        data-screen="mining"
-      >
-        <span>
-          MINING
-        </span>
-      </button>
-
-
-      <button
-        class="nav-item"
-        data-screen="upgrade"
-      >
-        <span>
-          UPGRADE
-        </span>
-      </button>
-
-
-      <button
-        class="nav-item"
-        data-screen="wallet"
-      >
-        <span>
-          WALLET
-        </span>
-      </button>
-
-
-      <button
-        class="nav-item"
-        data-screen="profile"
-      >
-        <span>
-          PROFILE
-        </span>
-      </button>
-
-    </nav>
-
+<div id="app">
+
+<header class="top-header">
+  <div class="brand">
+    <div class="brand-mark">X</div>
+    <div><div class="brand-name">XEARN</div><div class="brand-subtitle">Earn. Mine. Grow.</div></div>
   </div>
+  <button class="icon-button" id="notificationButton" type="button" aria-label="Notifications">
+    <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+  </button>
+</header>
 
+<main id="mainContent">
 
-  <!-- TOAST -->
-  <div
-    class="toast"
-    id="toast"
-  ></div>
+<section class="screen active" id="homeScreen" data-screen="home">
 
-
-  <!-- MODAL -->
-  <div
-    class="modal"
-    id="modal"
-  >
-
-    <div
-      class="modal-backdrop"
-      data-close-modal
-    ></div>
-
-
-    <div class="modal-card">
-
-      <button
-        class="modal-close"
-        data-close-modal
-      >
-        ×
-      </button>
-
-
-      <div id="modalContent"></div>
-
-    </div>
-
+<div class="balance-card">
+  <div class="balance-top"><span>Your Balance</span>
+    <button class="balance-refresh" id="refreshBalance" type="button" aria-label="Refresh balance">
+      <svg viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4"/></svg>
+    </button>
   </div>
+  <div class="balance-amount"><span id="balanceAmount">0</span><small>XCOIN</small></div>
+  <div class="balance-usdt">≈ $<span id="balanceUsdt">0.00</span> USDT</div>
+  <div class="balance-actions">
+    <button class="primary-action" id="earnButton" type="button"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg><span>Earn</span></button>
+    <button class="secondary-action" id="withdrawButton" type="button"><svg viewBox="0 0 24 24"><path d="M12 5v14M18 13l-6 6-6-6"/></svg><span>Withdraw</span></button>
+  </div>
+</div>
 
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/></svg></div><div class="stat-info"><span>Tasks</span><strong id="tasksCount">0</strong></div></div>
+  <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5.2L20 9l-4 4 .9 5.7L12 16l-4.9 2.7L8 13l-4-4 5.5-.8z"/></svg></div><div class="stat-info"><span>Streak</span><strong><span id="streakCount">0</span><small>days</small></strong></div></div>
+  <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M17 11a3 3 0 1 0 0-6M16 14.5h1a4 4 0 0 1 4 4V20"/></svg></div><div class="stat-info"><span>Referrals</span><strong id="referralsCount">0</strong></div></div>
+</div>
 
-  <!-- APP JAVASCRIPT -->
-  <script src="app.js"></script>
+<div class="section-heading"><div><span class="eyebrow">PASSIVE EARNING</span><h2>Mining</h2></div><span class="tier-badge" id="tierBadge">FREE</span></div>
 
+<div class="mining-card">
+  <div class="mining-main"><div class="mining-symbol"><span>X</span></div><div class="mining-copy"><strong id="miningReward">+50 XCOIN</strong><span id="miningStatus">Ready to mine</span></div></div>
+  <button class="mine-button" id="mineButton" type="button"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg><span id="mineButtonText">MINE</span></button>
+</div>
+
+<div class="cooldown-bar"><div class="cooldown-top"><span>Next mining</span><strong id="mineCountdown">Ready</strong></div><div class="progress-track"><div class="progress-fill" id="mineProgress" style="width:0%"></div></div></div>
+
+<div class="section-heading checkin-heading"><div><span class="eyebrow">DAILY BONUS</span><h2>Daily Check-in</h2></div><span class="day-label" id="checkinDay">Day 1</span></div>
+
+<div class="checkin-card">
+  <div class="checkin-days">
+    <button class="checkin-day" data-day="1" type="button"><span>1</span><small>+3</small></button>
+    <button class="checkin-day" data-day="2" type="button"><span>2</span><small>+3</small></button>
+    <button class="checkin-day" data-day="3" type="button"><span>3</span><small>+3</small></button>
+    <button class="checkin-day" data-day="4" type="button"><span>4</span><small>+3</small></button>
+    <button class="checkin-day" data-day="5" type="button"><span>5</span><small>+3</small></button>
+    <button class="checkin-day" data-day="6" type="button"><span>6</span><small>+3</small></button>
+    <button class="checkin-day" data-day="7" type="button"><span>7</span><small>+3</small></button>
+  </div>
+  <button class="checkin-button" id="checkinButton" type="button"><span>Daily Check-in</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+</div>
+
+<div class="section-heading"><div><span class="eyebrow">WATCH & EARN</span><h2>Watch Video</h2></div><span class="reward-label">Rewarded</span></div>
+
+<div class="video-card">
+  <div class="video-info"><div class="video-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM10 9l5 3-5 3z"/></svg></div><div><strong>Watch & Earn</strong><span>Complete a video to earn XCOIN</span></div></div>
+  <button class="watch-button" id="watchVideoButton" type="button">WATCH</button>
+</div>
+
+<div class="video-progress"><div class="video-progress-top"><span>Videos completed</span><strong><span id="videosCompleted">0</span> / <span id="videosLimit">20</span></strong></div><div class="progress-track"><div class="progress-fill" id="videoProgress" style="width:0%"></div></div></div>
+
+</section>
+
+<section class="screen" id="earnScreen" data-screen="earn">
+  <div class="page-title"><span class="eyebrow">EARN MORE</span><h1>Earn XCOIN</h1><p>Complete available earning activities.</p></div>
+  <div class="earn-list">
+    <button class="earn-item" id="earnVideoItem" type="button"><div class="earn-item-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM10 9l5 3-5 3z"/></svg></div><div class="earn-item-content"><strong>Watch Video</strong><span>Watch a rewarded video</span></div><div class="earn-item-reward">+5</div><svg class="arrow-icon" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="earn-item" id="taskItem" type="button"><div class="earn-item-icon"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg></div><div class="earn-item-content"><strong>Tasks</strong><span>Complete available tasks</span></div><div class="earn-item-reward">EARN</div><svg class="arrow-icon" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="earn-item" id="checkinItem" type="button"><div class="earn-item-icon"><svg viewBox="0 0 24 24"><path d="M7 3v4M17 3v4M4 9h16M5 5h14v16H5z"/></svg></div><div class="earn-item-content"><strong>Daily Check-in</strong><span>Claim your daily bonus</span></div><div class="earn-item-reward">DAILY</div><svg class="arrow-icon" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+  <div class="notice-card"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M12 3a9 9 0 1 0 0 18 9 9 0 0 0-9-9 9 9 0 0 0 9-9z"/></svg><div><strong>Important</strong><p>Rewards are credited only after successful verification.</p></div></div>
+</section>
+
+<section class="screen" id="upgradeScreen" data-screen="upgrade">
+  <div class="page-title"><span class="eyebrow">MEMBERSHIP</span><h1>Upgrade</h1><p>Unlock higher earning limits.</p></div>
+  <div class="current-plan-card"><div><span>Your current plan</span><strong id="currentTier">FREE</strong></div><div class="plan-mark">X</div></div>
+  <div class="plans">
+    <button class="plan-card" data-plan="BRONZE" type="button"><div class="plan-header"><strong>BRONZE</strong><span>$5</span></div><div class="plan-details"><span>100 XCOIN per mine</span><span>3 mines / 2 hours</span><span>20 videos daily</span></div><div class="plan-action">Upgrade</div></button>
+    <button class="plan-card" data-plan="SILVER" type="button"><div class="plan-header"><strong>SILVER</strong><span>$15</span></div><div class="plan-details"><span>200 XCOIN per mine</span><span>6 mines / 2 hours</span><span>30 videos daily</span></div><div class="plan-action">Upgrade</div></button>
+    <button class="plan-card" data-plan="GOLD" type="button"><div class="plan-header"><strong>GOLD</strong><span>$30</span></div><div class="plan-details"><span>400 XCOIN per mine</span><span>12 mines / 2 hours</span><span>50 videos daily</span></div><div class="plan-action">Upgrade</div></button>
+  </div>
+</section>
+
+<section class="screen" id="referScreen" data-screen="refer">
+  <div class="page-title"><span class="eyebrow">REFERRALS</span><h1>Refer & Earn</h1><p>Invite users and grow your rewards.</p></div>
+  <div class="referral-card">
+    <div class="referral-icon"><svg viewBox="0 0 24 24"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M17 11a3 3 0 1 0 0-6M16 14.5h1a4 4 0 0 1 4 4V20"/></svg></div>
+    <h2>Invite Friends</h2><p>Share your referral link and earn when your referrals become active.</p>
+    <div class="referral-stats"><div><span>Referrals</span><strong id="referralTotal">0</strong></div><div><span>Earned</span><strong><span id="referralEarnings">0</span> XCOIN</strong></div></div>
+    <div class="referral-link-box"><span id="referralLink">Loading referral link...</span></div>
+    <button class="copy-button" id="copyReferralButton" type="button"><svg viewBox="0 0 24 24"><path d="M8 8h11v12H8zM5 16H4V4h12v1"/></svg>Copy Referral Link</button>
+  </div>
+</section>
+
+<section class="screen" id="accountScreen" data-screen="account">
+  <div class="page-title"><span class="eyebrow">ACCOUNT</span><h1>Account</h1><p>Your XEarn account information.</p></div>
+  <div class="account-card"><div class="account-avatar">X</div><div class="account-details"><strong id="userName">XEARN User</strong><span id="userTelegram">Telegram account</span></div></div>
+  <div class="account-menu">
+    <button class="account-item" id="historyButton" type="button"><div class="account-item-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 8h8M8 12h6M8 16h4"/></svg></div><span>Transaction History</span><svg class="arrow-icon" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="account-item" id="withdrawAccountButton" type="button"><div class="account-item-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M18 13l-6 6-6-6M5 4h14"/></svg></div><span>Withdraw</span><svg class="arrow-icon" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="account-item" id="supportButton" type="button"><div class="account-item-icon"><svg viewBox="0 0 24 24"><path d="M5 5h14v10H9l-4 4zM8 9h8M8 12h5"/></svg></div><span>Support</span><svg class="arrow-icon" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+  <div class="account-footer"><span>XEARN</span><small>Earn. Mine. Grow.</small></div>
+</section>
+
+</main>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" data-target="home" type="button"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10M9 20v-6h6v6"/></svg><span>Home</span></button>
+  <button class="nav-item" data-target="earn" type="button"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM10 9l5 3-5 3z"/></svg><span>Earn</span></button>
+  <button class="upgrade-nav-button" data-target="upgrade" type="button" aria-label="Upgrade"><div class="upgrade-circle"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></div><span>Upgrade</span></button>
+  <button class="nav-item" data-target="refer" type="button"><svg viewBox="0 0 24 24"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10a3.5 3.5 0 1 0-3.5-3.5A3.5 3.5 0 0 0 9.5 10M17 11a3 3 0 1 0 0-6M16 14.5h1a4 4 0 0 1 4 4V20"/></svg><span>Refer</span></button>
+  <button class="nav-item" data-target="account" type="button"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M5 21a7 7 0 0 1 14 0"/></svg><span>Account</span></button>
+</nav>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <div class="toast-icon" id="toastIcon"><svg viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"/></svg></div>
+  <div class="toast-content"><strong id="toastTitle">Success</strong><span id="toastMessage">Action completed.</span></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true">
+    <button class="modal-close" id="modalClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="modal-icon" id="modalIcon"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg></div>
+    <h2 id="modalTitle">Success</h2>
+    <p id="modalMessage">Your action was completed successfully.</p>
+    <button class="modal-button" id="modalAction" type="button">OK</button>
+  </div>
+</div>
+
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">X</div><strong>XEARN</strong><div class="loading-spinner"></div><span>Loading your account...</span>
+</div>
+
+</div>
+<script src="app.js"></script>
 </body>
-</html>
+  </html>
+  
