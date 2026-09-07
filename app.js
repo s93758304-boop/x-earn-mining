@@ -1183,4 +1183,379 @@ function showReferral() {
 
 /* =========================
    WITHDRAW MODAL
-   ======================
+   ======================*/
+   function showWithdraw() {
+  const balance =
+    Number(currentUser?.balance_xcoin || 0);
+
+  openModal(
+    "Withdraw",
+    `
+      <div class="modal-note">
+        Minimum withdrawal: $10 USDT.
+        A 1,300 XCOIN withdrawal fee applies.
+      </div>
+
+      <div class="detail-row">
+        <span>Available</span>
+        <strong>${formatXcoin(balance)} XCOIN</strong>
+      </div>
+
+      <div class="modal-note">
+        Withdrawal processing will be connected
+        to the secure withdrawal system.
+      </div>
+    `
+  );
+}
+
+
+/* =========================
+   UPGRADE MODAL
+   ========================= */
+
+function showUpgrade() {
+  const tiers = [
+    {
+      name: "BRONZE",
+      price: "$5",
+      mines: "3 mines / 6h",
+      reward: "30 XCOIN / mine",
+      ads: "20 ads / day"
+    },
+    {
+      name: "SILVER",
+      price: "$15",
+      mines: "6 mines / 6h",
+      reward: "60 XCOIN / mine",
+      ads: "30 ads / day"
+    },
+    {
+      name: "GOLD",
+      price: "$30",
+      mines: "12 mines / 6h",
+      reward: "120 XCOIN / mine",
+      ads: "50 ads / day"
+    }
+  ];
+
+  const html =
+    tiers.map((tier) => `
+      <div class="tier-option">
+        <div>
+          <strong>${tier.name}</strong>
+          <span>${tier.price}</span>
+        </div>
+
+        <p>${tier.mines}</p>
+        <p>${tier.reward}</p>
+        <p>${tier.ads}</p>
+
+        <button
+          type="button"
+          class="upgrade-tier-btn"
+          data-tier="${tier.name}"
+        >
+          Select ${tier.name}
+        </button>
+      </div>
+    `).join("");
+
+  openModal(
+    "Upgrade Your Tier",
+    html
+  );
+
+  document
+    .querySelectorAll(".upgrade-tier-btn")
+    .forEach((button) => {
+      button.addEventListener(
+        "click",
+        () => {
+          toast(
+            "Tier upgrades will be enabled through the secure upgrade system.",
+            "warning"
+          );
+        }
+      );
+    });
+}
+
+
+/* =========================
+   TASK CENTER
+   ========================= */
+
+function showTasks() {
+  openModal(
+    "Task Center",
+    `
+      <div class="task-item">
+        <div>
+          <strong>Watch Video</strong>
+          <p>Watch a rewarded video and earn 1.04 XCOIN when the event is verified.</p>
+        </div>
+
+        <button
+          type="button"
+          id="taskWatchVideoBtn"
+        >
+          WATCH
+        </button>
+      </div>
+
+      <div class="task-item">
+        <div>
+          <strong>Rewarded Task</strong>
+          <p>Open a rewarded task and complete the available interaction.</p>
+        </div>
+
+        <button
+          type="button"
+          id="rewardedTaskBtn"
+        >
+          OPEN
+        </button>
+      </div>
+    `
+  );
+
+  const watchButton =
+    $("taskWatchVideoBtn");
+
+  if (watchButton) {
+    watchButton.addEventListener(
+      "click",
+      () => {
+        closeModal();
+        watchVideo();
+      }
+    );
+  }
+
+  const taskButton =
+    $("rewardedTaskBtn");
+
+  if (taskButton) {
+    taskButton.addEventListener(
+      "click",
+      openRewardedTask
+    );
+  }
+}
+
+
+/* =========================
+   LEADERBOARD
+   ========================= */
+
+function showLeaderboard() {
+  openModal(
+    "Leaderboard",
+    `
+      <div class="modal-note">
+        Leaderboard data will be displayed here
+        once the leaderboard endpoint is connected.
+      </div>
+    `
+  );
+}
+
+
+/* =========================
+   EVENT BINDING
+   ========================= */
+
+function bindClick(id, handler) {
+  const el = $(id);
+
+  if (!el) return;
+
+  el.addEventListener(
+    "click",
+    (event) => {
+      event.preventDefault();
+      handler(event);
+    }
+  );
+}
+
+
+/* =========================
+   INITIALIZE BUTTONS
+   ========================= */
+
+function bindButtons() {
+
+  /* Main actions */
+
+  bindClick(
+    "mineBtn",
+    mineXcoin
+  );
+
+  bindClick(
+    "adsBtn",
+    watchVideo
+  );
+
+  bindClick(
+    "watchVideoBtn",
+    watchVideo
+  );
+
+  bindClick(
+    "refreshBtn",
+    () => refreshUser(true)
+  );
+
+  bindClick(
+    "upgradeBtn",
+    showUpgrade
+  );
+
+  bindClick(
+    "smartLinkBtn",
+    openDailyCheckin
+  );
+
+  /* Navigation */
+
+  bindClick(
+    "balanceBtn",
+    showBalance
+  );
+
+  bindClick(
+    "withdrawBtn",
+    showWithdraw
+  );
+
+  bindClick(
+    "referralBtn",
+    showReferral
+  );
+
+  bindClick(
+    "leaderboardBtn",
+    showLeaderboard
+  );
+
+  bindClick(
+    "taskBtn",
+    showTasks
+  );
+
+  bindClick(
+    "profileBtn",
+    showProfile
+  );
+
+  bindClick(
+    "walletBtn",
+    showBalance
+  );
+
+  /* Generic modal close */
+
+  const modal =
+    $("modal");
+
+  if (modal) {
+    modal.addEventListener(
+      "click",
+      (event) => {
+        if (
+          event.target === modal
+        ) {
+          closeModal();
+        }
+      }
+    );
+  }
+
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    }
+  );
+}
+
+
+/* =========================
+   PAGE VISIBILITY
+   ========================= */
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+    if (
+      document.visibilityState ===
+      "visible"
+    ) {
+      refreshUser(false);
+    }
+  }
+);
+
+
+/* =========================
+   APP START
+   ========================= */
+
+async function startApp() {
+
+  bindButtons();
+
+  const authenticated =
+    await authenticate();
+
+  if (!authenticated) {
+    return;
+  }
+
+  /*
+    Start normal non-rewarded
+    in-app advertising after the
+    application has initialized.
+  */
+
+  setTimeout(
+    startInAppAds,
+    6000
+  );
+
+  /*
+    Periodic account refresh.
+    The frontend never credits rewards;
+    it only refreshes the server state.
+  */
+
+  clearInterval(refreshTimer);
+
+  refreshTimer =
+    setInterval(
+      () => refreshUser(false),
+      30000
+    );
+}
+
+
+/* =========================
+   START
+   ========================= */
+
+if (
+  document.readyState ===
+  "loading"
+) {
+  document.addEventListener(
+    "DOMContentLoaded",
+    startApp
+  );
+} else {
+  startApp();
+}
