@@ -4,16 +4,25 @@ const SUPABASE_FUNCTION_BASE =
 const SMARTLINK =
   "https://www.profitableratecpmnetwork.com/skzazzs529?key=b1a6eab3a3ea4f3a76a00dc123bde88f";
 
-const ADSGRAM_BLOCK_ID = "46210";
+const ADSGRAM_REWARD_BLOCK_ID = "46210";
+
+const ADSGRAM_TASK_BLOCK_ID = "task-46211";
 
 const RATE = 1300;
 
 const tg = window.Telegram?.WebApp;
 
 let initData = "";
+
 let currentUser = null;
 
+
+/* =========================
+   TIER RULES
+========================= */
+
 const tierRules = {
+
   FREE: {
     maxMines: 1,
     reward: 10,
@@ -45,19 +54,27 @@ const tierRules = {
     minWithdraw: 10,
     maxWithdraw: null
   }
+
 };
 
 
-/* ELEMENT HELPER */
+/* =========================
+   ELEMENT HELPER
+========================= */
 
 function $(id) {
+
   return document.getElementById(id);
+
 }
 
 
-/* TOAST */
+/* =========================
+   TOAST
+========================= */
 
 function toast(message) {
+
   const element = $("toast");
 
   if (!element) return;
@@ -69,12 +86,17 @@ function toast(message) {
   clearTimeout(window.__toastTimer);
 
   window.__toastTimer = setTimeout(() => {
+
     element.classList.remove("show");
+
   }, 2800);
+
 }
 
 
-/* TELEGRAM SETUP */
+/* =========================
+   TELEGRAM
+========================= */
 
 function telegramReady() {
 
@@ -87,11 +109,15 @@ function telegramReady() {
       tg.expand();
 
       if (tg.setHeaderColor) {
+
         tg.setHeaderColor("#070910");
+
       }
 
       if (tg.setBackgroundColor) {
+
         tg.setBackgroundColor("#070910");
+
       }
 
     }
@@ -105,11 +131,15 @@ function telegramReady() {
     console.error(error);
 
     return false;
+
   }
+
 }
 
 
-/* SUPABASE FUNCTION CALL */
+/* =========================
+   SUPABASE FUNCTION
+========================= */
 
 async function callFunction(functionName, body) {
 
@@ -127,7 +157,8 @@ async function callFunction(functionName, body) {
   );
 
 
-  const data = await response.json().catch(() => ({}));
+  const data =
+    await response.json().catch(() => ({}));
 
 
   if (!response.ok) {
@@ -142,10 +173,13 @@ async function callFunction(functionName, body) {
 
 
   return data;
+
 }
 
 
-/* TELEGRAM AUTHENTICATION */
+/* =========================
+   TELEGRAM AUTH
+========================= */
 
 async function authenticate() {
 
@@ -159,21 +193,23 @@ async function authenticate() {
       "Open this app inside Telegram";
 
     toast(
-      "Open X Earn Mining from your Telegram Mini App."
+      "Open X Earn Mining from Telegram."
     );
 
     return;
+
   }
 
 
   try {
 
-    const data = await callFunction(
-      "telegram-auth",
-      {
-        initData: initData
-      }
-    );
+    const data =
+      await callFunction(
+        "telegram-auth",
+        {
+          initData: initData
+        }
+      );
 
 
     currentUser =
@@ -204,7 +240,9 @@ async function authenticate() {
 }
 
 
-/* RENDER USER */
+/* =========================
+   RENDER USER
+========================= */
 
 function renderUser() {
 
@@ -252,7 +290,9 @@ function renderUser() {
 
 
   const balance =
-    Number(currentUser.balance_xcoin || 0);
+    Number(
+      currentUser.balance_xcoin || 0
+    );
 
 
   $("balance").textContent =
@@ -266,7 +306,9 @@ function renderUser() {
 
 
   $("usdBalance").textContent =
-    `≈ $${(balance / RATE).toFixed(2)} USDT`;
+    `≈ $${(
+      balance / RATE
+    ).toFixed(2)} USDT`;
 
 
   $("totalEarned").textContent =
@@ -326,7 +368,9 @@ function renderUser() {
 }
 
 
-/* MINING TIMER */
+/* =========================
+   MINING TIMER
+========================= */
 
 function startMineTimer() {
 
@@ -365,6 +409,7 @@ function startMineTimer() {
       "Cycle limit reached";
 
     return;
+
   }
 
 
@@ -374,6 +419,7 @@ function startMineTimer() {
       "Ready";
 
     return;
+
   }
 
 
@@ -396,6 +442,7 @@ function startMineTimer() {
       "Ready";
 
     return;
+
   }
 
 
@@ -421,16 +468,12 @@ function startMineTimer() {
       "0"
     )}m`;
 
-
-  setTimeout(
-    startMineTimer,
-    30000
-  );
-
 }
 
 
-/* MINE XCOIN */
+/* =========================
+   MINE XCOIN
+========================= */
 
 async function mine() {
 
@@ -441,6 +484,7 @@ async function mine() {
     );
 
     return;
+
   }
 
 
@@ -466,11 +510,16 @@ async function mine() {
     renderUser();
 
 
+    const tier =
+      (
+        currentUser.tier ||
+        "FREE"
+      ).toUpperCase();
+
+
     const reward =
       data.reward ??
-      tierRules[
-        currentUser.tier || "FREE"
-      ].reward;
+      tierRules[tier].reward;
 
 
     toast(
@@ -491,7 +540,9 @@ async function mine() {
 }
 
 
-/* ADSGRAM */
+/* =========================
+   WATCH ADS
+========================= */
 
 async function watchAd() {
 
@@ -502,16 +553,18 @@ async function watchAd() {
     );
 
     return;
+
   }
 
 
   if (!window.Adsgram) {
 
     toast(
-      "Ads service is still loading. Try again."
+      "Ads service is still loading."
     );
 
     return;
+
   }
 
 
@@ -521,12 +574,12 @@ async function watchAd() {
   try {
 
     const controller =
-      window.Adsgram.init(
-        {
-          blockId:
-            ADSGRAM_BLOCK_ID
-        }
-      );
+      window.Adsgram.init({
+
+        blockId:
+          ADSGRAM_REWARD_BLOCK_ID
+
+      });
 
 
     await controller.show();
@@ -536,12 +589,11 @@ async function watchAd() {
       IMPORTANT:
 
       The browser does NOT directly
-      add XCOIN here.
+      add XCOIN.
 
-      A secure server-side AdsGram
-      reward endpoint must verify the
-      completed ad before changing
-      the user's balance.
+      The completed ad must be
+      verified server-side before
+      the user's balance changes.
     */
 
 
@@ -567,9 +619,85 @@ async function watchAd() {
 }
 
 
-/* OPEN MODAL */
+/* =========================
+   ADSGRAM TASK
+========================= */
 
-function openModal(title, content) {
+async function openAdsGramTask() {
+
+  if (!initData) {
+
+    toast(
+      "Telegram authentication is required."
+    );
+
+    return;
+
+  }
+
+
+  if (!window.Adsgram) {
+
+    toast(
+      "Task service is still loading."
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    const controller =
+      window.Adsgram.init({
+
+        blockId:
+          ADSGRAM_TASK_BLOCK_ID
+
+      });
+
+
+    await controller.show();
+
+
+    /*
+      IMPORTANT:
+
+      Task completion must be
+      verified server-side before
+      XCOIN is credited.
+
+      No balance is changed here.
+    */
+
+
+    toast(
+      "Task completed. Verification is processing."
+    );
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    toast(
+      "Task was skipped or unavailable."
+    );
+
+  }
+
+}
+
+
+/* =========================
+   OPEN MODAL
+========================= */
+
+function openModal(
+  title,
+  content
+) {
 
   $("modalContent").innerHTML =
     `
@@ -585,7 +713,9 @@ function openModal(title, content) {
 }
 
 
-/* CLOSE MODAL */
+/* =========================
+   CLOSE MODAL
+========================= */
 
 function closeModal() {
 
@@ -596,7 +726,9 @@ function closeModal() {
 }
 
 
-/* SCREEN HANDLER */
+/* =========================
+   SCREENS
+========================= */
 
 function screen(name) {
 
@@ -615,11 +747,15 @@ function screen(name) {
   if (name === "home") {
 
     window.scrollTo({
+
       top: 0,
+
       behavior: "smooth"
+
     });
 
     return;
+
   }
 
 
@@ -639,8 +775,8 @@ function screen(name) {
     mining: `
 
       <p>
-        Your mining rules are controlled
-        by your current tier.
+        Your mining rewards and limits
+        are controlled by your current tier.
       </p>
 
       <div class="modal-list">
@@ -673,9 +809,8 @@ function screen(name) {
     upgrade: `
 
       <p>
-        Select a higher tier to unlock
-        additional mining and advertising
-        limits.
+        Upgrade your tier to unlock
+        higher earning limits.
       </p>
 
       <div class="modal-list">
@@ -703,22 +838,33 @@ function screen(name) {
     wallet: `
 
       <p>
-        Your current XCOIN wallet.
+        Your current XCOIN wallet balance.
       </p>
 
       <div class="modal-list">
 
         <div class="modal-row">
-          <b>Balance</b>
+
+          <b>
+            Balance
+          </b>
+
           <span>
             ${Number(
               currentUser?.balance_xcoin || 0
-            ).toLocaleString()} XCOIN
+            ).toLocaleString()}
+            XCOIN
           </span>
+
         </div>
 
+
         <div class="modal-row">
-          <b>USDT value</b>
+
+          <b>
+            USDT value
+          </b>
+
           <span>
             $${(
               Number(
@@ -726,6 +872,7 @@ function screen(name) {
               ) / RATE
             ).toFixed(2)}
           </span>
+
         </div>
 
       </div>
@@ -736,9 +883,9 @@ function screen(name) {
     withdraw: `
 
       <p>
-        Withdrawals will be enabled after
-        the secure withdrawal endpoint and
-        admin approval system are connected.
+        The secure withdrawal system
+        will be connected before withdrawals
+        are enabled.
       </p>
 
     `,
@@ -749,10 +896,26 @@ function screen(name) {
       <p>
         Your Telegram referral information
         is connected to the account system.
-        The final financial referral reward
-        will be connected through the secure
-        backend.
       </p>
+
+      <div class="modal-list">
+
+        <div class="modal-row">
+
+          <b>
+            Referral earnings
+          </b>
+
+          <span>
+            ${Number(
+              currentUser?.referral_earnings_xcoin || 0
+            ).toLocaleString()}
+            XCOIN
+          </span>
+
+        </div>
+
+      </div>
 
     `,
 
@@ -760,9 +923,9 @@ function screen(name) {
     leaderboard: `
 
       <p>
-        The leaderboard interface is ready.
-        The secure server-side leaderboard
-        query will be connected next.
+        The secure leaderboard query
+        will be connected to the database
+        next.
       </p>
 
     `,
@@ -771,22 +934,31 @@ function screen(name) {
     tasks: `
 
       <p>
-        Complete available offers normally.
-        Zeydoo rewards are credited only
-        after a verified conversion.
+        Complete available tasks through
+        AdsGram. Task rewards will only be
+        credited after secure verification.
       </p>
 
       <div class="modal-list">
 
         <div class="modal-row">
 
-          <b>
-            Zeydoo Task
-          </b>
+          <div>
+
+            <b>
+              AdsGram Task
+            </b>
+
+            <span>
+              Complete available task
+            </span>
+
+          </div>
+
 
           <button
             class="outline-btn"
-            id="startOfferBtn"
+            id="startAdsTaskBtn"
           >
             OPEN TASK
           </button>
@@ -801,31 +973,48 @@ function screen(name) {
     profile: `
 
       <p>
-        Your Telegram profile information.
+        Your Telegram account information.
       </p>
 
       <div class="modal-list">
 
         <div class="modal-row">
-          <b>Name</b>
+
+          <b>
+            Name
+          </b>
+
           <span>
             ${currentUser?.first_name || ""}
             ${currentUser?.last_name || ""}
           </span>
+
         </div>
 
+
         <div class="modal-row">
-          <b>Telegram ID</b>
+
+          <b>
+            Telegram ID
+          </b>
+
           <span>
             ${currentUser?.telegram_id || "—"}
           </span>
+
         </div>
 
+
         <div class="modal-row">
-          <b>Tier</b>
+
+          <b>
+            Tier
+          </b>
+
           <span>
             ${currentUser?.tier || "FREE"}
           </span>
+
         </div>
 
       </div>
@@ -836,23 +1025,25 @@ function screen(name) {
 
 
   openModal(
+
     name.charAt(0).toUpperCase() +
       name.slice(1),
 
     content[name] ||
       "<p>Coming soon.</p>"
+
   );
 
 
   const taskButton =
-    $("startOfferBtn");
+    $("startAdsTaskBtn");
 
 
   if (taskButton) {
 
     taskButton.addEventListener(
       "click",
-      startZeydoo
+      openAdsGramTask
     );
 
   }
@@ -860,64 +1051,9 @@ function screen(name) {
 }
 
 
-/* ZEYDOO */
-
-async function startZeydoo() {
-
-  if (!initData) {
-
-    toast(
-      "Telegram authentication is required."
-    );
-
-    return;
-  }
-
-
-  try {
-
-    const data =
-      await callFunction(
-        "start-zeydoo-offer",
-        {
-          initData: initData
-        }
-      );
-
-
-    if (!data.url) {
-
-      throw new Error(
-        "Task link was not returned."
-      );
-
-    }
-
-
-    window.open(
-      data.url,
-      "_blank",
-      "noopener,noreferrer"
-    );
-
-
-    toast(
-      "Task opened. Complete the offer normally."
-    );
-
-
-  } catch (error) {
-
-    console.error(error);
-
-    toast(error.message);
-
-  }
-
-}
-
-
-/* EVENT LISTENERS */
+/* =========================
+   EVENT LISTENER
+========================= */
 
 document.addEventListener(
   "click",
@@ -952,7 +1088,9 @@ document.addEventListener(
 );
 
 
-/* MAIN BUTTONS */
+/* =========================
+   MAIN BUTTONS
+========================= */
 
 $("mineBtn").addEventListener(
   "click",
@@ -966,7 +1104,9 @@ $("adsBtn").addEventListener(
 );
 
 
-/* REFRESH */
+/* =========================
+   REFRESH
+========================= */
 
 $("refreshBtn").addEventListener(
   "click",
@@ -974,36 +1114,45 @@ $("refreshBtn").addEventListener(
 );
 
 
-/* UPGRADE */
+/* =========================
+   UPGRADE
+========================= */
 
 $("upgradeBtn").addEventListener(
   "click",
-  () => screen("upgrade")
+  () => {
+
+    screen("upgrade");
+
+  }
 );
 
 
-/* SMARTLINK */
+/* =========================
+   SMARTLINK
+========================= */
 
 $("smartLinkBtn").href =
   SMARTLINK;
 
 
-/* START */
+/* =========================
+   START APP
+========================= */
 
 authenticate();
 
 
-/* UPDATE TIMER */
+/* =========================
+   TIMER UPDATE
+========================= */
 
-setInterval(
-  () => {
+setInterval(() => {
 
-    if (currentUser) {
+  if (currentUser) {
 
-      startMineTimer();
+    startMineTimer();
 
-    }
+  }
 
-  },
-  60000
-);
+}, 60000);
