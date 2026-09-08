@@ -2093,10 +2093,108 @@ window.addEventListener(
       "XEARN error:",
       event.error ||
         event.message
-    );
+    ):
 
   }
 );
+/* =========================
+   XEARN STARTUP FIX
+   ========================= */
+
+(async function startXEARN() {
+
+  console.log("XEARN starting...");
+
+  try {
+
+    // Make Telegram available
+    if (
+      !window.Telegram ||
+      !window.Telegram.WebApp
+    ) {
+
+      console.error(
+        "Telegram WebApp SDK missing"
+      );
+
+      hideLoading();
+
+      showToast(
+        "Telegram Error",
+        "Please open XEARN inside Telegram."
+      );
+
+      return;
+    }
+
+    // Telegram WebApp
+    window.tg =
+      window.Telegram.WebApp;
+
+    tg.ready();
+
+    tg.expand();
+
+    console.log(
+      "Telegram WebApp ready"
+    );
+
+    // Get Telegram user
+    const initDataUnsafe =
+      tg.initDataUnsafe || {};
+
+    const user =
+      initDataUnsafe.user;
+
+    if (!user || !user.id) {
+
+      console.error(
+        "Telegram user not found"
+      );
+
+      hideLoading();
+
+      showToast(
+        "Telegram Error",
+        "Telegram user information was not found."
+      );
+
+      return;
+    }
+
+    // Store user globally
+    telegramUser = user;
+
+    console.log(
+      "Telegram user:",
+      telegramUser
+    );
+
+    // Authenticate
+    await authenticateUser();
+
+    console.log(
+      "XEARN startup complete"
+    );
+
+  } catch (error) {
+
+    console.error(
+      "XEARN startup error:",
+      error
+    );
+
+    hideLoading();
+
+    showToast(
+      "Startup Error",
+      error.message ||
+        "Unable to start XEARN."
+    );
+
+  }
+
+})();
 
 
 /* =========================
