@@ -158,8 +158,20 @@ async function authenticateUser() {
 
   try {
 
+    if (!tg) {
+      throw new Error(
+        "Telegram WebApp is not available."
+      );
+    }
+
+    if (!telegramUser) {
+      throw new Error(
+        "Telegram user information is missing."
+      );
+    }
+
     const data =
-      await callFunction(
+      await callFunctionWithTimeout(
         "telegram-auth",
         {
           initData:
@@ -170,7 +182,8 @@ async function authenticateUser() {
 
           user:
             telegramUser
-        }
+        },
+        10000
       );
 
     currentUser =
@@ -189,23 +202,106 @@ async function authenticateUser() {
       error
     );
 
+    hideLoading();
+
     showToast(
       "Connection Error",
       "Unable to load your XEarn account."
     );
 
-    hideLoading();
   }
 }
 
+
+async function callFunctionWithTimeout(
+  functionName,
+  body = {},
+  timeout = 10000
+) {
+
+  const controller =
+    new AbortController();
+
+  const timer =
+    setTimeout(
+      () => controller.abort(),
+      timeout
+    );
+
+  try {
+
+    const response =
+      await fetch(
+        FUNCTION_BASE +
+          "/" +
+          functionName,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify(body),
+
+          signal:
+            controller.signal
+        }
+      );
+
+    let data = null;
+
+    try {
+
+      data =
+        await response.json();
+
+    } catch (_) {
+
+      data = null;
+
+    }
+
+    if (!response.ok) {
+
+      const message =
+        data &&
+        (
+          data.error ||
+          data.message ||
+          data.details
+        );
+
+      throw new Error(
+        message ||
+        "Request failed"
+      );
+
+    }
+
+    return data;
+
+  } finally {
+
+    clearTimeout(timer);
+
+  }
+
+}
+
+
 async function refreshUser() {
 
-  if (!telegramUser) return;
+  if (!telegramUser) {
+    return;
+  }
 
   try {
 
     const data =
-      await callFunction(
+      await callFunctionWithTimeout(
         "telegram-auth",
         {
           initData:
@@ -216,7 +312,8 @@ async function refreshUser() {
 
           user:
             telegramUser
-        }
+        },
+        10000
       );
 
     currentUser =
@@ -232,7 +329,9 @@ async function refreshUser() {
       "Refresh error:",
       error
     );
+
   }
+
 }
 
 function getValue(
