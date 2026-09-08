@@ -1,504 +1,763 @@
-/* =========================================================
-   X EARN MINING
-   Production Frontend Controller
-   Monetag Rewarded Interstitial Integration
-   ========================================================= */
-
-"use strict";
-
-/* =========================
-   CONFIGURATION
-   ========================= */
-
 const SUPABASE_URL =
   "https://ynrqdbdgjzmucqcfsyvi.supabase.co";
 
-const FUNCTIONS_URL =
-  `${SUPABASE_URL}/functions/v1`;
+const FUNCTION_BASE =
+  SUPABASE_URL + "/functions/v1";
 
 const MONETAG_ZONE_ID = "11747212";
 
-const WATCH_VIDEO_REWARD = 1.04;
 const XCOIN_USDT_RATE = 1300;
 
-const DAILY_CHECKIN_LINK =
+const TIER_RULES = {
+  FREE: {
+    reward: 50,
+    maxMines: 1,
+    maxAds: 20
+  },
+
+  BRONZE: {
+    reward: 100,
+    maxMines: 3,
+    maxAds: 20
+  },
+
+  SILVER: {
+    reward: 200,
+    maxMines: 6,
+    maxAds: 30
+  },
+
+  GOLD: {
+    reward: 400,
+    maxMines: 12,
+    maxAds: 50
+  }
+};
+
+const SMARTLINK =
   "https://www.profitableratecpmnetwork.com/skzazzs529?key=b1a6eab3a3ea4f3a76a00dc123bde88f";
 
+const tg =
+  window.Telegram &&
+  window.Telegram.WebApp
+    ? window.Telegram.WebApp
+    : null;
 
-/* =========================
-   TELEGRAM
-   ========================= */
-
-const tg = window.Telegram && window.Telegram.WebApp
-  ? window.Telegram.WebApp
-  : null;
-
-if (tg) {
-  tg.ready();
-  tg.expand();
-
-  try {
-    tg.setHeaderColor("#070910");
-    tg.setBackgroundColor("#070910");
-  } catch (_) {}
-}
-
-
-/* =========================
-   APPLICATION STATE
-   ========================= */
-
+let telegramUser = null;
 let currentUser = null;
-let currentTier = null;
-let isAuthenticated = false;
-let isMining = false;
-let isWatchingVideo = false;
+let currentTier = "FREE";
 
-let mineTimerInterval = null;
-let refreshTimer = null;
+let miningTimer = null;
+let toastTimer = null;
 
+let busyMining = false;
+let busyVideo = false;
+let busyCheckin = false;
 
-/* =========================
-   HELPERS
-   ========================= */
+const $ = (id) =>
+  document.getElementById(id);
 
-function $(id) {
-  return document.getElementById(id);
-}
+const qs = (selector) =>
+  document.querySelector(selector);
 
-function setText(id, value) {
-  const el = $(id);
-  if (el) el.textContent = value;
-}
+const qsa = (selector) =>
+  document.querySelectorAll(selector);
 
-function showElement(id) {
-  const el = $(id);
-  if (el) el.style.display = "";
-}
+document.addEventListener(
+  "DOMContentLoaded",
+  init
+);
 
-function hideElement(id) {
-  const el = $(id);
-  if (el) el.style.display = "none";
-}
+async function init() {
 
-function formatNumber(value) {
-  const number = Number(value || 0);
+  setupNavigation();
+  setupButtons();
 
-  return number.toLocaleString("en-US", {
-    maximumFractionDigits: 2
-  });
-}
+  if (tg) {
+    tg.ready();
+    tg.expand();
 
-function formatXcoin(value) {
-  return formatNumber(value);
-}
+    try {
+      tg.setHeaderColor("#050805");
+      tg.setBackgroundColor("#050805");
+    } catch (_) {}
+  }
 
-function xcoinToUsd(value) {
-  return Number(value || 0) / XCOIN_USDT_RATE;
-}
+  telegramUser =
+    tg &&
+    tg.initDataUnsafe &&
+    tg.initDataUnsafe.user
+      ? tg.initDataUnsafe.user
+      : null;
 
-function formatUsd(value) {
-  return `$${Number(value || 0).toFixed(2)}`;
-}
+  if (!telegramUser) {
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+    showToast(
+      "Telegram Required",
+      "Open XEarn from Telegram."
+    );
 
-
-/* =========================
-   TOAST
-   ========================= */
-
-function toast(message, type = "normal") {
-  const el = $("toast");
-
-  if (!el) {
-    console.log(message);
+    hideLoading();
     return;
   }
 
-  el.textContent = message;
-
-  el.classList.remove(
-    "show",
-    "success",
-    "error",
-    "warning"
-  );
-
-  if (type === "success") {
-    el.classList.add("success");
-  }
-
-  if (type === "error") {
-    el.classList.add("error");
-  }
-
-  if (type === "warning") {
-    el.classList.add("warning");
-  }
-
-  requestAnimationFrame(() => {
-    el.classList.add("show");
-  });
-
-  clearTimeout(el._toastTimer);
-
-  el._toastTimer = setTimeout(() => {
-    el.classList.remove("show");
-  }, 3200);
+  await authenticateUser();
 }
 
+async function callFunction(
+  functionName,
+  body = {}
+) {
 
-/* =========================
-   LOADING STATUS
-   ========================= */
+  const response =
+    await fetch(
+      FUNCTION_BASE +
+        "/" +
+        functionName,
+      {
+        method: "POST",
 
-function setAuthStatus(message) {
-  const el = $("authStatus");
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
 
-  if (el) {
-    el.textContent = message;
-  }
-}
-
-
-/* =========================
-   TELEGRAM INIT DATA
-   ========================= */
-
-function getInitData() {
-  if (!tg) return "";
-
-  return tg.initData || "";
-}
-
-function getTelegramUser() {
-  if (!tg || !tg.initDataUnsafe) return null;
-
-  return tg.initDataUnsafe.user || null;
-}
-
-
-/* =========================
-   SUPABASE FUNCTION CALL
-   ========================= */
-
-async function callFunction(functionName, body = {}) {
-  const response = await fetch(
-    `${FUNCTIONS_URL}/${functionName}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    }
-  );
+        body: JSON.stringify(body)
+      }
+    );
 
   let data = null;
 
   try {
-    data = await response.json();
+    data =
+      await response.json();
   } catch (_) {
     data = null;
   }
 
   if (!response.ok) {
-    const message =
-      data?.error ||
-      data?.message ||
-      `Request failed (${response.status})`;
 
-    throw new Error(message);
+    const message =
+      data &&
+      (
+        data.error ||
+        data.message ||
+        data.details
+      );
+
+    throw new Error(
+      message ||
+      "Request failed"
+    );
   }
 
   return data;
 }
 
-
-/* =========================
-   AUTHENTICATION
-   ========================= */
-
-async function authenticate() {
-  const initData = getInitData();
-
-  if (!initData) {
-    setAuthStatus("Open X Earn Mining inside Telegram.");
-    toast(
-      "Open the Mini App from Telegram.",
-      "warning"
-    );
-    return false;
-  }
-
-  setAuthStatus("Connecting...");
+async function authenticateUser() {
 
   try {
-    const data = await callFunction(
-      "telegram-auth",
-      {
-        initData
-      }
-    );
 
-    if (!data || !data.user) {
-      throw new Error("Invalid authentication response.");
-    }
+    const data =
+      await callFunction(
+        "telegram-auth",
+        {
+          initData:
+            tg.initData || "",
 
-    currentUser = data.user;
-    currentTier = data.tier || null;
-    isAuthenticated = true;
+          telegram_id:
+            telegramUser.id,
 
-    setAuthStatus("");
+          user:
+            telegramUser
+        }
+      );
 
-    renderUser();
+    currentUser =
+      data.user ||
+      data.data ||
+      data;
 
-    startMiningTimer();
+    updateInterface();
 
-    return true;
+    hideLoading();
 
   } catch (error) {
-    console.error("Authentication error:", error);
 
-    setAuthStatus("Unable to connect.");
-
-    toast(
-      error.message || "Unable to connect to the server.",
-      "error"
+    console.error(
+      "Authentication error:",
+      error
     );
 
-    return false;
+    showToast(
+      "Connection Error",
+      "Unable to load your XEarn account."
+    );
+
+    hideLoading();
   }
 }
 
+async function refreshUser() {
 
-/* =========================
-   USER RENDERING
-   ========================= */
-
-function renderUser() {
-  if (!currentUser) return;
-
-  const user = currentUser;
-  const tier = currentTier || {};
-
-  const fullName =
-    user.full_name ||
-    user.name ||
-    getTelegramUser()?.first_name ||
-    "X Earn User";
-
-  const username =
-    user.username ||
-    getTelegramUser()?.username ||
-    "";
-
-  const telegramId =
-    user.telegram_id ||
-    getTelegramUser()?.id ||
-    "";
-
-  const balance =
-    Number(user.balance_xcoin || 0);
-
-  const totalEarned =
-    Number(user.total_earned_xcoin || 0);
-
-  const referralEarned =
-    Number(
-      user.referral_earnings_xcoin ||
-      user.ref_earned_xcoin ||
-      0
-    );
-
-  const mineCount =
-    Number(
-      user.mines_count ||
-      user.mine_count ||
-      0
-    );
-
-  const adsToday =
-    Number(
-      user.ads_today ||
-      user.ad_count_today ||
-      0
-    );
-
-  /* Profile */
-
-  setText("profileName", fullName);
-
-  setText(
-    "profileId",
-    telegramId ? `ID: ${telegramId}` : ""
-  );
-
-  /* Avatar */
-
-  const avatar = $("avatar");
-
-  if (avatar) {
-    const firstLetter =
-      String(fullName)
-        .trim()
-        .charAt(0)
-        .toUpperCase() || "X";
-
-    avatar.textContent = firstLetter;
-  }
-
-  /* Tier */
-
-  const tierName =
-    tier.name ||
-    tier.tier_name ||
-    user.tier ||
-    "FREE";
-
-  setText(
-    "tierPill",
-    String(tierName).toUpperCase()
-  );
-
-  /* Balance */
-
-  setText(
-    "balance",
-    formatXcoin(balance)
-  );
-
-  setText(
-    "usdBalance",
-    formatUsd(xcoinToUsd(balance))
-  );
-
-  setText(
-    "totalEarned",
-    formatXcoin(totalEarned)
-  );
-
-  setText(
-    "refEarned",
-    formatXcoin(referralEarned)
-  );
-
-  /* Mining */
-
-  const mineLimit =
-    Number(
-      tier.mines_per_cycle ||
-      tier.mine_limit ||
-      tier.mines ||
-      1
-    );
-
-  setText(
-    "mineStat",
-    `${mineCount} / ${mineLimit}`
-  );
-
-  /* Ads */
-
-  const adLimit =
-    Number(
-      tier.ads_per_day ||
-      tier.daily_ads ||
-      tier.ads_limit ||
-      10
-    );
-
-  setText(
-    "adsStat",
-    `${adsToday} / ${adLimit}`
-  );
-
-  const progress =
-    adLimit > 0
-      ? Math.min(100, (adsToday / adLimit) * 100)
-      : 0;
-
-  const progressBar = $("adProgressBar");
-
-  if (progressBar) {
-    progressBar.style.width = `${progress}%`;
-  }
-
-  /* Mining subtitle */
-
-  const mineSub = $("mineSub");
-
-  if (mineSub) {
-    if (mineCount >= mineLimit) {
-      mineSub.textContent =
-        "Mining limit reached";
-    } else {
-      mineSub.textContent =
-        "Mine and earn XCOIN";
-    }
-  }
-
-  /* Watch video button */
-
-  const adsButton = $("adsBtn");
-
-  if (adsButton && !isWatchingVideo) {
-    adsButton.disabled = false;
-  }
-}
-
-
-/* =========================
-   REFRESH USER DATA
-   ========================= */
-
-async function refreshUser(showMessage = false) {
-  if (!isAuthenticated) return false;
-
-  const initData = getInitData();
-
-  if (!initData) return false;
+  if (!telegramUser) return;
 
   try {
-    const data = await callFunction(
-      "telegram-auth",
-      {
-        initData
-      }
-    );
 
-    if (data?.user) {
-      currentUser = data.user;
-      currentTier = data.tier || currentTier;
+    const data =
+      await callFunction(
+        "telegram-auth",
+        {
+          initData:
+            tg.initData || "",
 
-      renderUser();
+          telegram_id:
+            telegramUser.id,
 
-      if (showMessage) {
-        toast(
-          "Balance updated.",
-          "success"
-        );
-      }
+          user:
+            telegramUser
+        }
+      );
 
-      return true;
-    }
+    currentUser =
+      data.user ||
+      data.data ||
+      data;
+
+    updateInterface();
 
   } catch (error) {
+
     console.error(
       "Refresh error:",
       error
     );
   }
+}
 
-  return false;
+function getValue(
+  object,
+  names,
+  fallback = 0
+) {
+
+  if (!object)
+    return fallback;
+
+  for (
+    const name of names
+  ) {
+
+    if (
+      object[name] !==
+        undefined &&
+      object[name] !== null
+    ) {
+      return object[name];
+    }
+  }
+
+  return fallback;
+}
+
+function normalizeTier(value) {
+
+  const tier =
+    String(
+      value || "FREE"
+    )
+      .trim()
+      .toUpperCase();
+
+  return TIER_RULES[tier]
+    ? tier
+    : "FREE";
+}
+
+function setText(
+  id,
+  value
+) {
+
+  const element = $(id);
+
+  if (element) {
+    element.textContent =
+      value;
+  }
+}
+
+function formatNumber(number) {
+
+  return (
+    Number(number) || 0
+  ).toLocaleString(
+    "en-US",
+    {
+      maximumFractionDigits: 2
+    }
+  );
+}
+function updateInterface() {
+
+  if (!currentUser) return;
+
+  const balance =
+    Number(
+      getValue(
+        currentUser,
+        [
+          "balance_xcoin",
+          "balance",
+          "xcoin_balance"
+        ],
+        0
+      )
+    );
+
+  const tasks =
+    Number(
+      getValue(
+        currentUser,
+        [
+          "tasks_completed",
+          "completed_tasks",
+          "task_count"
+        ],
+        0
+      )
+    );
+
+  const referrals =
+    Number(
+      getValue(
+        currentUser,
+        [
+          "referrals_count",
+          "referral_count",
+          "total_referrals"
+        ],
+        0
+      )
+    );
+
+  const referralEarnings =
+    Number(
+      getValue(
+        currentUser,
+        [
+          "referral_earnings_xcoin",
+          "referral_earnings"
+        ],
+        0
+      )
+    );
+
+  const streak =
+    Number(
+      getValue(
+        currentUser,
+        [
+          "streak",
+          "streak_days",
+          "checkin_streak"
+        ],
+        0
+      )
+    );
+
+  const videos =
+    Number(
+      getValue(
+        currentUser,
+        [
+          "videos_completed",
+          "ads_watched",
+          "video_count"
+        ],
+        0
+      )
+    );
+
+  currentTier =
+    normalizeTier(
+      getValue(
+        currentUser,
+        [
+          "tier",
+          "plan",
+          "membership_tier"
+        ],
+        "FREE"
+      )
+    );
+
+  setText(
+    "balanceAmount",
+    formatNumber(balance)
+  );
+
+  setText(
+    "balanceUsdt",
+    (
+      balance /
+      XCOIN_USDT_RATE
+    ).toFixed(2)
+  );
+
+  setText(
+    "tasksCount",
+    formatNumber(tasks)
+  );
+
+  setText(
+    "referralsCount",
+    formatNumber(referrals)
+  );
+
+  setText(
+    "referralTotal",
+    formatNumber(referrals)
+  );
+
+  setText(
+    "referralEarnings",
+    formatNumber(
+      referralEarnings
+    )
+  );
+
+  setText(
+    "streakCount",
+    formatNumber(streak)
+  );
+
+  setText(
+    "currentTier",
+    currentTier
+  );
+
+  setText(
+    "tierBadge",
+    currentTier
+  );
+
+  setText(
+    "miningReward",
+    "+" +
+      TIER_RULES[
+        currentTier
+      ].reward +
+      " XCOIN"
+  );
+
+  setText(
+    "videosCompleted",
+    formatNumber(videos)
+  );
+
+  setText(
+    "videosLimit",
+    TIER_RULES[
+      currentTier
+    ].maxAds
+  );
+
+  const name =
+    getValue(
+      currentUser,
+      [
+        "full_name",
+        "name",
+        "username"
+      ],
+      ""
+    );
+
+  const telegramName =
+    telegramUser
+      ? [
+          telegramUser.first_name,
+          telegramUser.last_name
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : "";
+
+  setText(
+    "userName",
+    name ||
+      telegramName ||
+      "XEARN User"
+  );
+
+  const username =
+    telegramUser &&
+    telegramUser.username
+      ? "@" +
+        telegramUser.username
+      : telegramUser
+        ? "ID: " +
+          telegramUser.id
+        : "";
+
+  setText(
+    "userTelegram",
+    username
+  );
+
+  updateReferralLink();
+
+  updateVideoProgress(
+    videos
+  );
+
+  updateMiningUI();
+}
+
+
+/* =========================
+   NAVIGATION
+   ========================= */
+
+function setupNavigation() {
+
+  qsa("[data-target]")
+    .forEach(
+      (button) => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            const target =
+              button.dataset
+                .target;
+
+            navigateTo(
+              target
+            );
+          }
+        );
+
+      }
+    );
+}
+
+function navigateTo(
+  screenName
+) {
+
+  qsa(".screen")
+    .forEach(
+      (screen) => {
+
+        screen.classList
+          .remove("active");
+
+      }
+    );
+
+  const screen =
+    $(
+      screenName +
+      "Screen"
+    );
+
+  if (screen) {
+    screen.classList
+      .add("active");
+  }
+
+  qsa(".nav-item")
+    .forEach(
+      (button) => {
+
+        button.classList
+          .toggle(
+            "active",
+            button.dataset
+              .target ===
+              screenName
+          );
+
+      }
+    );
+
+  qsa(
+    ".upgrade-nav-button"
+  )
+    .forEach(
+      (button) => {
+
+        button.classList
+          .toggle(
+            "active",
+            button.dataset
+              .target ===
+              screenName
+          );
+
+      }
+    );
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+
+/* =========================
+   BUTTONS
+   ========================= */
+
+function setupButtons() {
+
+  $("earnButton")
+    ?.addEventListener(
+      "click",
+      () => navigateTo("earn")
+    );
+
+  $("withdrawButton")
+    ?.addEventListener(
+      "click",
+      openWithdraw
+    );
+
+  $("withdrawAccountButton")
+    ?.addEventListener(
+      "click",
+      openWithdraw
+    );
+
+  $("mineButton")
+    ?.addEventListener(
+      "click",
+      mine
+    );
+
+  $("watchVideoButton")
+    ?.addEventListener(
+      "click",
+      watchVideo
+    );
+
+  $("earnVideoItem")
+    ?.addEventListener(
+      "click",
+      watchVideo
+    );
+
+  $("taskItem")
+    ?.addEventListener(
+      "click",
+      openTask
+    );
+
+  $("checkinButton")
+    ?.addEventListener(
+      "click",
+      dailyCheckin
+    );
+
+  $("checkinItem")
+    ?.addEventListener(
+      "click",
+      dailyCheckin
+    );
+
+  $("refreshBalance")
+    ?.addEventListener(
+      "click",
+      async () => {
+
+        await refreshUser();
+
+        showToast(
+          "Balance Updated",
+          "Your account has been refreshed."
+        );
+
+      }
+    );
+
+  $("copyReferralButton")
+    ?.addEventListener(
+      "click",
+      copyReferral
+    );
+
+  $("historyButton")
+    ?.addEventListener(
+      "click",
+      openHistory
+    );
+
+  $("supportButton")
+    ?.addEventListener(
+      "click",
+      openSupport
+    );
+
+  $("notificationButton")
+    ?.addEventListener(
+      "click",
+      () => {
+
+        showToast(
+          "Notifications",
+          "You're all caught up."
+        );
+
+      }
+    );
+
+  qsa(".plan-card")
+    .forEach(
+      (card) => {
+
+        card.addEventListener(
+          "click",
+          () => {
+
+            openUpgrade(
+              card.dataset.plan
+            );
+
+          }
+        );
+
+      }
+    );
+
+  $("modalClose")
+    ?.addEventListener(
+      "click",
+      closeModal
+    );
+
+  $("modalAction")
+    ?.addEventListener(
+      "click",
+      closeModal
+    );
+
+  $("modalOverlay")
+    ?.addEventListener(
+      "click",
+      (event) => {
+
+        if (
+          event.target ===
+          $("modalOverlay")
+        ) {
+          closeModal();
+        }
+
+      }
+    );
 }
 
 
@@ -506,206 +765,328 @@ async function refreshUser(showMessage = false) {
    MINING
    ========================= */
 
-async function mineXcoin() {
-  if (!isAuthenticated) {
-    toast(
-      "Please wait for authentication.",
-      "warning"
+async function mine() {
+
+  if (busyMining)
+    return;
+
+  if (!telegramUser) {
+
+    showToast(
+      "Telegram Required",
+      "Open the app from Telegram."
     );
+
     return;
   }
 
-  if (isMining) return;
+  busyMining = true;
 
-  const button = $("mineBtn");
+  const button =
+    $("mineButton");
 
-  if (button) {
+  if (button)
     button.disabled = true;
-  }
 
-  isMining = true;
+  setText(
+    "mineButtonText",
+    "MINING..."
+  );
 
   try {
-    const data = await callFunction(
-      "mine-xcoin",
-      {
-        initData: getInitData()
-      }
-    );
 
-    if (data?.user) {
-      currentUser = data.user;
+    const result =
+      await callFunction(
+        "mine-xcoin",
+        {
+          telegram_id:
+            telegramUser.id
+        }
+      );
+
+    if (
+      result &&
+      (
+        result.success ===
+          false ||
+        result.error
+      )
+    ) {
+      throw new Error(
+        result.error ||
+        "Mining failed."
+      );
     }
 
-    if (data?.tier) {
-      currentTier = data.tier;
-    }
+    await refreshUser();
 
-    renderUser();
+    const reward =
+      Number(
+        result?.reward_xcoin ||
+        result?.reward ||
+        TIER_RULES[
+          currentTier
+        ].reward
+      );
 
-    toast(
-      data?.message ||
-      "Mining completed.",
-      "success"
+    showSuccess(
+      "Mining Complete!",
+      "+" +
+        formatNumber(
+          reward
+        ) +
+        " XCOIN"
     );
-
-    startMiningTimer();
 
   } catch (error) {
+
     console.error(
       "Mining error:",
       error
     );
 
-    toast(
+    showToast(
+      "Mining Unavailable",
       error.message ||
-      "Mining could not be completed.",
-      "error"
+        "Please try again later."
     );
 
   } finally {
-    isMining = false;
 
-    if (button) {
+    busyMining = false;
+
+    if (button)
       button.disabled = false;
-    }
+
+    setText(
+      "mineButtonText",
+      "MINE"
+    );
+
+    await refreshUser();
   }
 }
 
 
 /* =========================
-   MINING TIMER
+   MINING STATUS
    ========================= */
 
-function getNextMineTimestamp() {
-  if (!currentUser) return null;
+function updateMiningUI() {
 
-  const values = [
-    currentUser.next_mine_at,
-    currentUser.mine_next_at,
-    currentUser.next_mining_at
-  ];
+  if (!currentUser)
+    return;
 
-  for (const value of values) {
-    if (value) {
-      const time = new Date(value).getTime();
+  const lastMine =
+    getValue(
+      currentUser,
+      [
+        "last_mine_at",
+        "last_mining_at"
+      ],
+      null
+    );
 
-      if (!Number.isNaN(time)) {
-        return time;
-      }
-    }
-  }
+  if (!lastMine) {
 
-  return null;
-}
+    setText(
+      "miningStatus",
+      "Ready to mine"
+    );
 
-function startMiningTimer() {
-  clearInterval(mineTimerInterval);
+    setText(
+      "mineCountdown",
+      "Ready"
+    );
 
-  updateMiningTimer();
+    setProgress(
+      "mineProgress",
+      100
+    );
 
-  mineTimerInterval = setInterval(
-    updateMiningTimer,
-    1000
-  );
-}
-
-function updateMiningTimer() {
-  const timer = $("mineTimer");
-  const button = $("mineBtn");
-
-  if (!timer) return;
-
-  const next = getNextMineTimestamp();
-
-  if (!next) {
-    timer.textContent = "Ready";
-    if (button) button.disabled = false;
     return;
   }
+
+  const lastTime =
+    new Date(
+      lastMine
+    ).getTime();
+
+  if (
+    !Number.isFinite(
+      lastTime
+    )
+  )
+    return;
+
+  const cooldown =
+    2 *
+    60 *
+    60 *
+    1000;
+
+  const elapsed =
+    Date.now() -
+    lastTime;
 
   const remaining =
-    Math.max(0, next - Date.now());
+    cooldown -
+    elapsed;
 
   if (remaining <= 0) {
-    timer.textContent = "Ready";
 
-    if (button) {
-      button.disabled = false;
-    }
+    setText(
+      "miningStatus",
+      "Ready to mine"
+    );
+
+    setText(
+      "mineCountdown",
+      "Ready"
+    );
+
+    setProgress(
+      "mineProgress",
+      100
+    );
 
     return;
   }
 
-  if (button) {
-    button.disabled = true;
-  }
+  setText(
+    "miningStatus",
+    "Mining cooldown active"
+  );
 
-  const totalSeconds =
-    Math.floor(remaining / 1000);
+  updateMineCountdown(
+    remaining,
+    elapsed,
+    cooldown
+  );
+
+  clearInterval(
+    miningTimer
+  );
+
+  miningTimer =
+    setInterval(
+      () => {
+
+        const left =
+          cooldown -
+          (
+            Date.now() -
+            lastTime
+          );
+
+        if (left <= 0) {
+
+          clearInterval(
+            miningTimer
+          );
+
+          setText(
+            "miningStatus",
+            "Ready to mine"
+          );
+
+          setText(
+            "mineCountdown",
+            "Ready"
+          );
+
+          setProgress(
+            "mineProgress",
+            100
+          );
+
+          return;
+        }
+
+        updateMineCountdown(
+          left,
+          Date.now() -
+            lastTime,
+          cooldown
+        );
+
+      },
+      1000
+    );
+}
+
+function updateMineCountdown(
+  remaining,
+  elapsed,
+  cooldown
+) {
+
+  const seconds =
+    Math.ceil(
+      remaining / 1000
+    );
 
   const hours =
-    Math.floor(totalSeconds / 3600);
+    Math.floor(
+      seconds / 3600
+    );
 
   const minutes =
     Math.floor(
-      (totalSeconds % 3600) / 60
+      (seconds % 3600) /
+      60
     );
 
-  const seconds =
-    totalSeconds % 60;
+  const secs =
+    seconds % 60;
 
-  timer.textContent =
-    `${String(hours).padStart(2, "0")}:` +
-    `${String(minutes).padStart(2, "0")}:` +
-    `${String(seconds).padStart(2, "0")}`;
+  setText(
+    "mineCountdown",
+    pad(hours) +
+      ":" +
+      pad(minutes) +
+      ":" +
+      pad(secs)
+  );
+
+  setProgress(
+    "mineProgress",
+    (
+      elapsed /
+      cooldown
+    ) * 100
+  );
 }
 
+function pad(number) {
 
-/* =========================
-   MONETAG EVENT ID
-   ========================= */
-
-function createYmid() {
-  const telegramId =
-    getTelegramUser()?.id ||
-    currentUser?.telegram_id ||
-    "user";
-
-  let uniquePart = "";
-
-  if (
-    window.crypto &&
-    typeof window.crypto.randomUUID === "function"
-  ) {
-    uniquePart = window.crypto.randomUUID();
-  } else {
-    uniquePart =
-      `${Date.now()}-${Math.random()
-        .toString(36)
-        .slice(2)}`;
-  }
-
-  return `watch_video_${telegramId}_${uniquePart}`;
+  return String(number)
+    .padStart(2, "0");
 }
-
-
 /* =========================
-   MONETAG SDK CHECK
+   MONETAG ID
    ========================= */
 
-function getMonetagFunction() {
-  const functionName =
-    `show_${MONETAG_ZONE_ID}`;
+function createYMID() {
 
-  const adFunction =
-    window[functionName];
+  const id =
+    telegramUser
+      ? telegramUser.id
+      : "unknown";
 
-  if (typeof adFunction !== "function") {
-    return null;
-  }
+  const random =
+    Math.random()
+      .toString(36)
+      .slice(2, 12);
 
-  return adFunction;
+  return (
+    "xearn_" +
+    id +
+    "_" +
+    Date.now() +
+    "_" +
+    random
+  );
 }
 
 
@@ -714,213 +1095,312 @@ function getMonetagFunction() {
    ========================= */
 
 async function watchVideo() {
-  if (!isAuthenticated) {
-    toast(
-      "Please wait for authentication.",
-      "warning"
-    );
+
+  if (busyVideo)
     return;
-  }
 
-  if (isWatchingVideo) return;
+  if (!telegramUser) {
 
-  const showAd =
-    getMonetagFunction();
-
-  if (!showAd) {
-    toast(
-      "Video is temporarily unavailable. Please try again.",
-      "warning"
-    );
-
-    console.error(
-      `Monetag function show_${MONETAG_ZONE_ID} is unavailable.`
+    showToast(
+      "Telegram Required",
+      "Open the app from Telegram."
     );
 
     return;
   }
 
-  const button = $("adsBtn");
+  const completed =
+    Number(
+      getValue(
+        currentUser,
+        [
+          "videos_completed",
+          "ads_watched",
+          "video_count"
+        ],
+        0
+      )
+    );
 
-  isWatchingVideo = true;
+  const limit =
+    TIER_RULES[
+      currentTier
+    ].maxAds;
 
-  if (button) {
+  if (completed >= limit) {
+
+    showToast(
+      "Daily Limit Reached",
+      "Your video limit resets daily."
+    );
+
+    return;
+  }
+
+  if (
+    typeof window
+      .show_11747212 !==
+    "function"
+  ) {
+
+    showToast(
+      "Video Unavailable",
+      "Please try again shortly."
+    );
+
+    return;
+  }
+
+  busyVideo = true;
+
+  const button =
+    $("watchVideoButton");
+
+  if (button)
     button.disabled = true;
-    button.dataset.originalText =
-      button.textContent;
 
-    button.textContent =
-      "LOADING...";
-  }
-
-  const ymid = createYmid();
+  const ymid =
+    createYMID();
 
   try {
-    /*
-      The reward is NOT credited here.
 
-      Monetag sends the verified event to our
-      Supabase postback. The backend then decides
-      whether 1.04 XCOIN should be credited.
-    */
+    await window
+      .show_11747212({
+        type: "end",
+        ymid: ymid,
+        requestVar:
+          "watch_video"
+      });
 
-    await showAd({
-      ymid,
-      requestVar: "watch_video"
-    });
-
-    toast(
-      "Video completed. Your reward is being verified.",
-      "success"
+    setText(
+      "watchVideoButton",
+      "VERIFYING..."
     );
 
-    /*
-      Give the postback time to reach Supabase,
-      then refresh the account several times.
-    */
+    const verified =
+      await waitForVideoVerification(
+        15000
+      );
 
-    setTimeout(
-      () => refreshUser(false),
-      2500
-    );
+    if (verified) {
 
-    setTimeout(
-      () => refreshUser(false),
-      6000
-    );
+      await refreshUser();
 
-    setTimeout(
-      () => refreshUser(false),
-      10000
-    );
+      showSuccess(
+        "Video Complete!",
+        "Your XCOIN reward has been credited."
+      );
+
+    } else {
+
+      showToast(
+        "Verification Pending",
+        "Your reward will appear after verification."
+      );
+
+      await refreshUser();
+    }
 
   } catch (error) {
+
     console.error(
-      "Video ad error:",
+      "Video error:",
       error
     );
 
-    toast(
-      "The video could not be completed. Please try again.",
-      "error"
+    showToast(
+      "Video Not Completed",
+      "Please complete the video and try again."
     );
 
   } finally {
-    isWatchingVideo = false;
 
-    if (button) {
+    busyVideo = false;
+
+    if (button)
       button.disabled = false;
 
-      const original =
-        button.dataset.originalText;
-
-      button.textContent =
-        original || "WATCH VIDEO";
-    }
+    setText(
+      "watchVideoButton",
+      "WATCH"
+    );
   }
 }
 
 
 /* =========================
-   REWARDED POPUP / TASK
+   VIDEO VERIFICATION
    ========================= */
 
-async function openRewardedTask() {
-  if (!isAuthenticated) {
-    toast(
-      "Please wait for authentication.",
-      "warning"
+async function waitForVideoVerification(
+  timeout
+) {
+
+  const start =
+    Date.now();
+
+  const oldBalance =
+    Number(
+      getValue(
+        currentUser,
+        [
+          "balance_xcoin",
+          "balance",
+          "xcoin_balance"
+        ],
+        0
+      )
     );
+
+  const oldVideos =
+    Number(
+      getValue(
+        currentUser,
+        [
+          "videos_completed",
+          "ads_watched",
+          "video_count"
+        ],
+        0
+      )
+    );
+
+  while (
+    Date.now() -
+      start <
+    timeout
+  ) {
+
+    await sleep(2500);
+
+    await refreshUser();
+
+    const newBalance =
+      Number(
+        getValue(
+          currentUser,
+          [
+            "balance_xcoin",
+            "balance",
+            "xcoin_balance"
+          ],
+          0
+        )
+      );
+
+    const newVideos =
+      Number(
+        getValue(
+          currentUser,
+          [
+            "videos_completed",
+            "ads_watched",
+            "video_count"
+          ],
+          0
+        )
+      );
+
+    if (
+      newBalance >
+        oldBalance ||
+      newVideos >
+        oldVideos
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+/* =========================
+   VIDEO PROGRESS
+   ========================= */
+
+function updateVideoProgress(
+  completed
+) {
+
+  const limit =
+    TIER_RULES[
+      currentTier
+    ].maxAds;
+
+  const percent =
+    limit > 0
+      ? (
+          completed /
+          limit
+        ) * 100
+      : 0;
+
+  setProgress(
+    "videoProgress",
+    percent
+  );
+}
+
+
+/* =========================
+   TASK
+   ========================= */
+
+async function openTask() {
+
+  if (!telegramUser) {
+
+    showToast(
+      "Telegram Required",
+      "Open the app from Telegram."
+    );
+
     return;
   }
 
-  const showAd =
-    getMonetagFunction();
+  if (
+    typeof window
+      .show_11747212 !==
+    "function"
+  ) {
 
-  if (!showAd) {
-    toast(
-      "Task is temporarily unavailable.",
-      "warning"
+    showToast(
+      "Task Unavailable",
+      "Please try again shortly."
     );
+
     return;
   }
 
   const ymid =
-    createYmid()
-      .replace("watch_video_", "task_");
+    createYMID();
 
   try {
-    /*
-      Rewarded Popup is opened only from
-      a direct user action.
 
-      Its Promise is not treated as proof
-      of a completed reward. Monetag postback
-      remains responsible for verified reward
-      processing.
-    */
+    await window
+      .show_11747212({
+        type: "pop",
+        ymid: ymid,
+        requestVar:
+          "task"
+      });
 
-    await showAd({
-      type: "pop",
-      ymid,
-      requestVar: "task"
-    });
-
-    toast(
-      "Task opened.",
-      "success"
+    showToast(
+      "Task Submitted",
+      "Waiting for verification."
     );
 
   } catch (error) {
+
     console.error(
       "Task error:",
       error
     );
 
-    toast(
-      "Task could not be opened.",
-      "error"
-    );
-  }
-}
-
-
-/* =========================
-   IN-APP INTERSTITIAL
-   ========================= */
-
-function startInAppAds() {
-  const showAd =
-    getMonetagFunction();
-
-  if (!showAd) return;
-
-  /*
-    In-App Interstitial is NOT rewarded.
-    It must never directly add XCOIN.
-  */
-
-  try {
-    showAd({
-      type: "inApp",
-      inAppSettings: {
-        frequency: 2,
-        capping: 0.1,
-        interval: 30,
-        timeout: 5,
-        everyPage: false
-      }
-    }).catch((error) => {
-      console.log(
-        "In-app ad unavailable:",
-        error
-      );
-    });
-
-  } catch (error) {
-    console.log(
-      "In-app ad error:",
-      error
+    showToast(
+      "Task Not Completed",
+      "Please try again."
     );
   }
 }
@@ -930,632 +1410,596 @@ function startInAppAds() {
    DAILY CHECK-IN
    ========================= */
 
-function openDailyCheckin() {
-  /*
-    This link is a normal external monetization link.
+async function dailyCheckin() {
 
-    It does NOT automatically credit XCOIN.
-  */
+  if (busyCheckin)
+    return;
 
-  if (tg && typeof tg.openLink === "function") {
-    tg.openLink(DAILY_CHECKIN_LINK);
-  } else {
-    window.open(
-      DAILY_CHECKIN_LINK,
-      "_blank",
-      "noopener,noreferrer"
+  if (!telegramUser) {
+
+    showToast(
+      "Telegram Required",
+      "Open the app from Telegram."
     );
-  }
-}
 
-
-/* =========================
-   MODAL SYSTEM
-   ========================= */
-
-function closeModal() {
-  const modal = $("modal");
-
-  if (modal) {
-    modal.classList.remove("show");
-    modal.style.display = "none";
-  }
-}
-
-function openModal(title, content) {
-  const modal = $("modal");
-  const modalContent = $("modalContent");
-
-  if (!modal || !modalContent) {
     return;
   }
 
-  modalContent.innerHTML = `
-    <div class="modal-header">
-      <h2>${escapeHtml(title)}</h2>
-      <button
-        type="button"
-        class="modal-close"
-        id="modalCloseBtn"
-        aria-label="Close"
-      >
-        Close
-      </button>
-    </div>
+  busyCheckin = true;
 
-    <div class="modal-body">
-      ${content}
-    </div>
-  `;
+  const button =
+    $("checkinButton");
 
-  modal.style.display = "flex";
+  if (button)
+    button.disabled = true;
 
-  requestAnimationFrame(() => {
-    modal.classList.add("show");
-  });
+  try {
 
-  const closeButton =
-    $("modalCloseBtn");
+    openExternalLink(
+      SMARTLINK
+    );
 
-  if (closeButton) {
-    closeButton.addEventListener(
-      "click",
-      closeModal
+    showToast(
+      "Daily Check-in",
+      "Check-in page opened."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Check-in error:",
+      error
+    );
+
+    showToast(
+      "Check-in Error",
+      "Please try again."
+    );
+
+  } finally {
+
+    setTimeout(
+      () => {
+
+        busyCheckin = false;
+
+        if (button)
+          button.disabled = false;
+
+      },
+      2000
     );
   }
 }
 
 
 /* =========================
-   BALANCE MODAL
+   REFERRAL
    ========================= */
 
-function showBalance() {
-  const balance =
-    Number(currentUser?.balance_xcoin || 0);
+function updateReferralLink() {
 
-  const total =
-    Number(currentUser?.total_earned_xcoin || 0);
-
-  openModal(
-    "Balance",
-    `
-      <div class="detail-row">
-        <span>Available Balance</span>
-        <strong>${formatXcoin(balance)} XCOIN</strong>
-      </div>
-
-      <div class="detail-row">
-        <span>USDT Value</span>
-        <strong>${formatUsd(xcoinToUsd(balance))}</strong>
-      </div>
-
-      <div class="detail-row">
-        <span>Total Earned</span>
-        <strong>${formatXcoin(total)} XCOIN</strong>
-      </div>
-
-      <div class="modal-note">
-        Conversion rate: 1,300 XCOIN = $1 USDT.
-      </div>
-    `
-  );
-}
-
-
-/* =========================
-   PROFILE MODAL
-   ========================= */
-
-function showProfile() {
-  const user =
-    getTelegramUser();
-
-  const name =
-    currentUser?.full_name ||
-    currentUser?.name ||
-    user?.first_name ||
-    "X Earn User";
-
-  const username =
-    currentUser?.username ||
-    user?.username ||
-    "Not available";
-
-  const id =
-    currentUser?.telegram_id ||
-    user?.id ||
-    "Not available";
-
-  openModal(
-    "Profile",
-    `
-      <div class="profile-detail">
-        <strong>${escapeHtml(name)}</strong>
-        <span>@${escapeHtml(username)}</span>
-      </div>
-
-      <div class="detail-row">
-        <span>Telegram ID</span>
-        <strong>${escapeHtml(id)}</strong>
-      </div>
-
-      <div class="detail-row">
-        <span>Tier</span>
-        <strong>
-          ${escapeHtml(
-            currentTier?.name ||
-            currentTier?.tier_name ||
-            currentUser?.tier ||
-            "FREE"
-          )}
-        </strong>
-      </div>
-    `
-  );
-}
-
-
-/* =========================
-   REFERRAL MODAL
-   ========================= */
-
-function showReferral() {
-  const id =
-    currentUser?.telegram_id ||
-    getTelegramUser()?.id;
-
-  if (!id) {
-    toast(
-      "Referral information is unavailable.",
-      "warning"
-    );
+  if (!telegramUser)
     return;
-  }
 
-  const botUsername =
+  const bot =
     "XEarnmining_bot";
 
-  const referralLink =
-    `https://t.me/${botUsername}?start=ref_${id}`;
+  const link =
+    "https://t.me/" +
+    bot +
+    "?start=ref_" +
+    telegramUser.id;
 
-  openModal(
-    "Referrals",
-    `
-      <div class="modal-note">
-        Invite users with your referral link.
-      </div>
-
-      <div class="copy-box">
-        <input
-          id="referralLinkInput"
-          type="text"
-          readonly
-          value="${escapeHtml(referralLink)}"
-        >
-
-        <button
-          type="button"
-          id="copyReferralBtn"
-        >
-          Copy
-        </button>
-      </div>
-    `
+  setText(
+    "referralLink",
+    link
   );
+}
 
-  const copyButton =
-    $("copyReferralBtn");
 
-  if (copyButton) {
-    copyButton.addEventListener(
-      "click",
-      async () => {
-        try {
-          await navigator.clipboard.writeText(
-            referralLink
-          );
+async function copyReferral() {
 
-          toast(
-            "Referral link copied.",
-            "success"
-          );
+  const element =
+    $("referralLink");
 
-        } catch (_) {
-          const input =
-            $("referralLinkInput");
+  const link =
+    element
+      ? element.textContent
+      : "";
 
-          if (input) {
-            input.select();
-            document.execCommand("copy");
-          }
+  if (!link)
+    return;
 
-          toast(
-            "Referral link copied.",
-            "success"
-          );
-        }
-      }
+  try {
+
+    await navigator
+      .clipboard
+      .writeText(link);
+
+    showToast(
+      "Copied",
+      "Referral link copied."
+    );
+
+  } catch (error) {
+
+    showToast(
+      "Copy Failed",
+      "Please copy the link manually."
     );
   }
 }
 
 
 /* =========================
-   WITHDRAW MODAL
-   ======================*/
-   function showWithdraw() {
+   WITHDRAW
+   ========================= */
+
+function openWithdraw() {
+
   const balance =
-    Number(currentUser?.balance_xcoin || 0);
-
-  openModal(
-    "Withdraw",
-    `
-      <div class="modal-note">
-        Minimum withdrawal: $10 USDT.
-        A 1,300 XCOIN withdrawal fee applies.
-      </div>
-
-      <div class="detail-row">
-        <span>Available</span>
-        <strong>${formatXcoin(balance)} XCOIN</strong>
-      </div>
-
-      <div class="modal-note">
-        Withdrawal processing will be connected
-        to the secure withdrawal system.
-      </div>
-    `
-  );
-}
-
-
-/* =========================
-   UPGRADE MODAL
-   ========================= */
-
-function showUpgrade() {
-  const tiers = [
-    {
-      name: "BRONZE",
-      price: "$5",
-      mines: "3 mines / 6h",
-      reward: "30 XCOIN / mine",
-      ads: "20 ads / day"
-    },
-    {
-      name: "SILVER",
-      price: "$15",
-      mines: "6 mines / 6h",
-      reward: "60 XCOIN / mine",
-      ads: "30 ads / day"
-    },
-    {
-      name: "GOLD",
-      price: "$30",
-      mines: "12 mines / 6h",
-      reward: "120 XCOIN / mine",
-      ads: "50 ads / day"
-    }
-  ];
-
-  const html =
-    tiers.map((tier) => `
-      <div class="tier-option">
-        <div>
-          <strong>${tier.name}</strong>
-          <span>${tier.price}</span>
-        </div>
-
-        <p>${tier.mines}</p>
-        <p>${tier.reward}</p>
-        <p>${tier.ads}</p>
-
-        <button
-          type="button"
-          class="upgrade-tier-btn"
-          data-tier="${tier.name}"
-        >
-          Select ${tier.name}
-        </button>
-      </div>
-    `).join("");
-
-  openModal(
-    "Upgrade Your Tier",
-    html
-  );
-
-  document
-    .querySelectorAll(".upgrade-tier-btn")
-    .forEach((button) => {
-      button.addEventListener(
-        "click",
-        () => {
-          toast(
-            "Tier upgrades will be enabled through the secure upgrade system.",
-            "warning"
-          );
-        }
-      );
-    });
-}
-
-
-/* =========================
-   TASK CENTER
-   ========================= */
-
-function showTasks() {
-  openModal(
-    "Task Center",
-    `
-      <div class="task-item">
-        <div>
-          <strong>Watch Video</strong>
-          <p>Watch a rewarded video and earn 1.04 XCOIN when the event is verified.</p>
-        </div>
-
-        <button
-          type="button"
-          id="taskWatchVideoBtn"
-        >
-          WATCH
-        </button>
-      </div>
-
-      <div class="task-item">
-        <div>
-          <strong>Rewarded Task</strong>
-          <p>Open a rewarded task and complete the available interaction.</p>
-        </div>
-
-        <button
-          type="button"
-          id="rewardedTaskBtn"
-        >
-          OPEN
-        </button>
-      </div>
-    `
-  );
-
-  const watchButton =
-    $("taskWatchVideoBtn");
-
-  if (watchButton) {
-    watchButton.addEventListener(
-      "click",
-      () => {
-        closeModal();
-        watchVideo();
-      }
+    Number(
+      getValue(
+        currentUser,
+        [
+          "balance_xcoin",
+          "balance",
+          "xcoin_balance"
+        ],
+        0
+      )
     );
+
+  const minimum =
+    10 * XCOIN_USDT_RATE;
+
+  if (
+    balance <
+    minimum
+  ) {
+
+    showModal(
+      "Withdrawal Locked",
+      "You need at least " +
+        formatNumber(
+          minimum
+        ) +
+        " XCOIN ($10.00) to withdraw.",
+      "OK"
+    );
+
+    return;
   }
 
-  const taskButton =
-    $("rewardedTaskBtn");
-
-  if (taskButton) {
-    taskButton.addEventListener(
-      "click",
-      openRewardedTask
-    );
-  }
-}
-
-
-/* =========================
-   LEADERBOARD
-   ========================= */
-
-function showLeaderboard() {
-  openModal(
-    "Leaderboard",
-    `
-      <div class="modal-note">
-        Leaderboard data will be displayed here
-        once the leaderboard endpoint is connected.
-      </div>
-    `
+  showModal(
+    "Withdrawal",
+    "Your balance is eligible for withdrawal.",
+    "OK"
   );
 }
 
 
 /* =========================
-   EVENT BINDING
+   HISTORY
    ========================= */
 
-function bindClick(id, handler) {
-  const el = $(id);
+function openHistory() {
 
-  if (!el) return;
-
-  el.addEventListener(
-    "click",
-    (event) => {
-      event.preventDefault();
-      handler(event);
-    }
+  showModal(
+    "Transaction History",
+    "Your verified transactions will appear here.",
+    "OK"
   );
 }
 
 
 /* =========================
-   INITIALIZE BUTTONS
+   SUPPORT
    ========================= */
 
-function bindButtons() {
+function openSupport() {
 
-  /* Main actions */
+  openExternalLink(
+    "https://t.me/XEarnmining_bot"
+  );
+}
 
-  bindClick(
-    "mineBtn",
-    mineXcoin
+
+/* =========================
+   UPGRADE
+   ========================= */
+
+function openUpgrade(plan) {
+
+  const tier =
+    normalizeTier(plan);
+
+  const prices = {
+    BRONZE: "$5",
+    SILVER: "$15",
+    GOLD: "$30"
+  };
+
+  showModal(
+    tier + " Upgrade",
+    tier +
+      " upgrade price: " +
+      prices[tier] +
+      ".",
+    "OK"
+  );
+}
+
+
+/* =========================
+   MODAL
+   ========================= */
+
+function showModal(
+  title,
+  message,
+  buttonText
+) {
+
+  setText(
+    "modalTitle",
+    title
   );
 
-  bindClick(
-    "adsBtn",
-    watchVideo
+  setText(
+    "modalMessage",
+    message
   );
 
-  bindClick(
-    "watchVideoBtn",
-    watchVideo
+  setText(
+    "modalAction",
+    buttonText || "OK"
   );
-
-  bindClick(
-    "refreshBtn",
-    () => refreshUser(true)
-  );
-
-  bindClick(
-    "upgradeBtn",
-    showUpgrade
-  );
-
-  bindClick(
-    "smartLinkBtn",
-    openDailyCheckin
-  );
-
-  /* Navigation */
-
-  bindClick(
-    "balanceBtn",
-    showBalance
-  );
-
-  bindClick(
-    "withdrawBtn",
-    showWithdraw
-  );
-
-  bindClick(
-    "referralBtn",
-    showReferral
-  );
-
-  bindClick(
-    "leaderboardBtn",
-    showLeaderboard
-  );
-
-  bindClick(
-    "taskBtn",
-    showTasks
-  );
-
-  bindClick(
-    "profileBtn",
-    showProfile
-  );
-
-  bindClick(
-    "walletBtn",
-    showBalance
-  );
-
-  /* Generic modal close */
 
   const modal =
-    $("modal");
+    $("modalOverlay");
 
-  if (modal) {
-    modal.addEventListener(
-      "click",
-      (event) => {
-        if (
-          event.target === modal
-        ) {
-          closeModal();
-        }
-      }
+  if (!modal)
+    return;
+
+  modal.classList.add(
+    "show"
+  );
+
+  modal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+}
+
+
+function closeModal() {
+
+  const modal =
+    $("modalOverlay");
+
+  if (!modal)
+    return;
+
+  modal.classList.remove(
+    "show"
+  );
+
+  modal.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+}
+
+
+/* =========================
+   SUCCESS
+   ========================= */
+
+function showSuccess(
+  title,
+  message
+) {
+
+  setText(
+    "toastTitle",
+    title
+  );
+
+  setText(
+    "toastMessage",
+    message
+  );
+
+  const toast =
+    $("toast");
+
+  if (!toast)
+    return;
+
+  toast.classList.add(
+    "show"
+  );
+
+  clearTimeout(
+    toastTimer
+  );
+
+  toastTimer =
+    setTimeout(
+      () => {
+
+        toast.classList.remove(
+          "show"
+        );
+
+      },
+      3500
+    );
+}
+
+
+/* =========================
+   TOAST
+   ========================= */
+
+function showToast(
+  title,
+  message
+) {
+
+  setText(
+    "toastTitle",
+    title
+  );
+
+  setText(
+    "toastMessage",
+    message
+  );
+
+  const toast =
+    $("toast");
+
+  if (!toast)
+    return;
+
+  toast.classList.add(
+    "show"
+  );
+
+  clearTimeout(
+    toastTimer
+  );
+
+  toastTimer =
+    setTimeout(
+      () => {
+
+        toast.classList.remove(
+          "show"
+        );
+
+      },
+      3500
+    );
+       }
+/* =========================
+   PROGRESS BAR
+   ========================= */
+
+function setProgress(
+  id,
+  percent
+) {
+
+  const element =
+    $(id);
+
+  if (!element)
+    return;
+
+  const value =
+    Math.min(
+      100,
+      Math.max(
+        0,
+        Number(percent) || 0
+      )
+    );
+
+  element.style.width =
+    value + "%";
+}
+
+
+/* =========================
+   LOADING SCREEN
+   ========================= */
+
+function hideLoading() {
+
+  const loading =
+    $("loadingScreen");
+
+  if (!loading)
+    return;
+
+  setTimeout(
+    () => {
+
+      loading.classList.add(
+        "hidden"
+      );
+
+    },
+    250
+  );
+}
+
+
+/* =========================
+   EXTERNAL LINK
+   ========================= */
+
+function openExternalLink(
+  url
+) {
+
+  try {
+
+    if (
+      tg &&
+      typeof tg.openLink ===
+        "function"
+    ) {
+
+      tg.openLink(url);
+
+    } else {
+
+      window.open(
+        url,
+        "_blank"
+      );
+
+    }
+
+  } catch (error) {
+
+    window.open(
+      url,
+      "_blank"
     );
   }
+}
 
-  document.addEventListener(
-    "keydown",
-    (event) => {
-      if (event.key === "Escape") {
-        closeModal();
-      }
+
+/* =========================
+   WAIT
+   ========================= */
+
+function sleep(ms) {
+
+  return new Promise(
+    (resolve) => {
+
+      setTimeout(
+        resolve,
+        ms
+      );
+
     }
   );
 }
 
 
 /* =========================
-   PAGE VISIBILITY
+   TELEGRAM BACK BUTTON
    ========================= */
 
+if (tg) {
+
+  try {
+
+    tg.BackButton.onClick(
+      () => {
+
+        navigateTo(
+          "home"
+        );
+
+        tg.BackButton.hide();
+
+      }
+    );
+
+  } catch (error) {
+
+    console.log(
+      "Telegram BackButton unavailable"
+    );
+
+  }
+}
+
+
+/* =========================
+   PREVENT DOUBLE TAP ZOOM
+   ========================= */
+
+let lastTouchEnd = 0;
+
 document.addEventListener(
-  "visibilitychange",
-  () => {
+  "touchend",
+  (event) => {
+
+    const now =
+      Date.now();
+
     if (
-      document.visibilityState ===
-      "visible"
+      now -
+      lastTouchEnd <=
+      300
     ) {
-      refreshUser(false);
+
+      event.preventDefault();
+
     }
+
+    lastTouchEnd =
+      now;
+
+  },
+  {
+    passive: false
   }
 );
 
 
 /* =========================
-   APP START
+   INITIAL MONETAG CHECK
    ========================= */
 
-async function startApp() {
+window.addEventListener(
+  "load",
+  () => {
 
-  bindButtons();
+    if (
+      typeof window
+        .show_11747212 !==
+      "function"
+    ) {
 
-  const authenticated =
-    await authenticate();
+      console.warn(
+        "Monetag SDK not ready."
+      );
 
-  if (!authenticated) {
-    return;
+    }
+
   }
-
-  /*
-    Start normal non-rewarded
-    in-app advertising after the
-    application has initialized.
-  */
-
-  setTimeout(
-    startInAppAds,
-    6000
-  );
-
-  /*
-    Periodic account refresh.
-    The frontend never credits rewards;
-    it only refreshes the server state.
-  */
-
-  clearInterval(refreshTimer);
-
-  refreshTimer =
-    setInterval(
-      () => refreshUser(false),
-      30000
-    );
-}
+);
 
 
 /* =========================
-   START
+   ERROR PROTECTION
    ========================= */
 
-if (
-  document.readyState ===
-  "loading"
-) {
-  document.addEventListener(
-    "DOMContentLoaded",
-    startApp
-  );
-} else {
-  startApp();
-}
+window.addEventListener(
+  "error",
+  (event) => {
+
+    console.error(
+      "XEARN error:",
+      event.error ||
+        event.message
+    );
+
+  }
+);
+
+
+/* =========================
+   FINISHED
+   ========================= */
