@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0,
-        maximum-scale=1.0, user-scalable=no">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0,
+    maximum-scale=1.0, user-scalable=no"
+  >
 
   <title>XEARN</title>
 
-  <!-- Telegram Mini App SDK -->
+  <!-- Telegram Mini App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <!-- Monetag SDK -->
@@ -19,28 +22,67 @@
   </script>
 
   <style>
+    :root {
+      --bg: #050706;
+      --surface: #0a100c;
+      --surface-2: #0d1610;
+      --surface-3: #111c14;
+      --border: #1a2a1f;
+      --border-strong: #24432e;
+
+      --green: #5cff91;
+      --green-dark: #153521;
+      --green-soft: #9affb8;
+
+      --text: #f3fff7;
+      --muted: #78887e;
+      --muted-2: #526158;
+
+      --danger: #ff6d6d;
+
+      --radius: 18px;
+    }
+
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      min-height: 100%;
-      background: #050706;
-      color: #f4fff7;
-      font-family: Arial, sans-serif;
+    html {
+      background: var(--bg);
     }
 
     body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(
+          circle at 50% -15%,
+          rgba(50, 150, 80, .13),
+          transparent 42%
+        ),
+        var(--bg);
+      color: var(--text);
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
       overflow-x: hidden;
     }
 
     button {
-      font: inherit;
       border: 0;
+      font: inherit;
       cursor: pointer;
+      -webkit-appearance: none;
+    }
+
+    button:active {
+      transform: scale(.98);
     }
 
     .app {
@@ -48,10 +90,10 @@
       max-width: 520px;
       min-height: 100vh;
       margin: auto;
-      padding-bottom: 90px;
+      padding-bottom: 96px;
     }
 
-    /* LOADING */
+    /* ================= LOADING ================= */
 
     #loadingScreen {
       position: fixed;
@@ -68,21 +110,21 @@
     }
 
     .loader-logo {
-      font-size: 34px;
-      font-weight: 900;
-      letter-spacing: 3px;
-      color: #58ff91;
-      margin-bottom: 18px;
+      font-size: 32px;
+      font-weight: 950;
+      letter-spacing: 5px;
+      color: var(--green);
+      margin-bottom: 20px;
     }
 
     .loader {
-      width: 32px;
-      height: 32px;
-      border: 3px solid #183b26;
-      border-top-color: #58ff91;
+      width: 30px;
+      height: 30px;
+      margin: auto;
+      border: 3px solid #183021;
+      border-top-color: var(--green);
       border-radius: 50%;
       animation: spin .8s linear infinite;
-      margin: auto;
     }
 
     @keyframes spin {
@@ -91,398 +133,873 @@
       }
     }
 
-    /* HEADER */
+    /* ================= HEADER ================= */
 
     header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 20px 18px 12px;
+      justify-content: space-between;
+      padding: 18px 17px 13px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: var(--green);
+      color: #061008;
+      font-size: 16px;
+      font-weight: 950;
+      box-shadow: 0 0 25px rgba(92,255,145,.12);
     }
 
     .brand {
-      font-size: 25px;
-      font-weight: 900;
+      font-size: 21px;
+      font-weight: 950;
       letter-spacing: 2px;
-      color: #58ff91;
     }
 
     .tier {
-      padding: 7px 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
       border-radius: 20px;
-      background: #102719;
-      color: #70ff9f;
-      font-size: 11px;
-      font-weight: 800;
+      background: #0d1b12;
+      border: 1px solid #1b3824;
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .6px;
     }
 
-    /* SCREENS */
+    .tier-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    /* ================= SCREENS ================= */
 
     .screen {
       display: none;
-      padding: 0 15px;
+      padding: 0 14px;
+      animation: screenIn .22s ease;
     }
 
     .screen.active {
       display: block;
     }
 
-    /* BALANCE */
+    @keyframes screenIn {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ================= SECTION HEADING ================= */
+
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin: 9px 2px 12px;
+    }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .section-subtitle {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    /* ================= BALANCE ================= */
 
     .balance-card {
-      background:
-        linear-gradient(145deg, #102218, #09100c);
-      border: 1px solid #183b26;
+      position: relative;
+      overflow: hidden;
+      padding: 21px;
       border-radius: 22px;
-      padding: 23px 20px;
-      margin-bottom: 14px;
+      border: 1px solid var(--border-strong);
+      background:
+        radial-gradient(
+          circle at 100% 0%,
+          rgba(92,255,145,.10),
+          transparent 42%
+        ),
+        linear-gradient(
+          145deg,
+          #0e1b13,
+          #08100b
+        );
+      box-shadow:
+        0 15px 40px rgba(0,0,0,.20);
+    }
+
+    .balance-card::after {
+      content: "";
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      right: -55px;
+      bottom: -60px;
+      border-radius: 50%;
+      border: 1px solid rgba(92,255,145,.10);
+    }
+
+    .balance-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     .balance-label {
-      color: #82968a;
-      font-size: 12px;
-      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+
+    .balance-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--green-soft);
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .balance-row {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      margin-top: 6px;
     }
 
     .balance {
-      font-size: 36px;
-      font-weight: 900;
-      letter-spacing: -.5px;
+      font-size: 37px;
+      line-height: 1;
+      font-weight: 950;
+      letter-spacing: -1px;
     }
 
     .xcoin {
-      color: #58ff91;
-      font-size: 13px;
-      margin-left: 5px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .5px;
     }
 
     .usdt {
-      color: #82968a;
-      font-size: 13px;
-      margin-top: 7px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .main-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 18px;
+      gap: 9px;
+      margin-top: 19px;
     }
 
     .primary-btn,
     .secondary-btn {
-      padding: 14px;
+      height: 46px;
       border-radius: 13px;
-      font-weight: 800;
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .5px;
     }
 
     .primary-btn {
-      background: #58ff91;
+      background: var(--green);
       color: #061008;
+      box-shadow: 0 7px 22px rgba(92,255,145,.08);
     }
 
     .secondary-btn {
-      background: #17251c;
-      color: #eaffef;
-      border: 1px solid #294833;
+      color: var(--text);
+      background: #121d16;
+      border: 1px solid #21372a;
     }
 
-    /* STATS */
+    /* ================= STATS ================= */
 
     .stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 9px;
-      margin-bottom: 14px;
+      gap: 8px;
+      margin-top: 10px;
     }
 
     .stat {
-      background: #0b120e;
-      border: 1px solid #18271d;
+      padding: 14px 7px 13px;
+      border: 1px solid var(--border);
       border-radius: 15px;
-      padding: 14px 8px;
+      background: var(--surface);
       text-align: center;
     }
 
     .stat-value {
-      font-weight: 900;
-      font-size: 18px;
+      font-size: 17px;
+      font-weight: 950;
     }
 
     .stat-label {
       margin-top: 5px;
-      color: #708077;
-      font-size: 10px;
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: .7px;
     }
 
-    /* CARDS */
+    /* ================= GENERAL CARD ================= */
 
     .card {
-      background: #0b120e;
-      border: 1px solid #18271d;
-      border-radius: 18px;
       padding: 17px;
-      margin-bottom: 13px;
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
     }
 
     .card-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 900;
-      margin-bottom: 5px;
     }
 
     .card-subtitle {
-      color: #708077;
-      font-size: 11px;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
       line-height: 1.5;
     }
 
-    /* MINING */
+    /* ================= MINING ================= */
+
+    .mining-card {
+      position: relative;
+      overflow: hidden;
+      padding: 18px;
+      margin-top: 13px;
+      border: 1px solid #1d3825;
+      border-radius: 19px;
+      background:
+        linear-gradient(
+          135deg,
+          rgba(21,53,33,.75),
+          rgba(9,16,11,.95)
+        );
+    }
+
+    .mining-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mining-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mining-icon {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: #142c1b;
+      color: var(--green);
+    }
+
+    .mining-icon svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+    }
+
+    .mining-title {
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .mining-tier {
+      padding: 5px 8px;
+      border-radius: 8px;
+      color: var(--green);
+      background: #0a140d;
+      border: 1px solid #1c3724;
+      font-size: 8px;
+      font-weight: 900;
+    }
 
     .mine-reward {
-      color: #58ff91;
-      font-size: 25px;
-      font-weight: 900;
-      margin: 12px 0;
+      margin-top: 17px;
+      color: var(--green);
+      font-size: 27px;
+      font-weight: 950;
+      letter-spacing: -.5px;
+    }
+
+    .mine-info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .mine-progress {
+      height: 5px;
+      margin-top: 13px;
+      overflow: hidden;
+      border-radius: 20px;
+      background: #17251b;
+    }
+
+    .mine-progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+      transition: width .3s ease;
     }
 
     .mine-btn {
       width: 100%;
-      padding: 15px;
-      border-radius: 13px;
-      background: #58ff91;
+      height: 45px;
+      margin-top: 14px;
+      border-radius: 12px;
+      background: var(--green);
       color: #061008;
-      font-weight: 900;
+      font-size: 11px;
+      font-weight: 950;
     }
 
     .mine-btn:disabled,
     .action-btn:disabled {
-      opacity: .5;
+      opacity: .45;
       cursor: not-allowed;
     }
 
-    /* EARN */
+    /* ================= DAILY ACTIVITIES ================= */
 
-    .earn-item {
+    .activity-card {
       display: flex;
       align-items: center;
-      gap: 13px;
-      padding: 16px;
+      gap: 12px;
+      min-height: 65px;
+      padding: 11px 12px;
+      margin-top: 8px;
+      border: 1px solid var(--border);
       border-radius: 15px;
-      background: #0b120e;
-      border: 1px solid #18271d;
-      margin-bottom: 10px;
+      background: var(--surface);
     }
 
-    .earn-icon {
-      width: 43px;
-      height: 43px;
-      border-radius: 12px;
-      background: #132a1b;
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
       display: grid;
       place-items: center;
-      color: #58ff91;
-      flex-shrink: 0;
+      border-radius: 11px;
+      background: #102218;
+      color: var(--green);
     }
 
-    .earn-content {
+    .activity-icon svg {
+      width: 19px;
+      height: 19px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+    }
+
+    .activity-content {
       flex: 1;
+      min-width: 0;
     }
 
-    .earn-title {
+    .activity-title {
+      font-size: 12px;
       font-weight: 900;
-      font-size: 14px;
     }
 
-    .earn-desc {
-      color: #708077;
-      font-size: 10px;
+    .activity-desc {
       margin-top: 4px;
+      color: var(--muted);
+      font-size: 9px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .earn-arrow {
-      color: #58ff91;
-      font-size: 20px;
+    .activity-arrow {
+      color: var(--green);
+      font-size: 21px;
+      font-weight: 300;
+    }
+
+    /* ================= VIDEO ================= */
+
+    .video-card {
+      padding: 16px;
+      margin-top: 10px;
+      border: 1px solid #1b3523;
+      border-radius: 17px;
+      background: #0b1510;
+    }
+
+    .video-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .video-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .video-small-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: #132b1b;
+      color: var(--green);
+    }
+
+    .video-small-icon svg {
+      width: 17px;
+      height: 17px;
+      fill: currentColor;
+    }
+
+    .video-title {
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .video-counter {
+      color: var(--muted);
+      font-size: 9px;
     }
 
     .progress {
       height: 5px;
-      background: #17231b;
-      border-radius: 10px;
+      margin-top: 13px;
       overflow: hidden;
-      margin-top: 10px;
+      border-radius: 20px;
+      background: #17231b;
     }
 
     .progress-bar {
-      height: 100%;
       width: 0%;
-      background: #58ff91;
-      transition: width .3s;
+      height: 100%;
+      background: var(--green);
+      transition: width .3s ease;
     }
 
-    /* UPGRADE */
-
-    .tier-grid {
-      display: grid;
-      gap: 10px;
-    }
-
-    .tier-card {
-      background: #0b120e;
-      border: 1px solid #1b3021;
-      border-radius: 16px;
-      padding: 17px;
-    }
-
-    .tier-name {
-      font-weight: 900;
-      color: #58ff91;
-    }
-
-    .tier-price {
-      font-size: 20px;
-      font-weight: 900;
-      margin-top: 5px;
-    }
-
-    /* REFERRAL */
-
-    .referral-link {
-      background: #050806;
-      border: 1px solid #203326;
-      padding: 13px;
-      border-radius: 12px;
-      font-size: 11px;
-      word-break: break-all;
-      margin: 12px 0;
+    .video-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 9px;
     }
 
     .action-btn {
       width: 100%;
-      padding: 14px;
-      border-radius: 13px;
-      background: #58ff91;
+      height: 44px;
+      margin-top: 13px;
+      border-radius: 12px;
+      background: var(--green);
       color: #061008;
+      font-size: 10px;
+      font-weight: 950;
+      letter-spacing: .4px;
+    }
+
+    /* ================= EARN SCREEN ================= */
+
+    .earn-hero {
+      padding: 19px;
+      margin-bottom: 11px;
+      border: 1px solid #1c3825;
+      border-radius: 19px;
+      background:
+        radial-gradient(
+          circle at 100% 0,
+          rgba(92,255,145,.08),
+          transparent 45%
+        ),
+        var(--surface);
+    }
+
+    .earn-hero-title {
+      font-size: 19px;
+      font-weight: 950;
+    }
+
+    .earn-hero-text {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .earn-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 67px;
+      padding: 12px;
+      margin-bottom: 9px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: var(--surface);
+    }
+
+    .earn-icon {
+      width: 41px;
+      height: 41px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: #12271a;
+      color: var(--green);
+    }
+
+    .earn-icon svg {
+      width: 19px;
+      height: 19px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+    }
+
+    .earn-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .earn-title {
+      font-size: 12px;
       font-weight: 900;
     }
 
-    /* ACCOUNT */
+    .earn-desc {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .earn-arrow {
+      color: var(--green);
+      font-size: 21px;
+    }
+
+    /* ================= UPGRADE ================= */
+
+    .upgrade-banner {
+      padding: 20px;
+      border: 1px solid #1d3a26;
+      border-radius: 20px;
+      background:
+        linear-gradient(
+          135deg,
+          #102218,
+          #09100c
+        );
+    }
+
+    .upgrade-banner-title {
+      font-size: 19px;
+      font-weight: 950;
+    }
+
+    .upgrade-banner-text {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .tier-grid {
+      display: grid;
+      gap: 9px;
+      margin-top: 11px;
+    }
+
+    .tier-card {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: var(--surface);
+    }
+
+    .tier-card.featured {
+      border-color: #2b5537;
+      background: #0d1811;
+    }
+
+    .tier-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .tier-name {
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: .6px;
+    }
+
+    .tier-price {
+      margin-top: 5px;
+      font-size: 22px;
+      font-weight: 950;
+    }
+
+    .tier-description {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .tier-reward {
+      margin-top: 12px;
+      color: #c8d7cd;
+      font-size: 10px;
+    }
+
+    /* ================= REFER ================= */
+
+    .referral-hero {
+      padding: 20px;
+      border: 1px solid #1c3825;
+      border-radius: 19px;
+      background: var(--surface);
+    }
+
+    .referral-title {
+      font-size: 19px;
+      font-weight: 950;
+    }
+
+    .referral-text {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .ref-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 15px;
+    }
+
+    .ref-stat {
+      padding: 13px;
+      border-radius: 13px;
+      background: #08100b;
+      border: 1px solid var(--border);
+    }
+
+    .ref-stat-label {
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .ref-stat-value {
+      margin-top: 5px;
+      font-size: 19px;
+      font-weight: 950;
+    }
+
+    .referral-link {
+      padding: 12px;
+      margin-top: 13px;
+      border: 1px solid #203426;
+      border-radius: 11px;
+      background: #050806;
+      color: #aab9af;
+      font-size: 9px;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+
+    /* ================= ACCOUNT ================= */
 
     .profile {
+      padding: 20px 0 13px;
       text-align: center;
-      padding: 20px 0;
     }
 
     .avatar {
-      width: 65px;
-      height: 65px;
+      width: 67px;
+      height: 67px;
       margin: auto;
-      border-radius: 50%;
-      background: #132a1b;
       display: grid;
       place-items: center;
-      color: #58ff91;
-      font-size: 25px;
-      font-weight: 900;
+      border-radius: 50%;
+      border: 2px solid #25472f;
+      background: #112319;
+      color: var(--green);
+      font-size: 24px;
+      font-weight: 950;
     }
 
     .profile-name {
-      margin-top: 12px;
-      font-size: 18px;
-      font-weight: 900;
+      margin-top: 10px;
+      font-size: 17px;
+      font-weight: 950;
     }
 
     .profile-user {
-      color: #708077;
-      font-size: 12px;
       margin-top: 4px;
+      color: var(--muted);
+      font-size: 10px;
     }
 
-    /* NAV */
+    /* ================= BOTTOM NAV ================= */
 
     .bottom-nav {
       position: fixed;
       z-index: 100;
-      bottom: 0;
       left: 50%;
+      bottom: 0;
       transform: translateX(-50%);
       width: 100%;
       max-width: 520px;
-      height: 72px;
-      background: rgba(5, 9, 6, .97);
-      border-top: 1px solid #18271d;
+      height: 74px;
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       align-items: center;
       padding: 5px 7px;
+      padding-bottom: calc(5px + env(safe-area-inset-bottom));
+      background: rgba(5,8,6,.96);
+      border-top: 1px solid #17251b;
+      backdrop-filter: blur(14px);
     }
 
     .nav-item {
-      height: 58px;
-      background: transparent;
-      color: #66756c;
+      position: relative;
+      height: 60px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 4px;
-      font-size: 9px;
-      font-weight: 800;
+      background: transparent;
+      color: #5e6c63;
+      font-size: 8px;
+      font-weight: 850;
     }
 
     .nav-item svg {
-      width: 20px;
-      height: 20px;
+      width: 19px;
+      height: 19px;
       fill: none;
       stroke: currentColor;
-      stroke-width: 2;
+      stroke-width: 1.8;
     }
 
     .nav-item.active {
-      color: #58ff91;
+      color: var(--green);
+    }
+
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      top: 2px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--green);
     }
 
     .upgrade-nav-button {
-      position: relative;
       margin-top: -25px;
     }
 
     .upgrade-circle {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #58ff91;
-      color: #061008;
+      width: 49px;
+      height: 49px;
       display: grid;
       place-items: center;
-      box-shadow: 0 0 20px rgba(88,255,145,.18);
+      border-radius: 50%;
+      background: var(--green);
+      color: #061008;
+      border: 4px solid #08100b;
+      box-shadow: 0 6px 24px rgba(92,255,145,.15);
     }
 
     .upgrade-circle svg {
-      width: 24px;
-      height: 24px;
-      stroke: currentColor;
+      width: 22px;
+      height: 22px;
       fill: none;
-      stroke-width: 3;
+      stroke: currentColor;
+      stroke-width: 2.5;
     }
 
-    /* TOAST */
+    /* ================= TOAST ================= */
 
     #toast {
       position: fixed;
       z-index: 10000;
       left: 50%;
-      bottom: 90px;
-      transform: translate(-50%, 20px);
-      width: calc(100% - 30px);
+      bottom: 88px;
+      width: calc(100% - 28px);
       max-width: 480px;
-      background: #112017;
-      border: 1px solid #2b5738;
-      border-radius: 15px;
-      padding: 14px;
+      padding: 13px 14px;
+      transform: translate(-50%, 18px);
       opacity: 0;
       pointer-events: none;
-      transition: .25s;
+      border: 1px solid #285337;
+      border-radius: 13px;
+      background: #0f1d14;
+      box-shadow: 0 12px 35px rgba(0,0,0,.35);
+      transition: .25s ease;
     }
 
     #toast.show {
@@ -491,15 +1008,33 @@
     }
 
     #toastTitle {
-      font-weight: 900;
-      color: #58ff91;
-      font-size: 13px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 950;
     }
 
     #toastMessage {
-      color: #b3c1b8;
-      font-size: 11px;
       margin-top: 4px;
+      color: #b2c1b8;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    /* ================= SMALL DEVICES ================= */
+
+    @media (max-width: 350px) {
+      .balance {
+        font-size: 32px;
+      }
+
+      .brand {
+        font-size: 19px;
+      }
+
+      .screen {
+        padding-left: 11px;
+        padding-right: 11px;
+      }
     }
   </style>
 </head>
@@ -514,29 +1049,35 @@
     </div>
   </div>
 
-
   <div class="app">
 
+    <!-- HEADER -->
     <header>
-      <div class="brand">XEARN</div>
-      <div class="tier" id="tierBadge">FREE</div>
-    </header>
-
-
-    <!-- ================= HOME ================= -->
+      <div class="header-left">
+            <!-- ================= HOME ================= -->
 
     <section id="homeScreen" class="screen active">
 
+      <!-- WALLET -->
       <div class="balance-card">
 
-        <div class="balance-label">
-          Wallet Balance
+        <div class="balance-top">
+          <div class="balance-label">
+            WALLET BALANCE
+          </div>
+
+          <div class="balance-status">
+            <span class="status-dot"></span>
+            ACTIVE
+          </div>
         </div>
 
-        <div>
+        <div class="balance-row">
           <span
             class="balance"
-            id="balanceAmount">0</span>
+            id="balanceAmount">
+            0
+          </span>
 
           <span class="xcoin">
             XCOIN
@@ -564,9 +1105,11 @@
           </button>
 
         </div>
+
       </div>
 
 
+      <!-- STATS -->
       <div class="stats">
 
         <div class="stat">
@@ -609,21 +1152,59 @@
 
 
       <!-- MINING -->
+      <div class="mining-card">
 
-      <div class="card">
+        <div class="mining-head">
 
-        <div class="card-title">
-          XCOIN Mining
+          <div class="mining-title-wrap">
+
+            <div class="mining-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3v18"></path>
+                <path d="M7 7h7.5a2.5 2.5 0 0 1 0 5H8.5a2.5 2.5 0 0 0 0 5H17"></path>
+              </svg>
+            </div>
+
+            <div>
+              <div class="mining-title">
+                XCOIN Mining
+              </div>
+
+              <div class="card-subtitle">
+                Earn according to your tier
+              </div>
+            </div>
+
+          </div>
+
+          <div class="mining-tier">
+            <span id="currentTier">FREE</span>
+          </div>
+
         </div>
 
-        <div class="card-subtitle">
-          Mine according to your current tier.
-        </div>
 
         <div
           class="mine-reward"
           id="miningReward">
           +50 XCOIN
+        </div>
+
+        <div class="mine-info">
+          <span>
+            Mining reward
+          </span>
+
+          <span>
+            2 hour cycle
+          </span>
+        </div>
+
+        <div class="mine-progress">
+          <div
+            class="mine-progress-bar"
+            id="mineProgressBar">
+          </div>
         </div>
 
         <button
@@ -635,58 +1216,127 @@
       </div>
 
 
-      <!-- DAILY CHECK-IN -->
+      <!-- DAILY ACTIVITIES -->
+      <div class="section-head">
+        <div>
+          <div class="section-title">
+            Daily Activities
+          </div>
 
-      <div class="card">
+          <div class="section-subtitle">
+            Earn through available activities
+          </div>
+        </div>
+      </div>
 
-        <div class="card-title">
-          Daily Check-in
+
+      <!-- CHECK-IN -->
+      <div class="activity-card" id="checkinItem">
+
+        <div class="activity-icon">
+          <svg viewBox="0 0 24 24">
+            <rect x="4" y="5" width="16" height="15" rx="2"></rect>
+            <path d="M8 3v4M16 3v4M4 9h16"></path>
+            <path d="m8 14 2 2 5-5"></path>
+          </svg>
         </div>
 
-        <div class="card-subtitle">
-          Complete today's check-in.
+        <div class="activity-content">
+
+          <div class="activity-title">
+            Daily Check-in
+          </div>
+
+          <div class="activity-desc">
+            Open today's activity
+          </div>
+
         </div>
 
-        <div style="margin-top:12px">
+        <div class="activity-arrow">
+          ›
+        </div>
 
-          <button
-            class="action-btn"
-            id="checkinButton">
-            CHECK IN
-          </button>
+      </div>
 
+
+      <!-- TASKS -->
+      <div class="activity-card" id="taskItem">
+
+        <div class="activity-icon">
+          <svg viewBox="0 0 24 24">
+            <rect x="5" y="3" width="14" height="18" rx="2"></rect>
+            <path d="M8 8h8M8 12h8M8 16h5"></path>
+          </svg>
+        </div>
+
+        <div class="activity-content">
+
+          <div class="activity-title">
+            Tasks
+          </div>
+
+          <div class="activity-desc">
+            Complete available earning tasks
+          </div>
+
+        </div>
+
+        <div class="activity-arrow">
+          ›
         </div>
 
       </div>
 
 
       <!-- WATCH VIDEO -->
+      <div class="video-card">
 
-      <div class="card">
+        <div class="video-top">
 
-        <div class="card-title">
-          Watch Video
+          <div class="video-title-wrap">
+
+            <div class="video-small-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"></path>
+              </svg>
+            </div>
+
+            <div>
+              <div class="video-title">
+                Watch Video
+              </div>
+
+              <div
+                class="video-counter"
+                id="videoCounter">
+                <span id="videosCompleted">0</span>
+                /
+                <span id="videosLimit">20</span>
+                today
+              </div>
+            </div>
+
+          </div>
+
         </div>
 
-        <div class="card-subtitle">
-          Watch a rewarded video to earn XCOIN.
-        </div>
 
-        <div
-          class="progress">
+        <div class="progress">
           <div
             id="videoProgress"
             class="progress-bar">
           </div>
         </div>
 
-        <div
-          style="font-size:10px;color:#708077;margin:8px 0"
-          id="videoCounter">
-          <span id="videosCompleted">0</span>
-          /
-          <span id="videosLimit">20</span>
-          today
+        <div class="video-meta">
+          <span>
+            Daily progress
+          </span>
+
+          <span>
+            Rewarded activity
+          </span>
         </div>
 
         <button
@@ -704,17 +1354,21 @@
 
     <section id="earnScreen" class="screen">
 
-      <div class="card">
-        <div class="card-title">
+      <div class="earn-hero">
+
+        <div class="earn-hero-title">
           Earn XCOIN
         </div>
 
-        <div class="card-subtitle">
-          Complete available earning activities.
+        <div class="earn-hero-text">
+          Complete available activities and build
+          your XCOIN balance.
         </div>
+
       </div>
 
 
+      <!-- VIDEO -->
       <div
         class="earn-item"
         id="earnVideoItem">
@@ -722,10 +1376,7 @@
         <div class="earn-icon">
 
           <svg viewBox="0 0 24 24">
-            <path
-              d="M8 5v14l11-7z"
-              fill="currentColor">
-            </path>
+            <path d="M8 5v14l11-7z"></path>
           </svg>
 
         </div>
@@ -749,26 +1400,16 @@
       </div>
 
 
+      <!-- TASK -->
       <div
         class="earn-item"
-        id="taskItem">
+        id="taskItemEarn">
 
         <div class="earn-icon">
 
           <svg viewBox="0 0 24 24">
-            <path
-              d="M5 4h14v16H5z"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2">
-            </path>
-
-            <path
-              d="M8 9h8M8 13h8M8 17h5"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2">
-            </path>
+            <rect x="5" y="3" width="14" height="18" rx="2"></rect>
+            <path d="M8 8h8M8 12h8M8 16h5"></path>
           </svg>
 
         </div>
@@ -792,6 +1433,7 @@
       </div>
 
 
+      <!-- CHECK IN -->
       <div
         class="earn-item"
         id="checkinItem">
@@ -799,19 +1441,9 @@
         <div class="earn-icon">
 
           <svg viewBox="0 0 24 24">
-            <path
-              d="M5 4h14v16H5z"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2">
-            </path>
-
-            <path
-              d="M8 12l3 3 5-6"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2">
-            </path>
+            <rect x="4" y="5" width="16" height="15" rx="2"></rect>
+            <path d="M8 3v4M16 3v4M4 9h16"></path>
+            <path d="m8 14 2 2 5-5"></path>
           </svg>
 
         </div>
@@ -823,7 +1455,7 @@
           </div>
 
           <div class="earn-desc">
-            Open today's normal ad placement
+            Open today's normal activity
           </div>
 
         </div>
@@ -841,96 +1473,169 @@
 
     <section id="upgradeScreen" class="screen">
 
-      <div class="card">
-        <div class="card-title">
-          Upgrade
+      <div class="upgrade-banner">
+
+        <div class="upgrade-banner-title">
+          Upgrade Your Tier
         </div>
 
-        <div class="card-subtitle">
-          Increase your mining limits and rewards.
+        <div class="upgrade-banner-text">
+          Higher tiers unlock larger mining rewards
+          and increased activity limits.
         </div>
+
       </div>
+
 
       <div class="tier-grid">
 
+        <!-- FREE -->
         <div class="tier-card">
-          <div class="tier-name">FREE</div>
-          <div class="tier-price">$0</div>
-          <div class="card-subtitle">
-            50 XCOIN mining reward
+
+          <div class="tier-card-top">
+            <div class="tier-name">
+              FREE
+            </div>
           </div>
+
+          <div class="tier-price">
+            $0
+          </div>
+
+          <div class="tier-description">
+            Starting tier
+          </div>
+
+          <div class="tier-reward">
+            Mining reward: <strong>50 XCOIN</strong>
+          </div>
+
         </div>
 
-        <div class="tier-card">
-          <div class="tier-name">BRONZE</div>
-          <div class="tier-price">$5</div>
-          <div class="card-subtitle">
-            100 XCOIN mining reward
+
+        <!-- BRONZE -->
+        <div class="tier-card featured">
+
+          <div class="tier-card-top">
+            <div class="tier-name">
+              BRONZE
+            </div>
           </div>
+
+          <div class="tier-price">
+            $5
+          </div>
+
+          <div class="tier-description">
+            Increased earning capacity
+          </div>
+
+          <div class="tier-reward">
+            Mining reward: <strong>100 XCOIN</strong>
+          </div>
+
         </div>
 
-        <div class="tier-card">
-          <div class="tier-name">SILVER</div>
-          <div class="tier-price">$15</div>
-          <div class="card-subtitle">
-            200 XCOIN mining reward
+
+        <!-- SILVER -->
+        <div class="tier-card featured">
+
+          <div class="tier-card-top">
+            <div class="tier-name">
+              SILVER
+            </div>
           </div>
+
+          <div class="tier-price">
+            $15
+          </div>
+
+          <div class="tier-description">
+            Higher mining capacity
+          </div>
+
+          <div class="tier-reward">
+            Mining reward: <strong>200 XCOIN</strong>
+          </div>
+
         </div>
 
-        <div class="tier-card">
-          <div class="tier-name">GOLD</div>
-          <div class="tier-price">$30</div>
-          <div class="card-subtitle">
-            400 XCOIN mining reward
+
+        <!-- GOLD -->
+        <div class="tier-card featured">
+
+          <div class="tier-card-top">
+            <div class="tier-name">
+              GOLD
+            </div>
           </div>
+
+          <div class="tier-price">
+            $30
+          </div>
+
+          <div class="tier-description">
+            Maximum current tier
+          </div>
+
+          <div class="tier-reward">
+            Mining reward: <strong>400 XCOIN</strong>
+          </div>
+
         </div>
 
       </div>
 
     </section>
-
-
-    <!-- ================= REFER ================= -->
+        <!-- ================= REFER ================= -->
 
     <section id="referScreen" class="screen">
 
-      <div class="card">
+      <div class="referral-hero">
 
-        <div class="card-title">
+        <div class="referral-title">
           Refer & Earn
         </div>
 
-        <div class="card-subtitle">
-          Invite friends to XEARN.
+        <div class="referral-text">
+          Invite friends to XEARN and grow your
+          referral network.
         </div>
 
-        <div style="margin-top:20px">
 
-          <div class="card-subtitle">
-            Referrals
+        <div class="ref-stats">
+
+          <div class="ref-stat">
+
+            <div class="ref-stat-label">
+              REFERRALS
+            </div>
+
+            <div
+              class="ref-stat-value"
+              id="referralTotal">
+              0
+            </div>
+
           </div>
 
-          <div
-            style="font-size:28px;font-weight:900;margin-top:5px"
-            id="referralTotal">
-            0
+
+          <div class="ref-stat">
+
+            <div class="ref-stat-label">
+              EARNINGS
+            </div>
+
+            <div
+              class="ref-stat-value"
+              id="referralEarnings">
+              0 XCOIN
+            </div>
+
           </div>
 
         </div>
 
-        <div style="margin-top:18px">
-
-          <div class="card-subtitle">
-            Referral Earnings
-          </div>
-
-          <div
-            style="font-size:20px;font-weight:900;color:#58ff91;margin-top:5px"
-            id="referralEarnings">
-            0 XCOIN
-          </div>
-
-        </div>
 
         <div
           class="referral-link"
@@ -941,7 +1646,7 @@
         <button
           class="action-btn"
           id="copyReferralButton">
-          COPY LINK
+          COPY REFERRAL LINK
         </button>
 
       </div>
@@ -990,14 +1695,30 @@
       </div>
 
 
+      <!-- HISTORY -->
       <div
         class="earn-item"
         id="historyButton">
 
+        <div class="earn-icon">
+
+          <svg viewBox="0 0 24 24">
+            <path d="M4 5h16v14H4z"></path>
+            <path d="M8 9h8M8 13h6M8 17h4"></path>
+          </svg>
+
+        </div>
+
         <div class="earn-content">
+
           <div class="earn-title">
             Transaction History
           </div>
+
+          <div class="earn-desc">
+            View your account activity
+          </div>
+
         </div>
 
         <div class="earn-arrow">
@@ -1007,14 +1728,31 @@
       </div>
 
 
+      <!-- WITHDRAW -->
       <div
         class="earn-item"
         id="withdrawAccountButton">
 
+        <div class="earn-icon">
+
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3v14"></path>
+            <path d="m7 12 5 5 5-5"></path>
+            <path d="M5 21h14"></path>
+          </svg>
+
+        </div>
+
         <div class="earn-content">
+
           <div class="earn-title">
             Withdrawal
           </div>
+
+          <div class="earn-desc">
+            Manage your withdrawal
+          </div>
+
         </div>
 
         <div class="earn-arrow">
@@ -1032,6 +1770,7 @@
 
   <nav class="bottom-nav">
 
+    <!-- HOME -->
     <button
       class="nav-item active"
       data-target="home">
@@ -1042,9 +1781,11 @@
       </svg>
 
       Home
+
     </button>
 
 
+    <!-- EARN -->
     <button
       class="nav-item"
       data-target="earn">
@@ -1055,9 +1796,11 @@
       </svg>
 
       Earn
+
     </button>
 
 
+    <!-- UPGRADE -->
     <button
       class="nav-item upgrade-nav-button"
       data-target="upgrade">
@@ -1066,15 +1809,17 @@
 
         <svg viewBox="0 0 24 24">
           <path d="M12 19V5"></path>
-          <path d="M6 11l6-6 6 6"></path>
+          <path d="m6 11 6-6 6 6"></path>
         </svg>
 
       </div>
 
       Upgrade
+
     </button>
 
 
+    <!-- REFER -->
     <button
       class="nav-item"
       data-target="refer">
@@ -1086,9 +1831,11 @@
       </svg>
 
       Refer
+
     </button>
 
 
+    <!-- ACCOUNT -->
     <button
       class="nav-item"
       data-target="account">
@@ -1099,12 +1846,13 @@
       </svg>
 
       Account
+
     </button>
 
   </nav>
 
 
-  <!-- TOAST -->
+  <!-- ================= TOAST ================= -->
 
   <div id="toast">
 
@@ -1114,10 +1862,13 @@
 
     <div id="toastMessage">
       Done
-</div>
+    </div>
 
-</div>
+  </div>
 
-<script src="app.js"></script>
+
+  <!-- APP JS -->
+  <script src="app.js"></script>
+
 </body>
-</html>
+    </html>
