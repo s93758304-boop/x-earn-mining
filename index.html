@@ -11,7 +11,7 @@
 
   <title>XEARN</title>
 
-  <!-- Telegram Mini App -->
+  <!-- Telegram Mini App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <!-- Monetag SDK -->
@@ -22,25 +22,19 @@
   </script>
 
   <style>
+
     :root {
-      --bg: #050706;
-      --surface: #0a100c;
-      --surface-2: #0d1610;
-      --surface-3: #111c14;
-      --border: #1a2a1f;
-      --border-strong: #24432e;
-
-      --green: #5cff91;
-      --green-dark: #153521;
-      --green-soft: #9affb8;
-
-      --text: #f3fff7;
-      --muted: #78887e;
-      --muted-2: #526158;
-
-      --danger: #ff6d6d;
-
-      --radius: 18px;
+      --bg: #020604;
+      --card: #07100b;
+      --card2: #09150d;
+      --green: #51ff91;
+      --green2: #19d96a;
+      --green-dark: #0c2918;
+      --border: #123a23;
+      --border2: #1b5c34;
+      --white: #f7fff9;
+      --muted: #91a39a;
+      --muted2: #607067;
     }
 
     * {
@@ -58,12 +52,12 @@
       min-height: 100vh;
       background:
         radial-gradient(
-          circle at 50% -15%,
-          rgba(50, 150, 80, .13),
-          transparent 42%
+          circle at 50% -10%,
+          rgba(36, 255, 120, .09),
+          transparent 35%
         ),
-        var(--bg);
-      color: var(--text);
+        #020604;
+      color: var(--white);
       font-family:
         Inter,
         -apple-system,
@@ -75,8 +69,9 @@
     }
 
     button {
-      border: 0;
       font: inherit;
+      border: 0;
+      outline: none;
       cursor: pointer;
       -webkit-appearance: none;
     }
@@ -90,16 +85,19 @@
       max-width: 520px;
       min-height: 100vh;
       margin: auto;
-      padding-bottom: 96px;
+      padding-bottom: 105px;
     }
 
-    /* ================= LOADING ================= */
+
+    /* =========================================
+       LOADING
+    ========================================= */
 
     #loadingScreen {
       position: fixed;
       inset: 0;
       z-index: 9999;
-      background: #050706;
+      background: #020604;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -110,7 +108,7 @@
     }
 
     .loader-logo {
-      font-size: 32px;
+      font-size: 34px;
       font-weight: 950;
       letter-spacing: 5px;
       color: var(--green);
@@ -121,9 +119,9 @@
       width: 30px;
       height: 30px;
       margin: auto;
-      border: 3px solid #183021;
-      border-top-color: var(--green);
       border-radius: 50%;
+      border: 3px solid #12351f;
+      border-top-color: var(--green);
       animation: spin .8s linear infinite;
     }
 
@@ -133,71 +131,116 @@
       }
     }
 
-    /* ================= HEADER ================= */
+
+    /* =========================================
+       HEADER
+    ========================================= */
 
     header {
+      padding: 18px 16px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 18px 17px 13px;
     }
 
-    .header-left {
+    .brand-area {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 9px;
     }
 
-    .brand-mark {
-      width: 34px;
-      height: 34px;
-      border-radius: 11px;
+    .brand-x {
+      width: 39px;
+      height: 39px;
       display: grid;
       place-items: center;
-      background: var(--green);
-      color: #061008;
-      font-size: 16px;
-      font-weight: 950;
-      box-shadow: 0 0 25px rgba(92,255,145,.12);
+      color: white;
+    }
+
+    .brand-x svg {
+      width: 39px;
+      height: 39px;
+      fill: var(--green);
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
     }
 
     .brand {
-      font-size: 21px;
+      font-size: 25px;
+      line-height: 1;
       font-weight: 950;
       letter-spacing: 2px;
     }
 
-    .tier {
+    .brand-tagline {
+      margin-top: 5px;
+      color: var(--green);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 2.5px;
+    }
+
+    .header-right {
       display: flex;
       align-items: center;
+      gap: 13px;
+    }
+
+    .tier {
+      min-width: 76px;
+      height: 35px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       gap: 6px;
-      padding: 7px 10px;
+      border: 1px solid var(--green2);
       border-radius: 20px;
-      background: #0d1b12;
-      border: 1px solid #1b3824;
+      background: rgba(4, 20, 10, .8);
       color: var(--green);
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: .6px;
+      font-size: 11px;
+      font-weight: 950;
     }
 
     .tier-dot {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: var(--green);
+      box-shadow: 0 0 8px rgba(81,255,145,.7);
     }
 
-    /* ================= SCREENS ================= */
+    .header-icon {
+      width: 24px;
+      height: 24px;
+      color: white;
+      opacity: .95;
+    }
+
+    .header-icon svg {
+      width: 100%;
+      height: 100%;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+    }
+
+
+    /* =========================================
+       SCREENS
+    ========================================= */
 
     .screen {
       display: none;
       padding: 0 14px;
-      animation: screenIn .22s ease;
     }
 
     .screen.active {
       display: block;
+      animation: screenIn .2s ease;
     }
 
     @keyframes screenIn {
@@ -212,237 +255,233 @@
       }
     }
 
-    /* ================= SECTION HEADING ================= */
 
-    .section-head {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin: 9px 2px 12px;
-    }
-
-    .section-title {
-      font-size: 17px;
-      font-weight: 900;
-    }
-
-    .section-subtitle {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 10px;
-    }
-
-    /* ================= BALANCE ================= */
+    /* =========================================
+       WALLET CARD
+    ========================================= */
 
     .balance-card {
       position: relative;
       overflow: hidden;
+      min-height: 290px;
       padding: 21px;
-      border-radius: 22px;
-      border: 1px solid var(--border-strong);
+      border: 1px solid #176137;
+      border-radius: 28px;
+
       background:
         radial-gradient(
-          circle at 100% 0%,
-          rgba(92,255,145,.10),
-          transparent 42%
+          circle at 105% 15%,
+          rgba(33, 255, 111, .13),
+          transparent 35%
         ),
         linear-gradient(
           145deg,
-          #0e1b13,
-          #08100b
+          #0a2113,
+          #030b06 75%
         );
+
       box-shadow:
-        0 15px 40px rgba(0,0,0,.20);
+        inset 0 0 35px rgba(43,255,119,.025),
+        0 15px 40px rgba(0,0,0,.22);
+    }
+
+    .balance-card::before {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      right: -105px;
+      top: -75px;
+      border-radius: 50%;
+      border: 1px solid rgba(45,255,125,.10);
     }
 
     .balance-card::after {
       content: "";
       position: absolute;
-      width: 120px;
-      height: 120px;
-      right: -55px;
-      bottom: -60px;
+      right: -40px;
+      bottom: -70px;
+      width: 190px;
+      height: 190px;
       border-radius: 50%;
-      border: 1px solid rgba(92,255,145,.10);
+      border: 1px solid rgba(45,255,125,.07);
+    }
+
+    .balance-content {
+      position: relative;
+      z-index: 2;
     }
 
     .balance-top {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
     }
 
     .balance-label {
-      color: var(--muted);
+      color: #91a49a;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: .3px;
     }
-
-    .balance-status {
+    .active-status {
       display: flex;
       align-items: center;
-      gap: 5px;
-      color: var(--green-soft);
-      font-size: 9px;
-      font-weight: 800;
-      text-transform: uppercase;
+      gap: 6px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 900;
     }
 
-    .status-dot {
-      width: 5px;
-      height: 5px;
+    .active-dot {
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: var(--green);
+      box-shadow: 0 0 10px rgba(81,255,145,.65);
+    }
+
+
+    /* XCOIN LOGO */
+
+    .balance-main {
+      display: flex;
+      align-items: center;
+      gap: 17px;
+      margin-top: 13px;
+    }
+
+    .xcoin-logo {
+      width: 73px;
+      height: 73px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 1px solid var(--green2);
+      background:
+        radial-gradient(
+          circle,
+          #163c24,
+          #07150c
+        );
+      box-shadow:
+        0 0 20px rgba(81,255,145,.12);
+    }
+
+    .xcoin-logo svg {
+      width: 48px;
+      height: 48px;
+    }
+
+    .xcoin-logo .white-x {
+      fill: #ffffff;
+    }
+
+    .balance-number {
+      min-width: 0;
     }
 
     .balance-row {
       display: flex;
       align-items: baseline;
-      gap: 7px;
-      margin-top: 6px;
+      gap: 9px;
     }
 
     .balance {
-      font-size: 37px;
+      font-size: 42px;
       line-height: 1;
       font-weight: 950;
-      letter-spacing: -1px;
+      letter-spacing: -1.5px;
+      color: #ffffff;
     }
 
-    .xcoin {
+    .xcoin-text {
       color: var(--green);
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: .5px;
+      font-size: 16px;
+      font-weight: 950;
     }
 
     .usdt {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 12px;
+      margin-top: 9px;
+      color: #92a59b;
+      font-size: 13px;
     }
 
+
+    /* WALLET ACTIONS */
+
     .main-actions {
+      position: relative;
+      z-index: 3;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 9px;
-      margin-top: 19px;
+      gap: 10px;
+      margin-top: 27px;
     }
 
     .primary-btn,
     .secondary-btn {
-      height: 46px;
-      border-radius: 13px;
-      font-size: 11px;
+      height: 57px;
+      border-radius: 17px;
+      font-size: 14px;
       font-weight: 950;
-      letter-spacing: .5px;
+      letter-spacing: .3px;
     }
 
     .primary-btn {
-      background: var(--green);
-      color: #061008;
-      box-shadow: 0 7px 22px rgba(92,255,145,.08);
+      background: linear-gradient(
+        135deg,
+        #4cff91,
+        #35f27f
+      );
+      color: #031008;
+      box-shadow:
+        0 8px 25px rgba(51,255,128,.13);
     }
 
     .secondary-btn {
-      color: var(--text);
-      background: #121d16;
-      border: 1px solid #21372a;
+      color: #ffffff;
+      background: rgba(8, 20, 13, .72);
+      border: 1px solid #19412a;
     }
 
-    /* ================= STATS ================= */
+
+    /* =========================================
+       STATS
+    ========================================= */
 
     .stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 10px;
+      gap: 9px;
+      margin-top: 14px;
     }
 
     .stat {
-      padding: 14px 7px 13px;
-      border: 1px solid var(--border);
-      border-radius: 15px;
-      background: var(--surface);
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 17px;
-      font-weight: 950;
-    }
-
-    .stat-label {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 8px;
-      font-weight: 800;
-      letter-spacing: .7px;
-    }
-
-    /* ================= GENERAL CARD ================= */
-
-    .card {
-      padding: 17px;
-      margin-top: 10px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--surface);
-    }
-
-    .card-title {
-      font-size: 14px;
-      font-weight: 900;
-    }
-
-    .card-subtitle {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 10px;
-      line-height: 1.5;
-    }
-
-    /* ================= MINING ================= */
-
-    .mining-card {
-      position: relative;
-      overflow: hidden;
-      padding: 18px;
-      margin-top: 13px;
-      border: 1px solid #1d3825;
-      border-radius: 19px;
-      background:
-        linear-gradient(
-          135deg,
-          rgba(21,53,33,.75),
-          rgba(9,16,11,.95)
-        );
-    }
-
-    .mining-head {
+      min-height: 94px;
+      padding: 13px 8px;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
+      border: 1px solid #11271a;
+      border-radius: 18px;
+      background: #050c08;
     }
 
-    .mining-title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .mining-icon {
-      width: 38px;
-      height: 38px;
+    .stat-icon {
+      width: 35px;
+      height: 35px;
+      margin-bottom: 7px;
       display: grid;
       place-items: center;
-      border-radius: 12px;
-      background: #142c1b;
+      border-radius: 50%;
       color: var(--green);
+      background: #0a2817;
     }
 
-    .mining-icon svg {
+    .stat-icon svg {
       width: 20px;
       height: 20px;
       fill: none;
@@ -450,62 +489,216 @@
       stroke-width: 1.8;
     }
 
+    .stat-value {
+      font-size: 18px;
+      line-height: 1;
+      font-weight: 950;
+      color: white;
+    }
+
+    .stat-label {
+      margin-top: 5px;
+      color: #718178;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .6px;
+    }
+
+
+    /* =========================================
+       MINING CARD
+    ========================================= */
+
+    .mining-card {
+      position: relative;
+      overflow: hidden;
+      margin-top: 14px;
+      padding: 21px;
+      min-height: 320px;
+      border: 1px solid #18a653;
+      border-radius: 24px;
+
+      background:
+        radial-gradient(
+          circle at 10% 70%,
+          rgba(42,255,119,.10),
+          transparent 35%
+        ),
+        linear-gradient(
+          140deg,
+          #0a2816,
+          #041009
+        );
+    }
+
+    .mining-card::after {
+      content: "";
+      position: absolute;
+      right: -70px;
+      top: -70px;
+      width: 230px;
+      height: 230px;
+      transform: rotate(35deg);
+      border: 1px solid rgba(44,255,125,.09);
+    }
+
+    .mining-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .mining-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .mining-title-area {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .mining-icon {
+      width: 45px;
+      height: 45px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: #0a3019;
+      color: var(--green);
+    }
+
+    .mining-icon svg {
+      width: 25px;
+      height: 25px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+    }
+
     .mining-title {
-      font-size: 14px;
-      font-weight: 900;
+      font-size: 17px;
+      font-weight: 950;
+    }
+
+    .mining-subtitle {
+      margin-top: 4px;
+      color: #84978c;
+      font-size: 11px;
     }
 
     .mining-tier {
-      padding: 5px 8px;
-      border-radius: 8px;
+      padding: 7px 11px;
+      border: 1px solid #1a9d4d;
+      border-radius: 13px;
       color: var(--green);
-      background: #0a140d;
-      border: 1px solid #1c3724;
-      font-size: 8px;
-      font-weight: 900;
+      background: #06160c;
+      font-size: 10px;
+      font-weight: 950;
+    }
+
+    .mining-reward-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 23px;
+    }
+
+    .mini-xcoin {
+      width: 47px;
+      height: 47px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      border: 1px solid #1b9e50;
+      border-radius: 50%;
+      background: #06170c;
+    }
+
+    .mini-xcoin svg {
+      width: 29px;
+      height: 29px;
+    }
+
+    .mini-xcoin .white-x {
+      fill: white;
     }
 
     .mine-reward {
-      margin-top: 17px;
       color: var(--green);
-      font-size: 27px;
+      font-size: 31px;
+      line-height: 1;
       font-weight: 950;
-      letter-spacing: -.5px;
+      letter-spacing: -.7px;
     }
 
-    .mine-info {
+    .mine-details {
       display: flex;
       justify-content: space-between;
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 9px;
+      margin-top: 8px;
+      color: #83968b;
+      font-size: 10px;
+    }
+
+    .mine-details strong {
+      color: white;
+      font-weight: 800;
     }
 
     .mine-progress {
-      height: 5px;
-      margin-top: 13px;
+      height: 7px;
+      margin-top: 16px;
       overflow: hidden;
       border-radius: 20px;
-      background: #17251b;
+      background: #10351e;
     }
 
     .mine-progress-bar {
       width: 0%;
       height: 100%;
       border-radius: inherit;
-      background: var(--green);
-      transition: width .3s ease;
+      background: linear-gradient(
+        90deg,
+        #36f47e,
+        #5cff91
+      );
+      transition: width .4s ease;
+    }
+
+    .mine-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .next-reward {
+      color: #91a79a;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .next-reward span {
+      color: var(--green);
+      font-weight: 900;
     }
 
     .mine-btn {
-      width: 100%;
-      height: 45px;
-      margin-top: 14px;
-      border-radius: 12px;
-      background: var(--green);
-      color: #061008;
-      font-size: 11px;
+      min-width: 160px;
+      height: 54px;
+      padding: 0 20px;
+      border-radius: 16px;
+      background: linear-gradient(
+        135deg,
+        #4cff91,
+        #35ef7b
+      );
+      color: #031008;
+      font-size: 12px;
       font-weight: 950;
+      box-shadow: 0 8px 25px rgba(51,255,128,.12);
     }
 
     .mine-btn:disabled,
@@ -514,34 +707,63 @@
       cursor: not-allowed;
     }
 
-    /* ================= DAILY ACTIVITIES ================= */
+
+    /* =========================================
+       SECTION TITLES
+    ========================================= */
+
+    .section-head {
+      margin: 20px 3px 11px;
+    }
+
+    .section-title {
+      font-size: 23px;
+      font-weight: 950;
+      letter-spacing: -.4px;
+    }
+
+    .section-subtitle {
+      margin-top: 3px;
+      color: #788b80;
+      font-size: 11px;
+    }
+
+
+    /* =========================================
+       DAILY ACTIVITIES
+    ========================================= */
+
+    .activities-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
 
     .activity-card {
+      min-height: 115px;
+      padding: 14px;
       display: flex;
-      align-items: center;
-      gap: 12px;
-      min-height: 65px;
-      padding: 11px 12px;
-      margin-top: 8px;
-      border: 1px solid var(--border);
-      border-radius: 15px;
-      background: var(--surface);
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid #123a23;
+      border-radius: 17px;
+      background: #06100a;
     }
 
     .activity-icon {
-      width: 40px;
-      height: 40px;
+      width: 43px;
+      height: 43px;
       flex-shrink: 0;
       display: grid;
       place-items: center;
-      border-radius: 11px;
-      background: #102218;
+      border-radius: 14px;
+      background: #0b2918;
       color: var(--green);
     }
 
     .activity-icon svg {
-      width: 19px;
-      height: 19px;
+      width: 23px;
+      height: 23px;
       fill: none;
       stroke: currentColor;
       stroke-width: 1.8;
@@ -553,70 +775,77 @@
     }
 
     .activity-title {
+      margin-top: 3px;
+      color: white;
       font-size: 12px;
       font-weight: 900;
     }
 
     .activity-desc {
-      margin-top: 4px;
-      color: var(--muted);
+      margin-top: 6px;
+      color: #718178;
       font-size: 9px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      line-height: 1.4;
     }
 
     .activity-arrow {
+      position: absolute;
+      margin-left: 185px;
+      margin-top: 52px;
       color: var(--green);
-      font-size: 21px;
-      font-weight: 300;
+      font-size: 23px;
     }
 
-    /* ================= VIDEO ================= */
+
+    /* =========================================
+       VIDEO CARD
+    ========================================= */
 
     .video-card {
-      padding: 16px;
       margin-top: 10px;
-      border: 1px solid #1b3523;
-      border-radius: 17px;
-      background: #0b1510;
+      padding: 17px;
+      border: 1px solid #143b25;
+      border-radius: 18px;
+      background: #06100a;
     }
-
-    .video-top {
+    .video-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .video-title-wrap {
+    .video-title-area {
       display: flex;
       align-items: center;
-      gap: 9px;
+      gap: 10px;
     }
 
-    .video-small-icon {
-      width: 34px;
-      height: 34px;
+    .video-icon {
+      width: 42px;
+      height: 42px;
       display: grid;
       place-items: center;
-      border-radius: 10px;
-      background: #132b1b;
+      border-radius: 13px;
+      background: #0a2917;
       color: var(--green);
     }
 
-    .video-small-icon svg {
-      width: 17px;
-      height: 17px;
-      fill: currentColor;
+    .video-icon svg {
+      width: 21px;
+      height: 21px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
     }
 
     .video-title {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 900;
     }
 
     .video-counter {
-      color: var(--muted);
+      margin-top: 4px;
+      color: #718178;
       font-size: 9px;
     }
 
@@ -625,7 +854,7 @@
       margin-top: 13px;
       overflow: hidden;
       border-radius: 20px;
-      background: #17231b;
+      background: #12251a;
     }
 
     .progress-bar {
@@ -639,40 +868,39 @@
       display: flex;
       justify-content: space-between;
       margin-top: 7px;
-      color: var(--muted);
+      color: #65766c;
       font-size: 9px;
     }
 
     .action-btn {
       width: 100%;
-      height: 44px;
+      height: 46px;
       margin-top: 13px;
-      border-radius: 12px;
+      border-radius: 13px;
       background: var(--green);
-      color: #061008;
-      font-size: 10px;
+      color: #031008;
+      font-size: 11px;
       font-weight: 950;
-      letter-spacing: .4px;
     }
-
-    /* ================= EARN SCREEN ================= */
+      /* =========================================
+       EARN SCREEN
+    ========================================= */
 
     .earn-hero {
-      padding: 19px;
-      margin-bottom: 11px;
-      border: 1px solid #1c3825;
-      border-radius: 19px;
+      padding: 21px;
+      border: 1px solid #16462a;
+      border-radius: 21px;
       background:
         radial-gradient(
           circle at 100% 0,
-          rgba(92,255,145,.08),
-          transparent 45%
+          rgba(81,255,145,.08),
+          transparent 40%
         ),
-        var(--surface);
+        #07110b;
     }
 
     .earn-hero-title {
-      font-size: 19px;
+      font-size: 21px;
       font-weight: 950;
     }
 
@@ -680,35 +908,36 @@
       margin-top: 6px;
       color: var(--muted);
       font-size: 10px;
-      line-height: 1.55;
+      line-height: 1.5;
     }
 
     .earn-item {
+      position: relative;
       display: flex;
       align-items: center;
       gap: 12px;
-      min-height: 67px;
+      min-height: 70px;
       padding: 12px;
-      margin-bottom: 9px;
+      margin-top: 9px;
       border: 1px solid var(--border);
-      border-radius: 15px;
-      background: var(--surface);
+      border-radius: 16px;
+      background: var(--card);
     }
 
     .earn-icon {
-      width: 41px;
-      height: 41px;
+      width: 43px;
+      height: 43px;
       flex-shrink: 0;
       display: grid;
       place-items: center;
-      border-radius: 11px;
-      background: #12271a;
+      border-radius: 13px;
+      background: #0a2817;
       color: var(--green);
     }
 
     .earn-icon svg {
-      width: 19px;
-      height: 19px;
+      width: 21px;
+      height: 21px;
       fill: none;
       stroke: currentColor;
       stroke-width: 1.8;
@@ -716,41 +945,43 @@
 
     .earn-content {
       flex: 1;
-      min-width: 0;
     }
 
     .earn-title {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 900;
     }
 
     .earn-desc {
       margin-top: 4px;
-      color: var(--muted);
+      color: var(--muted2);
       font-size: 9px;
     }
 
     .earn-arrow {
       color: var(--green);
-      font-size: 21px;
+      font-size: 23px;
     }
 
-    /* ================= UPGRADE ================= */
+
+    /* =========================================
+       UPGRADE
+    ========================================= */
 
     .upgrade-banner {
-      padding: 20px;
-      border: 1px solid #1d3a26;
-      border-radius: 20px;
+      padding: 21px;
+      border: 1px solid #17502d;
+      border-radius: 21px;
       background:
         linear-gradient(
           135deg,
-          #102218,
-          #09100c
+          #0b2415,
+          #050c07
         );
     }
 
     .upgrade-banner-title {
-      font-size: 19px;
+      font-size: 21px;
       font-weight: 950;
     }
 
@@ -763,38 +994,37 @@
 
     .tier-grid {
       display: grid;
-      gap: 9px;
+      gap: 10px;
       margin-top: 11px;
     }
 
     .tier-card {
-      padding: 16px;
+      padding: 17px;
       border: 1px solid var(--border);
-      border-radius: 17px;
-      background: var(--surface);
+      border-radius: 18px;
+      background: var(--card);
     }
 
     .tier-card.featured {
-      border-color: #2b5537;
-      background: #0d1811;
+      border-color: #1b4f2d;
     }
 
     .tier-card-top {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
     }
 
     .tier-name {
       color: var(--green);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 950;
-      letter-spacing: .6px;
+      letter-spacing: .7px;
     }
 
     .tier-price {
-      margin-top: 5px;
-      font-size: 22px;
+      margin-top: 6px;
+      font-size: 23px;
       font-weight: 950;
     }
 
@@ -806,21 +1036,24 @@
 
     .tier-reward {
       margin-top: 12px;
-      color: #c8d7cd;
+      color: #aabbb1;
       font-size: 10px;
     }
 
-    /* ================= REFER ================= */
+
+    /* =========================================
+       REFERRAL
+    ========================================= */
 
     .referral-hero {
-      padding: 20px;
-      border: 1px solid #1c3825;
-      border-radius: 19px;
-      background: var(--surface);
+      padding: 21px;
+      border: 1px solid #16462a;
+      border-radius: 21px;
+      background: #07110b;
     }
 
     .referral-title {
-      font-size: 19px;
+      font-size: 21px;
       font-weight: 950;
     }
 
@@ -835,63 +1068,68 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 9px;
-      margin-top: 15px;
+      margin-top: 17px;
     }
 
     .ref-stat {
-      padding: 13px;
-      border-radius: 13px;
-      background: #08100b;
+      padding: 14px;
       border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #040b06;
     }
 
     .ref-stat-label {
       color: var(--muted);
       font-size: 9px;
+      font-weight: 800;
     }
 
     .ref-stat-value {
       margin-top: 5px;
-      font-size: 19px;
+      color: white;
+      font-size: 20px;
       font-weight: 950;
     }
 
     .referral-link {
-      padding: 12px;
       margin-top: 13px;
-      border: 1px solid #203426;
-      border-radius: 11px;
-      background: #050806;
-      color: #aab9af;
+      padding: 13px;
+      border: 1px solid #193827;
+      border-radius: 12px;
+      background: #020604;
+      color: #a4b4aa;
       font-size: 9px;
       line-height: 1.4;
       word-break: break-all;
     }
 
-    /* ================= ACCOUNT ================= */
+
+    /* =========================================
+       ACCOUNT
+    ========================================= */
 
     .profile {
-      padding: 20px 0 13px;
+      padding: 20px 0 14px;
       text-align: center;
     }
 
     .avatar {
-      width: 67px;
-      height: 67px;
+      width: 70px;
+      height: 70px;
       margin: auto;
       display: grid;
       place-items: center;
       border-radius: 50%;
-      border: 2px solid #25472f;
-      background: #112319;
-      color: var(--green);
-      font-size: 24px;
+      border: 1px solid #1e6036;
+      background: #0b2918;
+      color: white;
+      font-size: 25px;
       font-weight: 950;
     }
 
     .profile-name {
-      margin-top: 10px;
-      font-size: 17px;
+      margin-top: 11px;
+      font-size: 18px;
       font-weight: 950;
     }
 
@@ -901,7 +1139,10 @@
       font-size: 10px;
     }
 
-    /* ================= BOTTOM NAV ================= */
+
+    /* =========================================
+       BOTTOM NAVIGATION
+    ========================================= */
 
     .bottom-nav {
       position: fixed;
@@ -911,34 +1152,39 @@
       transform: translateX(-50%);
       width: 100%;
       max-width: 520px;
-      height: 74px;
+      height: 82px;
+      padding: 5px 6px;
+      padding-bottom: calc(
+        5px + env(safe-area-inset-bottom)
+      );
+
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      align-items: center;
-      padding: 5px 7px;
-      padding-bottom: calc(5px + env(safe-area-inset-bottom));
-      background: rgba(5,8,6,.96);
-      border-top: 1px solid #17251b;
-      backdrop-filter: blur(14px);
+
+      background: rgba(2,7,4,.97);
+      border-top: 1px solid #102219;
+      backdrop-filter: blur(16px);
     }
 
     .nav-item {
       position: relative;
-      height: 60px;
+      height: 65px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 5px;
+
       background: transparent;
-      color: #5e6c63;
-      font-size: 8px;
+      color: #63736a;
+
+      font-size: 9px;
       font-weight: 850;
     }
 
     .nav-item svg {
-      width: 19px;
-      height: 19px;
+      width: 22px;
+      height: 22px;
       fill: none;
       stroke: currentColor;
       stroke-width: 1.8;
@@ -951,54 +1197,73 @@
     .nav-item.active::before {
       content: "";
       position: absolute;
-      top: 2px;
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
+      top: 1px;
+      width: 30px;
+      height: 2px;
+      border-radius: 10px;
       background: var(--green);
+      box-shadow: 0 0 10px rgba(81,255,145,.7);
     }
 
     .upgrade-nav-button {
-      margin-top: -25px;
+      margin-top: -29px;
     }
 
     .upgrade-circle {
-      width: 49px;
-      height: 49px;
+      width: 58px;
+      height: 58px;
       display: grid;
       place-items: center;
       border-radius: 50%;
-      background: var(--green);
-      color: #061008;
-      border: 4px solid #08100b;
-      box-shadow: 0 6px 24px rgba(92,255,145,.15);
+
+      background:
+        linear-gradient(
+          145deg,
+          #5cff98,
+          #36ed7b
+        );
+
+      color: #020a05;
+
+      border: 4px solid #061009;
+
+      box-shadow:
+        0 0 0 1px #27b85d,
+        0 0 25px rgba(81,255,145,.27);
     }
 
     .upgrade-circle svg {
-      width: 22px;
-      height: 22px;
+      width: 27px;
+      height: 27px;
       fill: none;
       stroke: currentColor;
-      stroke-width: 2.5;
+      stroke-width: 2.8;
     }
 
-    /* ================= TOAST ================= */
+
+    /* =========================================
+       TOAST
+    ========================================= */
 
     #toast {
       position: fixed;
       z-index: 10000;
       left: 50%;
-      bottom: 88px;
+      bottom: 95px;
       width: calc(100% - 28px);
       max-width: 480px;
-      padding: 13px 14px;
-      transform: translate(-50%, 18px);
+      padding: 14px;
+
+      transform: translate(-50%, 20px);
       opacity: 0;
       pointer-events: none;
-      border: 1px solid #285337;
-      border-radius: 13px;
-      background: #0f1d14;
-      box-shadow: 0 12px 35px rgba(0,0,0,.35);
+
+      border: 1px solid #225336;
+      border-radius: 14px;
+      background: #0b1b11;
+
+      box-shadow: 0 15px 35px rgba(0,0,0,.4);
+
       transition: .25s ease;
     }
 
@@ -1009,100 +1274,283 @@
 
     #toastTitle {
       color: var(--green);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 950;
     }
 
     #toastMessage {
       margin-top: 4px;
-      color: #b2c1b8;
+      color: #afbeb5;
       font-size: 10px;
-      line-height: 1.4;
     }
 
-    /* ================= SMALL DEVICES ================= */
 
-    @media (max-width: 350px) {
-      .balance {
-        font-size: 32px;
-      }
+    /* =========================================
+       SMALL PHONE
+    ========================================= */
+
+    @media (max-width: 370px) {
 
       .brand {
-        font-size: 19px;
+        font-size: 21px;
       }
 
-      .screen {
-        padding-left: 11px;
-        padding-right: 11px;
+      .brand-tagline {
+        font-size: 7px;
+      }
+
+      .balance {
+        font-size: 35px;
+      }
+
+      .xcoin-logo {
+        width: 62px;
+        height: 62px;
+      }
+
+      .xcoin-logo svg {
+        width: 41px;
+        height: 41px;
+      }
+
+      .mining-card {
+        padding: 17px;
+      }
+
+      .mine-reward {
+        font-size: 27px;
+      }
+
+      .mine-bottom {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .mine-btn {
+        width: 100%;
+      }
+
+      .activity-card {
+        min-height: 110px;
+      }
+
+      .activity-arrow {
+        margin-left: 150px;
       }
     }
+
   </style>
 </head>
 
 <body>
 
-  <!-- LOADING -->
+  <!-- =========================================
+       LOADING
+  ========================================= -->
+
   <div id="loadingScreen">
+    <script>
+  // Safety fallback: never leave XEARN stuck on loading
+  setTimeout(function () {
+    const loader = document.getElementById("loadingScreen");
+    if (loader) {
+      loader.style.display = "none";
+    }
+  }, 1200);
+</script>
     <div class="loader-box">
-      <div class="loader-logo">XEARN</div>
+
+      <div class="loader-logo">
+        XEARN
+      </div>
+
       <div class="loader"></div>
+
     </div>
+
   </div>
+
 
   <div class="app">
 
-    <!-- HEADER -->
-    <header>
-      <div class="header-left">
-            <!-- ================= HOME ================= -->
+    <!-- =========================================
+         HEADER
+    ========================================= -->
 
-    <section id="homeScreen" class="screen active">
+    <header>
+
+      <div class="brand-area">
+
+        <!-- XEARN GREEN X -->
+        <div class="brand-x">
+
+          <svg viewBox="0 0 100 100">
+
+            <path
+              d="M8 8h25l17 22L67 8h25L63 50l29 42H67L50 70 33 92H8l29-42z">
+            </path>
+
+            <path
+              d="M34 8h17l15 19-13 18z"
+              fill="#061008">
+            </path>
+
+          </svg>
+
+        </div>
+
+
+        <div class="brand-text">
+
+          <div class="brand">
+            XEARN
+          </div>
+
+          <div class="brand-tagline">
+            EARN&nbsp;&nbsp;•&nbsp;&nbsp;MINE&nbsp;&nbsp;•&nbsp;&nbsp;GROW
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="header-right">
+
+        <div class="tier">
+
+          <span class="tier-dot"></span>
+
+          <span id="tierBadge">
+            FREE
+          </span>
+
+        </div>
+
+
+        <div class="header-icon">
+
+          <svg viewBox="0 0 24 24">
+
+            <path
+              d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9">
+            </path>
+
+            <path d="M10 21h4"></path>
+
+          </svg>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <!-- =========================================
+         HOME
+    ========================================= -->
+
+    <section
+      id="homeScreen"
+      class="screen active">
+
 
       <!-- WALLET -->
       <div class="balance-card">
 
-        <div class="balance-top">
-          <div class="balance-label">
-            WALLET BALANCE
+        <div class="balance-content">
+
+          <div class="balance-top">
+
+            <div class="balance-label">
+              WALLET BALANCE
+            </div>
+
+            <div class="active-status">
+
+              <span class="active-dot"></span>
+
+              ACTIVE
+
+            </div>
+
           </div>
 
-          <div class="balance-status">
-            <span class="status-dot"></span>
-            ACTIVE
+
+          <div class="balance-main">
+
+            <!-- WHITE XCOIN SYMBOL -->
+            <div class="xcoin-logo">
+
+              <svg
+                viewBox="0 0 100 100"
+                aria-label="XCOIN">
+
+                <path
+                  class="white-x"
+                  d="M9 10h25l16 22L66 10h25L64 50l27 40H66L50 69 34 90H9l27-40z">
+                </path>
+
+                <path
+                  d="M35 10h18l13 18-13 19z"
+                  fill="#07130b">
+                </path>
+
+              </svg>
+
+            </div>
+
+
+            <div class="balance-number">
+
+              <div class="balance-row">
+
+                <span
+                  class="balance"
+                  id="balanceAmount">
+                  0.00
+                </span>
+
+                <span class="xcoin-text">
+                  XCOIN
+                </span>
+
+              </div>
+
+
+              <div
+                class="usdt"
+                id="balanceUsdt">
+                ≈ $0.0000
+              </div>
+
+            </div>
+
           </div>
-        </div>
 
-        <div class="balance-row">
-          <span
-            class="balance"
-            id="balanceAmount">
-            0
-          </span>
 
-          <span class="xcoin">
-            XCOIN
-          </span>
-        </div>
+          <!-- EARN / WITHDRAW -->
+          <div class="main-actions">
 
-        <div
-          class="usdt"
-          id="balanceUsdt">
-          $0.0000
-        </div>
+            <button
+              class="primary-btn"
+              id="earnButton">
 
-        <div class="main-actions">
+              EARN
 
-          <button
-            class="primary-btn"
-            id="earnButton">
-            EARN
-          </button>
+            </button>
 
-          <button
-            class="secondary-btn"
-            id="withdrawButton">
-            WITHDRAW
-          </button>
+
+            <button
+              class="secondary-btn"
+              id="withdrawButton">
+
+              WITHDRAW
+
+            </button>
+
+          </div>
 
         </div>
 
@@ -1113,6 +1561,27 @@
       <div class="stats">
 
         <div class="stat">
+
+          <div class="stat-icon">
+
+            <svg viewBox="0 0 24 24">
+
+              <rect
+                x="5"
+                y="3"
+                width="14"
+                height="18"
+                rx="2">
+              </rect>
+
+              <path d="M8 8h8"></path>
+              <path d="M8 12h8"></path>
+              <path d="M8 16h5"></path>
+
+            </svg>
+
+          </div>
+
           <div
             class="stat-value"
             id="tasksCount">
@@ -1122,9 +1591,28 @@
           <div class="stat-label">
             TASKS
           </div>
+
         </div>
 
+
         <div class="stat">
+
+          <div class="stat-icon">
+
+            <svg viewBox="0 0 24 24">
+
+              <path
+                d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-2 1-4 3-6">
+              </path>
+
+              <path
+                d="M12 21a3 3 0 0 1-3-3c0-2 2-3 3-5 2 2 3 3 3 5a3 3 0 0 1-3 3z">
+              </path>
+
+            </svg>
+
+          </div>
+
           <div
             class="stat-value"
             id="streakCount">
@@ -1134,9 +1622,40 @@
           <div class="stat-label">
             STREAK
           </div>
+
         </div>
 
+
         <div class="stat">
+
+          <div class="stat-icon">
+
+            <svg viewBox="0 0 24 24">
+
+              <circle
+                cx="9"
+                cy="8"
+                r="3">
+              </circle>
+
+              <circle
+                cx="17"
+                cy="10"
+                r="3">
+              </circle>
+
+              <path
+                d="M3 20c0-4 3-6 6-6s6 2 6 6">
+              </path>
+
+              <path
+                d="M15 15c3 0 6 2 6 5">
+              </path>
+
+            </svg>
+
+          </div>
+
           <div
             class="stat-value"
             id="referralsCount">
@@ -1146,163 +1665,384 @@
           <div class="stat-label">
             REFERRALS
           </div>
+
         </div>
 
       </div>
+            <!-- =========================================
+           MINING
+      ========================================= -->
 
-
-      <!-- MINING -->
       <div class="mining-card">
 
-        <div class="mining-head">
+        <div class="mining-content">
 
-          <div class="mining-title-wrap">
+          <div class="mining-head">
 
-            <div class="mining-icon">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 3v18"></path>
-                <path d="M7 7h7.5a2.5 2.5 0 0 1 0 5H8.5a2.5 2.5 0 0 0 0 5H17"></path>
+            <div class="mining-title-area">
+
+              <div class="mining-icon">
+
+                <svg viewBox="0 0 24 24">
+
+                  <path d="M5 19 19 5"></path>
+
+                  <path d="m14 5 5 5"></path>
+
+                  <path d="M7 17 3 21"></path>
+
+                  <path d="M4 7h5"></path>
+
+                  <path d="M7 4v6"></path>
+
+                </svg>
+
+              </div>
+
+
+              <div>
+
+                <div class="mining-title">
+                  XCOIN Mining
+                </div>
+
+                <div class="mining-subtitle">
+                  Mine XCOIN every 2 hours
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="mining-tier">
+              <span id="miningTier">
+                FREE
+              </span>
+            </div>
+
+          </div>
+
+
+          <div class="mining-reward-row">
+
+            <!-- WHITE XCOIN SYMBOL -->
+            <div class="mini-xcoin">
+
+              <svg
+                viewBox="0 0 100 100">
+
+                <path
+                  class="white-x"
+                  d="M9 10h25l16 22L66 10h25L64 50l27 40H66L50 69 34 90H9l27-40z">
+                </path>
+
+                <path
+                  d="M35 10h18l13 18-13 19z"
+                  fill="#06120a">
+                </path>
+
               </svg>
+
             </div>
 
-            <div>
-              <div class="mining-title">
-                XCOIN Mining
-              </div>
 
-              <div class="card-subtitle">
-                Earn according to your tier
-              </div>
+            <div
+              class="mine-reward"
+              id="miningReward">
+              +50 XCOIN
             </div>
 
           </div>
 
-          <div class="mining-tier">
-            <span id="currentTier">FREE</span>
+
+          <div class="mine-details">
+
+            <span>
+              Mining reward
+            </span>
+
+            <span>
+              <strong>
+                2 hour cycle
+              </strong>
+            </span>
+
+          </div>
+
+
+          <div class="mine-progress">
+
+            <div
+              class="mine-progress-bar"
+              id="mineProgressBar">
+            </div>
+
+          </div>
+
+
+          <div class="mine-bottom">
+
+            <div class="next-reward">
+
+              Next reward in:
+
+              <span id="mineCountdown">
+                Ready
+              </span>
+
+            </div>
+
+
+            <button
+              class="mine-btn"
+              id="mineButton">
+
+              MINE XCOIN
+
+            </button>
+
           </div>
 
         </div>
-
-
-        <div
-          class="mine-reward"
-          id="miningReward">
-          +50 XCOIN
-        </div>
-
-        <div class="mine-info">
-          <span>
-            Mining reward
-          </span>
-
-          <span>
-            2 hour cycle
-          </span>
-        </div>
-
-        <div class="mine-progress">
-          <div
-            class="mine-progress-bar"
-            id="mineProgressBar">
-          </div>
-        </div>
-
-        <button
-          class="mine-btn"
-          id="mineButton">
-          MINE XCOIN
-        </button>
 
       </div>
 
 
-      <!-- DAILY ACTIVITIES -->
+      <!-- =========================================
+           DAILY ACTIVITIES
+      ========================================= -->
+
       <div class="section-head">
-        <div>
-          <div class="section-title">
-            Daily Activities
-          </div>
 
-          <div class="section-subtitle">
-            Earn through available activities
-          </div>
-        </div>
-      </div>
-
-
-      <!-- CHECK-IN -->
-      <div class="activity-card" id="checkinItem">
-
-        <div class="activity-icon">
-          <svg viewBox="0 0 24 24">
-            <rect x="4" y="5" width="16" height="15" rx="2"></rect>
-            <path d="M8 3v4M16 3v4M4 9h16"></path>
-            <path d="m8 14 2 2 5-5"></path>
-          </svg>
+        <div class="section-title">
+          Daily Activities
         </div>
 
-        <div class="activity-content">
-
-          <div class="activity-title">
-            Daily Check-in
-          </div>
-
-          <div class="activity-desc">
-            Open today's activity
-          </div>
-
-        </div>
-
-        <div class="activity-arrow">
-          ›
+        <div class="section-subtitle">
+          Earn through available activities
         </div>
 
       </div>
 
 
-      <!-- TASKS -->
-      <div class="activity-card" id="taskItem">
+      <div class="activities-grid">
 
-        <div class="activity-icon">
-          <svg viewBox="0 0 24 24">
-            <rect x="5" y="3" width="14" height="18" rx="2"></rect>
-            <path d="M8 8h8M8 12h8M8 16h5"></path>
-          </svg>
-        </div>
 
-        <div class="activity-content">
+        <!-- VIDEO -->
+        <div
+          class="activity-card"
+          id="earnVideoItem">
 
-          <div class="activity-title">
-            Tasks
+          <div class="activity-icon">
+
+            <svg viewBox="0 0 24 24">
+
+              <rect
+                x="3"
+                y="6"
+                width="13"
+                height="12"
+                rx="2">
+              </rect>
+
+              <path
+                d="m16 10 5-3v10l-5-3">
+              </path>
+
+            </svg>
+
           </div>
 
-          <div class="activity-desc">
-            Complete available earning tasks
+          <div class="activity-content">
+
+            <div class="activity-title">
+              Watch Video
+            </div>
+
+            <div class="activity-desc">
+              Earn XCOIN by watching videos
+            </div>
+
+          </div>
+
+          <div class="activity-arrow">
+            ›
           </div>
 
         </div>
 
-        <div class="activity-arrow">
-          ›
+
+        <!-- TASKS -->
+        <div
+          class="activity-card"
+          id="taskItem">
+
+          <div class="activity-icon">
+
+            <svg viewBox="0 0 24 24">
+
+              <rect
+                x="5"
+                y="3"
+                width="14"
+                height="18"
+                rx="2">
+              </rect>
+
+              <path d="M8 8h8"></path>
+              <path d="M8 12h8"></path>
+
+              <path
+                d="m8 16 2 2 4-4">
+              </path>
+
+            </svg>
+
+          </div>
+
+          <div class="activity-content">
+
+            <div class="activity-title">
+              Tasks
+            </div>
+
+            <div class="activity-desc">
+              Complete available tasks
+            </div>
+
+          </div>
+
+          <div class="activity-arrow">
+            ›
+          </div>
+
+        </div>
+
+
+        <!-- DAILY CHECK-IN -->
+        <div
+          class="activity-card"
+          id="checkinItem">
+
+          <div class="activity-icon">
+
+            <svg viewBox="0 0 24 24">
+
+              <rect
+                x="4"
+                y="5"
+                width="16"
+                height="15"
+                rx="2">
+              </rect>
+
+              <path d="M8 3v4"></path>
+              <path d="M16 3v4"></path>
+              <path d="M4 9h16"></path>
+
+              <path
+                d="m8 14 2 2 5-5">
+              </path>
+
+            </svg>
+
+          </div>
+
+          <div class="activity-content">
+
+            <div class="activity-title">
+              Daily Check-in
+            </div>
+
+            <div class="activity-desc">
+              Open today's activity
+            </div>
+
+          </div>
+
+          <div class="activity-arrow">
+            ›
+          </div>
+
+        </div>
+
+
+        <!-- SPECIAL OFFERS -->
+        <div
+          class="activity-card"
+          id="specialOffersItem">
+
+          <div class="activity-icon">
+
+            <svg viewBox="0 0 24 24">
+
+              <path
+                d="M20 12v8H4v-8">
+              </path>
+
+              <path
+                d="M2 7h20v5H2z">
+              </path>
+
+              <path
+                d="M12 7v13">
+              </path>
+
+              <path
+                d="M12 7H8.5a2.5 2.5 0 1 1 2.5-2.5V7">
+              </path>
+
+              <path
+                d="M12 7h3.5a2.5 2.5 0 1 0-2.5-2.5V7">
+              </path>
+
+            </svg>
+
+          </div>
+
+          <div class="activity-content">
+
+            <div class="activity-title">
+              Special Offers
+            </div>
+
+            <div class="activity-desc">
+              Complete offers & earn more
+            </div>
+
+          </div>
+
+          <div class="activity-arrow">
+            ›
+          </div>
+
         </div>
 
       </div>
 
 
-      <!-- WATCH VIDEO -->
+      <!-- VIDEO PROGRESS -->
       <div class="video-card">
 
-        <div class="video-top">
+        <div class="video-header">
 
-          <div class="video-title-wrap">
+          <div class="video-title-area">
 
-            <div class="video-small-icon">
+            <div class="video-icon">
+
               <svg viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z"></path>
+
+                <path
+                  d="M8 5v14l11-7z">
+                </path>
+
               </svg>
+
             </div>
 
             <div>
+
               <div class="video-title">
                 Watch Video
               </div>
@@ -1310,11 +2050,21 @@
               <div
                 class="video-counter"
                 id="videoCounter">
-                <span id="videosCompleted">0</span>
+
+                <span id="videosCompleted">
+                  0
+                </span>
+
                 /
-                <span id="videosLimit">20</span>
+
+                <span id="videosLimit">
+                  20
+                </span>
+
                 today
+
               </div>
+
             </div>
 
           </div>
@@ -1323,13 +2073,17 @@
 
 
         <div class="progress">
+
           <div
             id="videoProgress"
             class="progress-bar">
           </div>
+
         </div>
 
+
         <div class="video-meta">
+
           <span>
             Daily progress
           </span>
@@ -1337,12 +2091,16 @@
           <span>
             Rewarded activity
           </span>
+
         </div>
+
 
         <button
           class="action-btn"
           id="watchVideoButton">
+
           WATCH VIDEO
+
         </button>
 
       </div>
@@ -1350,9 +2108,13 @@
     </section>
 
 
-    <!-- ================= EARN ================= -->
+    <!-- =========================================
+         EARN SCREEN
+    ========================================= -->
 
-    <section id="earnScreen" class="screen">
+    <section
+      id="earnScreen"
+      class="screen">
 
       <div class="earn-hero">
 
@@ -1368,7 +2130,6 @@
       </div>
 
 
-      <!-- VIDEO -->
       <div
         class="earn-item"
         id="earnVideoItem">
@@ -1400,16 +2161,26 @@
       </div>
 
 
-      <!-- TASK -->
       <div
         class="earn-item"
-        id="taskItemEarn">
+        id="earnTaskItem">
 
         <div class="earn-icon">
 
           <svg viewBox="0 0 24 24">
-            <rect x="5" y="3" width="14" height="18" rx="2"></rect>
-            <path d="M8 8h8M8 12h8M8 16h5"></path>
+
+            <rect
+              x="5"
+              y="3"
+              width="14"
+              height="18"
+              rx="2">
+            </rect>
+
+            <path d="M8 8h8"></path>
+            <path d="M8 12h8"></path>
+            <path d="M8 16h5"></path>
+
           </svg>
 
         </div>
@@ -1433,17 +2204,26 @@
       </div>
 
 
-      <!-- CHECK IN -->
       <div
         class="earn-item"
-        id="checkinItem">
+        id="earnCheckinItem">
 
         <div class="earn-icon">
 
           <svg viewBox="0 0 24 24">
-            <rect x="4" y="5" width="16" height="15" rx="2"></rect>
-            <path d="M8 3v4M16 3v4M4 9h16"></path>
-            <path d="m8 14 2 2 5-5"></path>
+
+            <rect
+              x="4"
+              y="5"
+              width="16"
+              height="15"
+              rx="2">
+            </rect>
+
+            <path d="M8 3v4"></path>
+            <path d="M16 3v4"></path>
+            <path d="M4 9h16"></path>
+
           </svg>
 
         </div>
@@ -1469,9 +2249,13 @@
     </section>
 
 
-    <!-- ================= UPGRADE ================= -->
+    <!-- =========================================
+         UPGRADE SCREEN
+    ========================================= -->
 
-    <section id="upgradeScreen" class="screen">
+    <section
+      id="upgradeScreen"
+      class="screen">
 
       <div class="upgrade-banner">
 
@@ -1489,13 +2273,14 @@
 
       <div class="tier-grid">
 
-        <!-- FREE -->
         <div class="tier-card">
 
           <div class="tier-card-top">
+
             <div class="tier-name">
               FREE
             </div>
+
           </div>
 
           <div class="tier-price">
@@ -1507,19 +2292,21 @@
           </div>
 
           <div class="tier-reward">
-            Mining reward: <strong>50 XCOIN</strong>
+            Mining reward:
+            <strong>50 XCOIN</strong>
           </div>
 
         </div>
 
 
-        <!-- BRONZE -->
         <div class="tier-card featured">
 
           <div class="tier-card-top">
+
             <div class="tier-name">
               BRONZE
             </div>
+
           </div>
 
           <div class="tier-price">
@@ -1531,19 +2318,21 @@
           </div>
 
           <div class="tier-reward">
-            Mining reward: <strong>100 XCOIN</strong>
+            Mining reward:
+            <strong>100 XCOIN</strong>
           </div>
 
         </div>
 
 
-        <!-- SILVER -->
         <div class="tier-card featured">
 
           <div class="tier-card-top">
+
             <div class="tier-name">
               SILVER
             </div>
+
           </div>
 
           <div class="tier-price">
@@ -1555,19 +2344,21 @@
           </div>
 
           <div class="tier-reward">
-            Mining reward: <strong>200 XCOIN</strong>
+            Mining reward:
+            <strong>200 XCOIN</strong>
           </div>
 
         </div>
 
 
-        <!-- GOLD -->
         <div class="tier-card featured">
 
           <div class="tier-card-top">
+
             <div class="tier-name">
               GOLD
             </div>
+
           </div>
 
           <div class="tier-price">
@@ -1579,7 +2370,8 @@
           </div>
 
           <div class="tier-reward">
-            Mining reward: <strong>400 XCOIN</strong>
+            Mining reward:
+            <strong>400 XCOIN</strong>
           </div>
 
         </div>
@@ -1587,9 +2379,13 @@
       </div>
 
     </section>
-        <!-- ================= REFER ================= -->
+    <!-- =========================================
+         REFER SCREEN
+    ========================================= -->
 
-    <section id="referScreen" class="screen">
+    <section
+      id="referScreen"
+      class="screen">
 
       <div class="referral-hero">
 
@@ -1643,10 +2439,13 @@
           Loading referral link...
         </div>
 
+
         <button
           class="action-btn"
           id="copyReferralButton">
+
           COPY REFERRAL LINK
+
         </button>
 
       </div>
@@ -1654,9 +2453,13 @@
     </section>
 
 
-    <!-- ================= ACCOUNT ================= -->
+    <!-- =========================================
+         ACCOUNT
+    ========================================= -->
 
-    <section id="accountScreen" class="screen">
+    <section
+      id="accountScreen"
+      class="screen">
 
       <div class="profile">
 
@@ -1686,16 +2489,18 @@
         </div>
 
         <div class="card-subtitle">
+
           Current tier:
+
           <strong id="currentTier">
             FREE
           </strong>
+
         </div>
 
       </div>
 
 
-      <!-- HISTORY -->
       <div
         class="earn-item"
         id="historyButton">
@@ -1703,8 +2508,19 @@
         <div class="earn-icon">
 
           <svg viewBox="0 0 24 24">
-            <path d="M4 5h16v14H4z"></path>
-            <path d="M8 9h8M8 13h6M8 17h4"></path>
+
+            <rect
+              x="4"
+              y="5"
+              width="16"
+              height="14"
+              rx="2">
+            </rect>
+
+            <path d="M8 9h8"></path>
+            <path d="M8 13h6"></path>
+            <path d="M8 17h4"></path>
+
           </svg>
 
         </div>
@@ -1728,7 +2544,6 @@
       </div>
 
 
-      <!-- WITHDRAW -->
       <div
         class="earn-item"
         id="withdrawAccountButton">
@@ -1736,9 +2551,15 @@
         <div class="earn-icon">
 
           <svg viewBox="0 0 24 24">
+
             <path d="M12 3v14"></path>
-            <path d="m7 12 5 5 5-5"></path>
+
+            <path
+              d="m7 12 5 5 5-5">
+            </path>
+
             <path d="M5 21h14"></path>
+
           </svg>
 
         </div>
@@ -1766,9 +2587,12 @@
   </div>
 
 
-  <!-- ================= BOTTOM NAV ================= -->
+  <!-- =========================================
+       BOTTOM NAV
+  ========================================= -->
 
   <nav class="bottom-nav">
+
 
     <!-- HOME -->
     <button
@@ -1776,8 +2600,15 @@
       data-target="home">
 
       <svg viewBox="0 0 24 24">
-        <path d="M3 11l9-8 9 8"></path>
-        <path d="M5 10v10h14V10"></path>
+
+        <path
+          d="M3 11 12 3l9 8">
+        </path>
+
+        <path
+          d="M5 10v10h14V10">
+        </path>
+
       </svg>
 
       Home
@@ -1791,8 +2622,13 @@
       data-target="earn">
 
       <svg viewBox="0 0 24 24">
+
         <path d="M12 3v18"></path>
-        <path d="M17 7c0-2-2-3-5-3S7 5 7 7s2 3 5 3 5 1 5 3-2 3-5 3-5-1-5-3"></path>
+
+        <path
+          d="M17 7c0-2-2-3-5-3S7 5 7 7s2 3 5 3 5 1 5 3-2 3-5 3-5-1-5-3">
+        </path>
+
       </svg>
 
       Earn
@@ -1808,8 +2644,13 @@
       <div class="upgrade-circle">
 
         <svg viewBox="0 0 24 24">
+
           <path d="M12 19V5"></path>
-          <path d="m6 11 6-6 6 6"></path>
+
+          <path
+            d="m6 11 6-6 6 6">
+          </path>
+
         </svg>
 
       </div>
@@ -1825,9 +2666,23 @@
       data-target="refer">
 
       <svg viewBox="0 0 24 24">
-        <circle cx="9" cy="8" r="3"></circle>
-        <circle cx="17" cy="10" r="3"></circle>
-        <path d="M3 20c0-4 3-6 6-6s6 2 6 6"></path>
+
+        <circle
+          cx="9"
+          cy="8"
+          r="3">
+        </circle>
+
+        <circle
+          cx="17"
+          cy="10"
+          r="3">
+        </circle>
+
+        <path
+          d="M3 20c0-4 3-6 6-6s6 2 6 6">
+        </path>
+
       </svg>
 
       Refer
@@ -1841,8 +2696,17 @@
       data-target="account">
 
       <svg viewBox="0 0 24 24">
-        <circle cx="12" cy="8" r="3"></circle>
-        <path d="M5 21c0-4 3-7 7-7s7 3 7 7"></path>
+
+        <circle
+          cx="12"
+          cy="8"
+          r="3">
+        </circle>
+
+        <path
+          d="M5 21c0-4 3-7 7-7s7 3 7 7">
+        </path>
+
       </svg>
 
       Account
@@ -1852,7 +2716,9 @@
   </nav>
 
 
-  <!-- ================= TOAST ================= -->
+  <!-- =========================================
+       TOAST
+  ========================================= -->
 
   <div id="toast">
 
@@ -1867,8 +2733,11 @@
   </div>
 
 
-  <!-- APP JS -->
+  <!-- =========================================
+       APP JS
+  ========================================= -->
+
   <script src="app.js"></script>
 
 </body>
-    </html>
+</html>
