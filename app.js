@@ -1,7 +1,8 @@
 /* =========================================================
-   XEARN — APP.JS
-   Clean replacement
+   XEARN APP.JS
+   Matched to current XEARN index.html
    ========================================================= */
+
 
 /* =========================================================
    CONFIG
@@ -10,50 +11,42 @@
 const SUPABASE_URL =
   "https://ynrqdbdgjzmucqcfsyvi.supabase.co";
 
-const SUPABASE_ANON_KEY =
-  window.SUPABASE_ANON_KEY ||
-  "";
+const XCOIN_PER_USDT = 1300;
 
-const MONETAG_ZONE =
-  "11747212";
-
-const XCOIN_PER_USDT =
-  1300;
+const MONETAG_ZONE = "11747212";
 
 
 /* =========================================================
-   TELEGRAM
+   GLOBAL STATE
    ========================================================= */
 
 let tg = null;
+
 let telegramUser = null;
-
-
-/* =========================================================
-   USER STATE
-   ========================================================= */
 
 let currentUser = null;
 
-
-/* =========================================================
-   RUNNING STATES
-   ========================================================= */
-
 let videoRunning = false;
+
 let taskRunning = false;
+
 let checkinRunning = false;
+
 let miningRunning = false;
 
 
 /* =========================================================
-   HELPERS
+   DOM HELPER
    ========================================================= */
 
 function $(id) {
   return document.getElementById(id);
 }
 
+
+/* =========================================================
+   TEXT HELPER
+   ========================================================= */
 
 function setText(id, value) {
 
@@ -66,6 +59,10 @@ function setText(id, value) {
   element.textContent = value;
 }
 
+
+/* =========================================================
+   NUMBER FORMAT
+   ========================================================= */
 
 function formatNumber(value) {
 
@@ -80,6 +77,10 @@ function formatNumber(value) {
   );
 }
 
+
+/* =========================================================
+   TOAST
+   ========================================================= */
 
 function showToast(title, message) {
 
@@ -96,50 +97,60 @@ function showToast(title, message) {
   }
 
   const titleElement =
-    toast.querySelector(
-      ".toast-title"
-    );
+    $("toastTitle");
 
   const messageElement =
-    toast.querySelector(
-      ".toast-message"
-    );
+    $("toastMessage");
 
   if (titleElement) {
+
     titleElement.textContent =
       title;
+
   }
 
   if (messageElement) {
+
     messageElement.textContent =
       message;
+
   }
 
-  toast.classList.add(
-    "show"
+  toast.classList.add("show");
+
+  clearTimeout(
+    window.xearnToastTimer
   );
 
-  setTimeout(() => {
+  window.xearnToastTimer =
+    setTimeout(
+      () => {
 
-    toast.classList.remove(
-      "show"
+        toast.classList.remove(
+          "show"
+        );
+
+      },
+      3500
     );
-
-  }, 3500);
 }
 
+
+/* =========================================================
+   LOADING
+   ========================================================= */
 
 function hideLoading() {
 
   const loading =
     $("loadingScreen");
 
-  if (loading) {
-
-    loading.style.display =
-      "none";
-
+  if (!loading) {
+    return;
   }
+
+  loading.style.display =
+    "none";
 }
 
 
@@ -173,11 +184,11 @@ function initializeTelegram() {
       );
 
       return true;
-
     }
 
+
     console.warn(
-      "Telegram WebApp unavailable."
+      "Telegram WebApp SDK not available."
     );
 
     return false;
@@ -195,7 +206,7 @@ function initializeTelegram() {
 
 
 /* =========================================================
-   SUPABASE FUNCTION CALL
+   SUPABASE EDGE FUNCTION
    ========================================================= */
 
 async function callFunction(
@@ -221,7 +232,9 @@ async function callFunction(
       }
     );
 
+
   let data = null;
+
 
   try {
 
@@ -234,6 +247,7 @@ async function callFunction(
 
   }
 
+
   if (!response.ok) {
 
     const message =
@@ -245,6 +259,7 @@ async function callFunction(
       message
     );
   }
+
 
   return data;
 }
@@ -261,8 +276,8 @@ async function authenticateUser() {
     createFallbackUser();
 
     return;
-
   }
+
 
   try {
 
@@ -291,10 +306,12 @@ async function authenticateUser() {
         }
       );
 
+
     currentUser =
       result?.user ||
       result ||
       null;
+
 
     if (!currentUser) {
 
@@ -304,10 +321,12 @@ async function authenticateUser() {
 
     }
 
+
     console.log(
-      "Authenticated user:",
+      "XEARN user authenticated:",
       currentUser
     );
+
 
     updateInterface();
 
@@ -317,6 +336,7 @@ async function authenticateUser() {
       "Authentication error:",
       error
     );
+
 
     createFallbackUser();
 
@@ -373,6 +393,7 @@ function createFallbackUser() {
       0
   };
 
+
   updateInterface();
 }
 
@@ -386,6 +407,7 @@ async function refreshUser() {
   if (!telegramUser) {
     return;
   }
+
 
   try {
 
@@ -414,10 +436,12 @@ async function refreshUser() {
         }
       );
 
+
     const refreshedUser =
       result?.user ||
       result ||
       null;
+
 
     if (refreshedUser) {
 
@@ -445,22 +469,64 @@ async function refreshUser() {
 
 function showScreen(screenName) {
 
-  const screens =
-    document.querySelectorAll(
+  /*
+     IMPORTANT:
+     HTML uses:
+     homeScreen
+     earnScreen
+     upgradeScreen
+     referScreen
+     accountScreen
+
+     Navigation uses:
+     home
+     earn
+     upgrade
+     refer
+     account
+  */
+
+  const screenMap = {
+
+    home:
+      "homeScreen",
+
+    earn:
+      "earnScreen",
+
+    upgrade:
+      "upgradeScreen",
+
+    refer:
+      "referScreen",
+
+    account:
+      "accountScreen"
+
+  };
+
+
+  const targetId =
+    screenMap[screenName] ||
+    screenName;
+
+
+  document
+    .querySelectorAll(
       ".screen"
-    );
+    )
+    .forEach(screen => {
 
-  screens.forEach(screen => {
+      screen.classList.remove(
+        "active"
+      );
 
-    screen.classList.remove(
-      "active"
-    );
-
-  });
+    });
 
 
   const target =
-    $(screenName);
+    $(targetId);
+
 
   if (target) {
 
@@ -468,6 +534,14 @@ function showScreen(screenName) {
       "active"
     );
 
+  } else {
+
+    console.error(
+      "Screen not found:",
+      targetId
+    );
+
+    return;
   }
 
 
@@ -481,6 +555,7 @@ function showScreen(screenName) {
         "active"
       );
 
+
       if (
         item.dataset.target ===
         screenName
@@ -493,45 +568,6 @@ function showScreen(screenName) {
       }
 
     });
-
-
-  if (
-    typeof window.show_11747212 ===
-    "function"
-  ) {
-
-    try {
-
-      window.show_11747212({
-
-        type: "inApp",
-
-        inAppSettings: {
-
-          frequency: 2,
-
-          capping: 0.1,
-
-          interval: 30,
-
-          timeout: 5,
-
-          everyPage: false
-
-        }
-
-      });
-
-    } catch (error) {
-
-      console.log(
-        "In-app ad:",
-        error
-      );
-
-    }
-
-  }
 }
 
 
@@ -547,12 +583,19 @@ function updateInterface() {
 
 
   /* =====================================================
-     BASIC USER DATA
+     BASIC DATA
      ===================================================== */
 
   const balance =
     Number(
       currentUser.balance_xcoin ||
+      0
+    );
+
+
+  const totalEarned =
+    Number(
+      currentUser.total_earned_xcoin ||
       0
     );
 
@@ -566,10 +609,9 @@ function updateInterface() {
     );
 
 
-  const streak =
+  const videos =
     Number(
-      currentUser.streak_days ||
-      currentUser.checkin_streak ||
+      currentUser.videos_watched_today ||
       0
     );
 
@@ -585,6 +627,14 @@ function updateInterface() {
   const referralEarnings =
     Number(
       currentUser.referral_earnings_xcoin ||
+      0
+    );
+
+
+  const streak =
+    Number(
+      currentUser.streak_days ||
+      currentUser.checkin_streak ||
       0
     );
 
@@ -609,18 +659,21 @@ function updateInterface() {
 
   setText(
     "balanceUsdt",
-    "$" +
-    (balance / XCOIN_PER_USDT)
-      .toFixed(4)
+    "≈ $" +
+    (
+      balance /
+      XCOIN_PER_USDT
+    ).toFixed(4)
   );
 
 
+  /* =====================================================
+     TOTAL EARNED
+     ===================================================== */
+
   setText(
     "totalEarned",
-    formatNumber(
-      currentUser.total_earned_xcoin ||
-      0
-    )
+    formatNumber(totalEarned)
   );
 
 
@@ -630,6 +683,12 @@ function updateInterface() {
 
   setText(
     "tasksCount",
+    formatNumber(tasks)
+  );
+
+
+  setText(
+    "tasksCompleted",
     formatNumber(tasks)
   );
 
@@ -685,6 +744,12 @@ function updateInterface() {
   );
 
 
+  setText(
+    "miningTier",
+    tier
+  );
+
+
   /* =====================================================
      MINING REWARD
      ===================================================== */
@@ -702,57 +767,22 @@ function updateInterface() {
   };
 
 
+  const miningReward =
+    miningRewards[tier] ||
+    50;
+
+
   setText(
     "miningReward",
     "+" +
-    (
-      miningRewards[tier] ||
-      miningRewards.FREE
-    ) +
+    miningReward +
     " XCOIN"
   );
 
 
   /* =====================================================
-     ACCOUNT
+     VIDEO LIMIT
      ===================================================== */
-
-  const name =
-    currentUser.full_name ||
-    currentUser.first_name ||
-    telegramUser?.first_name ||
-    "XEARN User";
-
-
-  setText(
-    "userName",
-    name
-  );
-
-
-  setText(
-    "userTelegram",
-
-    telegramUser?.username
-
-      ? "@" +
-        telegramUser.username
-
-      : "Telegram User"
-
-  );
-
-
-  /* =====================================================
-     DAILY VIDEOS
-     ===================================================== */
-
-  const videos =
-    Number(
-      currentUser.videos_watched_today ||
-      0
-    );
-
 
   const videoLimits = {
 
@@ -772,7 +802,7 @@ function updateInterface() {
     20;
 
 
-  const safeVideoCount =
+  const safeVideos =
     Math.min(
       videos,
       videoLimit
@@ -781,7 +811,7 @@ function updateInterface() {
 
   setText(
     "videosCompleted",
-    safeVideoCount
+    safeVideos
   );
 
 
@@ -791,15 +821,17 @@ function updateInterface() {
   );
 
 
+  /* =====================================================
+     VIDEO PROGRESS
+     ===================================================== */
+
   const videoPercentage =
     Math.min(
       100,
-
       (
-        safeVideoCount /
+        safeVideos /
         videoLimit
       ) * 100
-
     );
 
 
@@ -817,7 +849,7 @@ function updateInterface() {
 
 
   /* =====================================================
-     DAILY TASKS
+     TASK LIMIT
      ===================================================== */
 
   const taskLimits = {
@@ -838,7 +870,7 @@ function updateInterface() {
     10;
 
 
-  const safeTaskCount =
+  const safeTasks =
     Math.min(
       tasks,
       taskLimit
@@ -847,7 +879,7 @@ function updateInterface() {
 
   setText(
     "tasksCompleted",
-    safeTaskCount
+    safeTasks
   );
 
 
@@ -866,13 +898,12 @@ function updateInterface() {
     const percentage =
       Math.min(
         100,
-
         (
-          safeTaskCount /
+          safeTasks /
           taskLimit
         ) * 100
-
       );
+
 
     taskProgress.style.width =
       percentage +
@@ -902,31 +933,269 @@ function updateInterface() {
 
 
   /* =====================================================
-     PROFILE PHOTO
+     USER NAME
      ===================================================== */
 
-  const photo =
-    currentUser.photo_url ||
-    telegramUser?.photo_url ||
-    "";
+  const name =
+    currentUser.full_name ||
+    currentUser.first_name ||
+    telegramUser?.first_name ||
+    "XEARN User";
 
 
-  document
-    .querySelectorAll(
-      "[data-user-photo]"
-    )
-    .forEach(element => {
+  setText(
+    "userName",
+    name
+  );
 
-      if (photo) {
 
-        element.src =
-          photo;
+  /* =====================================================
+     TELEGRAM USERNAME
+     ===================================================== */
 
-      }
+  setText(
+    "userTelegram",
 
-    });
+    telegramUser?.username
+
+      ? "@" +
+        telegramUser.username
+
+      : "Telegram User"
+
+  );
+
+
+  /* =====================================================
+     AVATAR
+     ===================================================== */
+
+  const avatar =
+    document.querySelector(
+      ".avatar"
+    );
+
+
+  if (avatar) {
+
+    const firstLetter =
+      (
+        currentUser.first_name ||
+        "X"
+      )
+      .charAt(0)
+      .toUpperCase();
+
+
+    avatar.textContent =
+      firstLetter;
+
+  }
+
+
+  /* =====================================================
+     MINE PROGRESS
+     ===================================================== */
+
+  updateMiningDisplay();
 
 }
+
+
+/* =========================================================
+   MINING DISPLAY
+   ========================================================= */
+
+function updateMiningDisplay() {
+
+  if (!currentUser) {
+    return;
+  }
+
+
+  const lastMine =
+    currentUser.last_mine_time;
+
+
+  const progressBar =
+    $("mineProgressBar");
+
+
+  const countdown =
+    $("mineCountdown");
+
+
+  if (!lastMine) {
+
+    if (progressBar) {
+
+      progressBar.style.width =
+        "0%";
+
+    }
+
+
+    if (countdown) {
+
+      countdown.textContent =
+        "Ready";
+
+    }
+
+    return;
+  }
+
+
+  const lastTime =
+    new Date(
+      lastMine
+    )
+    .getTime();
+
+
+  if (
+    !Number.isFinite(
+      lastTime
+    )
+  ) {
+
+    if (countdown) {
+
+      countdown.textContent =
+        "Ready";
+
+    }
+
+    return;
+
+  }
+
+
+  const cycle =
+    2 *
+    60 *
+    60 *
+    1000;
+
+
+  const now =
+    Date.now();
+
+
+  const elapsed =
+    now -
+    lastTime;
+
+
+  if (elapsed >= cycle) {
+
+    if (progressBar) {
+
+      progressBar.style.width =
+        "100%";
+
+    }
+
+
+    if (countdown) {
+
+      countdown.textContent =
+        "Ready";
+
+    }
+
+    return;
+
+  }
+
+
+  const remaining =
+    cycle -
+    elapsed;
+
+
+  const percentage =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        (
+          elapsed /
+          cycle
+        ) * 100
+      )
+    );
+
+
+  if (progressBar) {
+
+    progressBar.style.width =
+      percentage +
+      "%";
+
+  }
+
+
+  const hours =
+    Math.floor(
+      remaining /
+      3600000
+    );
+
+
+  const minutes =
+    Math.floor(
+      (
+        remaining %
+        3600000
+      ) /
+      60000
+    );
+
+
+  const seconds =
+    Math.floor(
+      (
+        remaining %
+        60000
+      ) /
+      1000
+    );
+
+
+  if (countdown) {
+
+    countdown.textContent =
+      String(hours)
+        .padStart(2, "0") +
+      ":" +
+      String(minutes)
+        .padStart(2, "0") +
+      ":" +
+      String(seconds)
+        .padStart(2, "0");
+
+  }
+
+}
+
+
+/* =========================================================
+   MINING COUNTDOWN REFRESH
+   ========================================================= */
+
+setInterval(
+  () => {
+
+    if (currentUser) {
+
+      updateMiningDisplay();
+
+    }
+
+  },
+  1000
+);
 
 
 /* =========================================================
@@ -975,7 +1244,7 @@ async function watchVideo() {
     ).toUpperCase();
 
 
-  const limits = {
+  const videoLimits = {
 
     FREE: 20,
 
@@ -988,21 +1257,21 @@ async function watchVideo() {
   };
 
 
-  const currentVideos =
+  const videoLimit =
+    videoLimits[tier] ||
+    20;
+
+
+  const videos =
     Number(
       currentUser?.videos_watched_today ||
       0
     );
 
 
-  const dailyLimit =
-    limits[tier] ||
-    20;
-
-
   if (
-    currentVideos >=
-    dailyLimit
+    videos >=
+    videoLimit
   ) {
 
     showToast(
@@ -1015,7 +1284,8 @@ async function watchVideo() {
   }
 
 
-  videoRunning = true;
+  videoRunning =
+    true;
 
 
   const button =
@@ -1047,7 +1317,8 @@ async function watchVideo() {
 
     await window.show_11747212({
 
-      type: "end",
+      type:
+        "end",
 
       ymid:
         ymid,
@@ -1159,7 +1430,7 @@ async function watchVideo() {
 
 
 /* =========================================================
-   TASK
+   START TASK
    MONETAG REWARDED POPUP
    ========================================================= */
 
@@ -1217,21 +1488,21 @@ async function startTask() {
   };
 
 
-  const currentTasks =
+  const taskLimit =
+    taskLimits[tier] ||
+    10;
+
+
+  const tasks =
     Number(
       currentUser?.tasks_completed_today ||
       0
     );
 
 
-  const dailyLimit =
-    taskLimits[tier] ||
-    10;
-
-
   if (
-    currentTasks >=
-    dailyLimit
+    tasks >=
+    taskLimit
   ) {
 
     showToast(
@@ -1246,18 +1517,6 @@ async function startTask() {
 
   taskRunning =
     true;
-
-
-  const button =
-    $("taskItem");
-
-
-  if (button) {
-
-    button.disabled =
-      true;
-
-  }
 
 
   const oldBalance =
@@ -1277,7 +1536,8 @@ async function startTask() {
 
     await window.show_11747212({
 
-      type: "pop",
+      type:
+        "pop",
 
       ymid:
         ymid,
@@ -1375,14 +1635,6 @@ async function startTask() {
     taskRunning =
       false;
 
-
-    if (button) {
-
-      button.disabled =
-        false;
-
-    }
-
   }
 
 }
@@ -1391,7 +1643,7 @@ async function startTask() {
 /* =========================================================
    DAILY CHECK-IN
    MONETAG IN-APP INTERSTITIAL
-   NO AUTOMATIC REWARD
+   NO AUTOMATIC XCOIN REWARD
    ========================================================= */
 
 async function claimDailyCheckin() {
@@ -1418,18 +1670,6 @@ async function claimDailyCheckin() {
 
   checkinRunning =
     true;
-
-
-  const button =
-    $("checkinButton");
-
-
-  if (button) {
-
-    button.disabled =
-      true;
-
-  }
 
 
   try {
@@ -1487,14 +1727,6 @@ async function claimDailyCheckin() {
         checkinRunning =
           false;
 
-
-        if (button) {
-
-          button.disabled =
-            false;
-
-        }
-
       },
       2000
     );
@@ -1505,7 +1737,7 @@ async function claimDailyCheckin() {
 
 
 /* =========================================================
-   MINING
+   MINE XCOIN
    ========================================================= */
 
 async function mineXcoin() {
@@ -1655,27 +1887,35 @@ async function copyReferral() {
   } catch (error) {
 
     console.error(
-      "Copy error:",
+      "Clipboard error:",
       error
     );
 
 
-    const input =
+    const textarea =
       document.createElement(
         "textarea"
       );
 
 
-    input.value =
+    textarea.value =
       link;
 
 
+    textarea.style.position =
+      "fixed";
+
+
+    textarea.style.opacity =
+      "0";
+
+
     document.body.appendChild(
-      input
+      textarea
     );
 
 
-    input.select();
+    textarea.select();
 
 
     try {
@@ -1683,6 +1923,7 @@ async function copyReferral() {
       document.execCommand(
         "copy"
       );
+
 
       showToast(
         "Copied",
@@ -1699,7 +1940,7 @@ async function copyReferral() {
     }
 
 
-    input.remove();
+    textarea.remove();
 
   }
 
@@ -1712,8 +1953,13 @@ async function copyReferral() {
 
 function setupButtons() {
 
+  console.log(
+    "Setting up XEARN buttons..."
+  );
+
+
   /* =====================================================
-     BOTTOM NAVIGATION
+     BOTTOM NAV
      ===================================================== */
 
   document
@@ -1729,13 +1975,13 @@ function setupButtons() {
           const target =
             button.dataset.target;
 
-          if (target) {
-
-            showScreen(
-              target
-            );
-
+          if (!target) {
+            return;
           }
+
+          showScreen(
+            target
+          );
 
         }
       );
@@ -1761,7 +2007,7 @@ function setupButtons() {
 
 
   /* =====================================================
-     WATCH VIDEO
+     WATCH VIDEO BUTTON
      ===================================================== */
 
   $("watchVideoButton")
@@ -1772,7 +2018,8 @@ function setupButtons() {
 
 
   /* =====================================================
-     EARN VIDEO ITEM
+     ALL VIDEO ITEMS
+     Handles duplicate earnVideoItem IDs safely
      ===================================================== */
 
   document
@@ -1790,7 +2037,7 @@ function setupButtons() {
 
 
   /* =====================================================
-     TASK
+     TASK HOME ITEM
      ===================================================== */
 
   $("taskItem")
@@ -1801,10 +2048,21 @@ function setupButtons() {
 
 
   /* =====================================================
-     CHECK-IN BUTTON
+     TASK EARN ITEM
      ===================================================== */
 
-  $("checkinButton")
+  $("earnTaskItem")
+    ?.addEventListener(
+      "click",
+      startTask
+    );
+
+
+  /* =====================================================
+     CHECK-IN HOME ITEM
+     ===================================================== */
+
+  $("checkinItem")
     ?.addEventListener(
       "click",
       claimDailyCheckin
@@ -1812,10 +2070,10 @@ function setupButtons() {
 
 
   /* =====================================================
-     CHECK-IN ITEM
+     CHECK-IN EARN ITEM
      ===================================================== */
 
-  $("checkinItem")
+  $("earnCheckinItem")
     ?.addEventListener(
       "click",
       claimDailyCheckin
@@ -1834,7 +2092,7 @@ function setupButtons() {
 
 
   /* =====================================================
-     REFERRAL
+     COPY REFERRAL
      ===================================================== */
 
   $("copyReferralButton")
@@ -1898,6 +2156,26 @@ function setupButtons() {
      UPGRADE
      ===================================================== */
 
+  document
+    .querySelectorAll(
+      '[data-target="upgrade"]'
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          showScreen(
+            "upgrade"
+          );
+
+        }
+      );
+
+    });
+
+
   $("upgradeButton")
     ?.addEventListener(
       "click",
@@ -1911,18 +2189,31 @@ function setupButtons() {
     );
 
 
-  $("upgradeNavButton")
+  /* =====================================================
+     SPECIAL OFFERS
+     ===================================================== */
+
+  $("specialOffersItem")
     ?.addEventListener(
       "click",
       () => {
 
         showScreen(
-          "upgrade"
+          "earn"
+        );
+
+        showToast(
+          "Special Offers",
+          "Available offers will appear here."
         );
 
       }
     );
 
+
+  console.log(
+    "XEARN buttons ready."
+  );
 }
 
 
@@ -1940,6 +2231,12 @@ async function startXEARN() {
   hideLoading();
 
 
+  /*
+     IMPORTANT:
+     Use "home", because showScreen()
+     translates it to "homeScreen".
+  */
+
   showScreen(
     "home"
   );
@@ -1955,6 +2252,8 @@ async function startXEARN() {
 
       createFallbackUser();
 
+      setupButtons();
+
       return;
 
     }
@@ -1965,11 +2264,10 @@ async function startXEARN() {
 
     await authenticateUser();
 
-
   } catch (error) {
 
     console.error(
-      "Startup error:",
+      "XEARN startup error:",
       error
     );
 
@@ -1986,7 +2284,7 @@ async function startXEARN() {
 
 
 /* =========================================================
-   AUTOMATIC USER REFRESH
+   REFRESH USER EVERY 30 SECONDS
    ========================================================= */
 
 setInterval(
