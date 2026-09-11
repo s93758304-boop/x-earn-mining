@@ -524,49 +524,307 @@ function updateInterface() {
     SILVER: 30,
     GOLD: 50
   };
+function updateInterface() {
 
-  const limit =
-    limits[tier] || 20;
-
-  setText(
-    "videosCompleted",
-    videos
-  );
-
-  setText(
-    "videosLimit",
-    limit
-  );
-
-  const percentage =
-    Math.min(
-      100,
-      (videos / limit) * 100
-    );
-
-  const progress =
-    $("videoProgress");
-
-  if (progress) {
-    progress.style.width =
-      percentage + "%";
+  if (!currentUser) {
+    return;
   }
 
 
-  /* Referral link */
+  /* =====================================================
+     BASIC USER DATA
+  ===================================================== */
+
+  const balance =
+    Number(
+      currentUser.balance_xcoin || 0
+    );
+
+
+  const tasks =
+    Number(
+      currentUser.tasks_completed_today ||
+      currentUser.tasks_completed ||
+      currentUser.completed_tasks ||
+      0
+    );
+
+
+  const streak =
+    Number(
+      currentUser.streak_days ||
+      currentUser.checkin_streak ||
+      0
+    );
+
+
+  const referrals =
+    Number(
+      currentUser.referral_count ||
+      currentUser.total_referrals ||
+      0
+    );
+
+
+  const referralEarnings =
+    Number(
+      currentUser.referral_earnings_xcoin ||
+      0
+    );
+
+
+  const tier =
+    String(
+      currentUser.tier ||
+      currentUser.plan ||
+      "FREE"
+    ).toUpperCase();
+
+
+
+  /* =====================================================
+     BALANCE
+  ===================================================== */
+
+  setText(
+    "balanceAmount",
+    formatNumber(balance)
+  );
+
+
+  setText(
+    "balanceUsdt",
+    "$" +
+    (balance / 1300).toFixed(4)
+  );
+
+
+
+  /* =====================================================
+     TASKS
+  ===================================================== */
+
+  setText(
+    "tasksCount",
+    formatNumber(tasks)
+  );
+
+
+
+  /* =====================================================
+     STREAK
+  ===================================================== */
+
+  setText(
+    "streakCount",
+    formatNumber(streak)
+  );
+
+
+
+  /* =====================================================
+     REFERRALS
+  ===================================================== */
+
+  setText(
+    "referralsCount",
+    formatNumber(referrals)
+  );
+
+
+
+  /* =====================================================
+     TIER
+  ===================================================== */
+
+  setText(
+    "tierBadge",
+    tier
+  );
+
+
+  setText(
+    "currentTier",
+    tier
+  );
+
+
+
+  /* =====================================================
+     MINING
+  ===================================================== */
+
+  const rewards = {
+    FREE: 50,
+    BRONZE: 100,
+    SILVER: 200,
+    GOLD: 400
+  };
+
+
+  setText(
+    "miningReward",
+    "+" +
+    (rewards[tier] || 50) +
+    " XCOIN"
+  );
+
+
+
+  /* =====================================================
+     REFERRAL
+  ===================================================== */
+
+  setText(
+    "referralTotal",
+    formatNumber(referrals)
+  );
+
+
+  setText(
+    "referralEarnings",
+    formatNumber(
+      referralEarnings
+    ) +
+    " XCOIN"
+  );
+
+
+
+  /* =====================================================
+     ACCOUNT
+  ===================================================== */
+
+  const name =
+    currentUser.full_name ||
+    currentUser.first_name ||
+    telegramUser?.first_name ||
+    "XEARN User";
+
+
+  setText(
+    "userName",
+    name
+  );
+
+
+  setText(
+    "userTelegram",
+    telegramUser?.username
+      ? "@" +
+        telegramUser.username
+      : "Telegram User"
+  );
+
+
+
+  /* =====================================================
+     DAILY VIDEOS
+  ===================================================== */
+
+  /*
+    IMPORTANT:
+
+    The old app was reading:
+
+      videos_completed
+      video_count
+
+    Those are not the real database
+    fields for XEARN.
+
+    The real field is:
+
+      videos_watched_today
+  */
+
+  const videos =
+    Number(
+      currentUser.videos_watched_today ||
+      0
+    );
+
+
+  const videoLimits = {
+    FREE: 20,
+    BRONZE: 20,
+    SILVER: 30,
+    GOLD: 50
+  };
+
+
+  const videoLimit =
+    videoLimits[tier] || 20;
+
+
+  /*
+    Never allow the visual counter
+    to exceed the tier limit.
+  */
+
+  const safeVideoCount =
+    Math.min(
+      videos,
+      videoLimit
+    );
+
+
+  setText(
+    "videosCompleted",
+    safeVideoCount
+  );
+
+
+  setText(
+    "videosLimit",
+    videoLimit
+  );
+
+
+  const videoPercentage =
+    Math.min(
+      100,
+      (
+        safeVideoCount /
+        videoLimit
+      ) * 100
+    );
+
+
+  const videoProgress =
+    $("videoProgress");
+
+
+  if (videoProgress) {
+
+    videoProgress.style.width =
+      videoPercentage +
+      "%";
+
+  }
+
+
+
+  /* =====================================================
+     REFERRAL LINK
+  ===================================================== */
 
   const referralLink =
     $("referralLink");
 
-  if (referralLink) {
+
+  if (
+    referralLink &&
+    telegramUser?.id
+  ) {
 
     referralLink.textContent =
       "https://t.me/XEarnmining_bot?start=ref_" +
       telegramUser.id;
 
   }
-}
 
+}
 
 /* =====================================================
    NAVIGATION
