@@ -2946,164 +2946,111 @@ async function copyUpgradeWallet() {
 /* =========================================================
    SUBMIT UPGRADE ORDER
 ========================================================= */
-
 async function submitUpgradeOrder() {
+  if (!telegramUser || !telegramUser.id) {
+    showToast("Error", "Telegram account not detected.");
+    return;
+  }
 
-    if (!telegramUser?.id) {
+  const txidInput = document.getElementById("upgradeTxid");
 
-        showToast(
-            "Telegram Required",
-            "Open XEARN inside Telegram."
-        );
+  if (!txidInput) {
+    showToast("Error", "TXID field not found.");
+    return;
+  }
 
-        return;
-    }
+  const txid = txidInput.value.trim();
 
+  if (!txid) {
+    showToast("TXID Required", "Please enter your transaction ID.");
+    return;
+  }
 
-    if (!selectedUpgradeTier) {
+  if (txid.length < 8) {
+    showToast("Invalid TXID", "Please enter a valid transaction ID.");
+    return;
+  }
 
-        showToast(
-            "Upgrade",
-            "Select an upgrade tier."
-        );
+  if (!selectedUpgradeTier) {
+    showToast("Select Tier", "Please select an upgrade tier.");
+    return;
+  }
 
-        return;
-    }
+  if (!selectedPaymentAsset) {
+    showToast("Select Payment", "Please select USDT or USDC.");
+    return;
+  }
 
+  if (!selectedPaymentNetwork) {
+    showToast("Select Network", "Please select a payment network.");
+    return;
+  }
 
-    if (!selectedPaymentAsset) {
+  const button = document.getElementById("upgradePaidButton");
 
-        showToast(
-            "Payment",
-            "Select USDT or USDC."
-        );
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Submitting...";
+  }
 
-        return;
-    }
+  try {
+    console.log("Submitting upgrade order:", {
+      telegram_id: telegramUser.id,
+      requested_tier: selectedUpgradeTier,
+      payment_asset: selectedPaymentAsset,
+      payment_network: selectedPaymentNetwork,
+      txid: txid
+    });
 
+    const result = await callFunction("create-upgrade-order", {
+      telegram_id: telegramUser.id,
+      requested_tier: selectedUpgradeTier,
+      payment_asset: selectedPaymentAsset,
+      payment_network: selectedPaymentNetwork,
+      txid: txid
+    });
 
-    if (!selectedPaymentNetwork) {
+    console.log("Upgrade order response:", result);
 
-        showToast(
-            "Network",
-            "Select a payment network."
-        );
+    if (result && result.success === true) {
+      showToast(
+        "Payment Submitted",
+        "Your upgrade is pending verification."
+      );
 
-        return;
-    }
+      if (txidInput) {
+        txidInput.value = "";
+      }
 
-
-    const txidInput =
-        $("xearnTxid");
-
-
-    const txid =
-        txidInput?.value.trim() ||
-        "";
-
-
-    if (!txid) {
-
-        showToast(
-            "Transaction ID Required",
-            "Paste your transaction ID before submitting."
-        );
-
-        return;
-    }
-
-
-    const submitButton =
-        $("xearnSubmitUpgrade");
-
-
-    if (submitButton) {
-
-        submitButton.disabled =
-            true;
-
-        submitButton.textContent =
-            "Submitting...";
-    }
-
-
-    try {
-
-        const result =
-            await callFunction(
-                "create-upgrade-order",
-                {
-                    telegram_id:
-                        telegramUser.id,
-
-                    requested_tier:
-                        selectedUpgradeTier,
-
-                    payment_asset:
-                        selectedPaymentAsset,
-
-                    payment_network:
-                        selectedPaymentNetwork,
-
-                    txid:
-                        txid
-                }
-            );
-
-
-        if (
-            !result?.success
-        ) {
-
-            throw new Error(
-                result?.message ||
-                "Upgrade order could not be created."
-            );
-        }
-
-
-        showToast(
-            "Payment Submitted",
-            "Your upgrade payment is pending admin verification."
-        );
-
-
-        if (txidInput) {
-
-            txidInput.value =
-                "";
-        }
-
-
+      setTimeout(() => {
         closeUpgradeModal();
+      }, 1800);
 
-
-    } catch (error) {
-
-        console.error(
-            "Upgrade order error:",
-            error
-        );
-
-
-        showToast(
-            "Upgrade Submission Failed",
-            error.message ||
-            "Unable to submit your upgrade."
-        );
-
-    } finally {
-
-        if (submitButton) {
-
-            submitButton.disabled =
-                false;
-
-            submitButton.textContent =
-                "I've Paid";
-        }
+      return;
     }
+
+    const message =
+      result?.message ||
+      result?.error ||
+      "The upgrade order could not be submitted.";
+
+    showToast("Submission Failed", message);
+
+  } catch (error) {
+    console.error("Upgrade submission error:", error);
+
+    showToast(
+      "Submission Failed",
+      error?.message || "Unable to submit your upgrade."
+    );
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "I've Paid";
+    }
+  }
 }
+
 
 
 /* =========================================================
