@@ -2994,55 +2994,61 @@ async function submitUpgradeOrder() {
   }
 
   try {
-    console.log("Submitting upgrade order:", {
-      telegram_id: telegramUser.id,
-      requested_tier: selectedUpgradeTier,
-      payment_asset: selectedPaymentAsset,
-      payment_network: selectedPaymentNetwork,
+    const payload = {
+      telegram_id: Number(telegramUser.id),
+      requested_tier: String(selectedUpgradeTier).toUpperCase(),
+      payment_asset: String(selectedPaymentAsset).toUpperCase(),
+      payment_network: String(selectedPaymentNetwork).toUpperCase(),
       txid: txid
-    });
+    };
 
-    const result = await callFunction("create-upgrade-order", {
-      telegram_id: telegramUser.id,
-      requested_tier: selectedUpgradeTier,
-      payment_asset: selectedPaymentAsset,
-      payment_network: selectedPaymentNetwork,
-      txid: txid
-    });
+    console.log("XEARN upgrade payload:", payload);
 
-    console.log("Upgrade order response:", result);
+    if (typeof callFunction !== "function") {
+      throw new Error(
+        "callFunction is not available. The frontend function is missing."
+      );
+    }
+
+    const result = await callFunction(
+      "create-upgrade-order",
+      payload
+    );
+
+    console.log("XEARN upgrade response:", result);
 
     if (result && result.success === true) {
       showToast(
         "Payment Submitted",
-        "Your upgrade is pending verification."
+        "Your payment has been submitted and is pending verification."
       );
 
-      if (txidInput) {
-        txidInput.value = "";
-      }
+      txidInput.value = "";
 
       setTimeout(() => {
-        closeUpgradeModal();
+        if (typeof closeUpgradeModal === "function") {
+          closeUpgradeModal();
+        }
       }, 1800);
 
       return;
     }
 
-    const message =
+    throw new Error(
       result?.message ||
       result?.error ||
-      "The upgrade order could not be submitted.";
-
-    showToast("Submission Failed", message);
+      "The upgrade order could not be submitted."
+    );
 
   } catch (error) {
-    console.error("Upgrade submission error:", error);
+    console.error("XEARN upgrade error:", error);
 
     showToast(
       "Submission Failed",
-      error?.message || "Unable to submit your upgrade."
+      error?.message ||
+      "Unable to submit your upgrade. Please try again."
     );
+
   } finally {
     if (button) {
       button.disabled = false;
@@ -3050,9 +3056,6 @@ async function submitUpgradeOrder() {
     }
   }
 }
-
-
-
 /* =========================================================
    OPEN UPGRADE SCREEN / BUTTON
 ========================================================= */
