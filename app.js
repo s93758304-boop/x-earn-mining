@@ -1,12 +1,10 @@
-/* =====================================================
-   XEARN — FINAL APP.JS
-===================================================== */
+/* =========================================================
+   XEARN APP.JS — COMPLETE CORRECTED VERSION
+   ========================================================= */
 
-const SUPABASE_URL =
-  "https://ynrqdbdgjzmucqcfsyvi.supabase.co";
-
-const FUNCTION_BASE =
-  SUPABASE_URL + "/functions/v1";
+const SUPABASE_URL = "https://ynrqdbdgjzmucqcfsyvi.supabase.co";
+const XCOIN_PER_USDT = 1300;
+const MONETAG_ZONE = "11747212";
 
 let tg = null;
 let telegramUser = null;
@@ -14,3591 +12,2775 @@ let currentUser = null;
 
 let videoRunning = false;
 let taskRunning = false;
-let miningRunning = false;
 let checkinRunning = false;
+let miningRunning = false;
 
-/* =====================================================
-   UPGRADE STATE
-===================================================== */
 let selectedUpgradeTier = null;
 let selectedPaymentAsset = "USDT";
 let selectedPaymentNetwork = "TRC20";
-let pendingUpgradeOrderId = null;
-let pendingUpgradeTier = null;
-let upgradeStatus = null;
-let upgradeStatusPollTimer = null;
-let upgradeApprovalNotified = false;
-let upgradeModalCreated = false;
+
+const VIDEO_LIMITS = {
+    FREE: 5,
+    BRONZE: 20,
+    SILVER: 30,
+    GOLD: 50
+};
+
+const TASK_LIMITS = {
+    FREE: 10,
+    BRONZE: 20,
+    SILVER: 30,
+    GOLD: 50
+};
+
+const MINING_REWARDS = {
+    FREE: 50,
+    BRONZE: 200,
+    SILVER: 300,
+    GOLD: 650
+};
+
+const UPGRADE_TIERS = {
+    BRONZE: 5,
+    SILVER: 15,
+    GOLD: 30
+};
+
+const PAYMENT_METHODS = {
+    USDT: {
+        BEP20: "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
+        ERC20: "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
+        TRC20: "TSvw8wApc97mYsq59eohym2Bv5jpxNAdTJ",
+        TON: "UQB4IcjcNbzsQ-MRchgdspVZ4tPuFFM6CVRtfU709kelf2D",
+        SOL: "CEPxJr7nhrne1Bnu1n2hXnZjYwawthy8xMEZxTc4Dztd"
+    },
+    USDC: {
+        BEP20: "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
+        ERC20: "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995"
+    }
+};
 
 
-/* =====================================================
-   HELPERS
-===================================================== */
+/* =========================================================
+   DOM HELPERS
+   ========================================================= */
 
 function $(id) {
-  return document.getElementById(id);
+    return document.getElementById(id);
 }
 
 function setText(id, value) {
-  const element = $(id);
-
-  if (element) {
-    element.textContent = value;
-  }
+    const element = $(id);
+    if (element) {
+        element.textContent = value;
+    }
 }
 
 function formatNumber(value) {
-  return Number(value || 0).toLocaleString(
-    "en-US",
-    {
-      maximumFractionDigits: 2
-    }
-  );
+    return Number(value || 0).toLocaleString("en-US", {
+        maximumFractionDigits: 2
+    });
 }
 
-function hideLoading() {
-  const loader = $("loadingScreen");
 
-  if (loader) {
-    loader.style.display = "none";
-  }
-}
+/* =========================================================
+   TOAST
+   ========================================================= */
 
 function showToast(title, message) {
+    if (message === undefined) {
+        message = title;
+        title = "XEARN";
+    }
 
-  const toast = $("toast");
+    console.log(title + ":", message);
 
-  if (!toast) {
-    console.log(title, message);
-    return;
-  }
+    const toast = $("toast");
+    if (!toast) return;
 
-  setText("toastTitle", title);
-  setText("toastMessage", message);
+    const titleElement = $("toastTitle");
+    const messageElement = $("toastMessage");
 
-  toast.classList.add("show");
+    if (titleElement) {
+        titleElement.textContent = title;
+    }
 
-  clearTimeout(
-    window.xearnToastTimer
-  );
+    if (messageElement) {
+        messageElement.textContent = message;
+    }
 
-  window.xearnToastTimer =
-    setTimeout(() => {
-      toast.classList.remove("show");
+    toast.classList.add("show");
+
+    clearTimeout(window.xearnToastTimer);
+
+    window.xearnToastTimer = setTimeout(() => {
+        toast.classList.remove("show");
     }, 3500);
 }
 
 
-/* =====================================================
-   API
-===================================================== */
+/* =========================================================
+   LOADING
+   ========================================================= */
 
-async function callFunction(
-  functionName,
-  body = {},
-  timeout = 15000
-) {
+function hideLoading() {
+    const loading = $("loadingScreen");
 
-  const controller =
-    new AbortController();
+    if (loading) {
+        loading.style.display = "none";
+    }
+}
 
-  const timer =
-    setTimeout(
-      () => controller.abort(),
-      timeout
-    );
 
-  try {
+/* =========================================================
+   TELEGRAM
+   ========================================================= */
 
-    const response =
-      await fetch(
-        FUNCTION_BASE +
-        "/" +
+function initializeTelegram() {
+    try {
+        if (
+            window.Telegram &&
+            window.Telegram.WebApp
+        ) {
+            tg = window.Telegram.WebApp;
+
+            tg.ready();
+            tg.expand();
+
+            telegramUser =
+                tg.initDataUnsafe?.user || null;
+
+            console.log(
+                "Telegram user:",
+                telegramUser
+            );
+
+            return true;
+        }
+
+        console.warn(
+            "Telegram WebApp SDK not available."
+        );
+
+        return false;
+
+    } catch (error) {
+        console.error(
+            "Telegram initialization error:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+/* =========================================================
+   SUPABASE EDGE FUNCTION
+   ========================================================= */
+
+async function callFunction(functionName, body) {
+    const response = await fetch(
+        SUPABASE_URL +
+        "/functions/v1/" +
         functionName,
         {
-          method: "POST",
+            method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-          body:
-            JSON.stringify(body),
-
-          signal:
-            controller.signal
+            body: JSON.stringify(body)
         }
-      );
+    );
 
-    let data = {};
+    let data = null;
 
     try {
-      data =
-        await response.json();
-    } catch (_) {}
+        data = await response.json();
+    } catch {
+        data = null;
+    }
 
     if (!response.ok) {
-
-      throw new Error(
-        data?.error ||
-        data?.message ||
-        "Server request failed."
-      );
+        throw new Error(
+            data?.message ||
+            data?.error ||
+            "Request failed."
+        );
     }
 
     return data;
-
-  } finally {
-
-    clearTimeout(timer);
-
-  }
 }
 
 
-/* =====================================================
-   TELEGRAM
-===================================================== */
-
-function initializeTelegram() {
-
-  tg =
-    window.Telegram?.WebApp ||
-    null;
-
-  if (!tg) {
-
-    hideLoading();
-
-    showToast(
-      "Telegram Required",
-      "Open XEARN inside Telegram."
-    );
-
-    return false;
-  }
-
-  try {
-
-    tg.ready();
-    tg.expand();
-
-    telegramUser =
-      tg.initDataUnsafe?.user ||
-      null;
-
-    if (!telegramUser?.id) {
-
-      hideLoading();
-
-      showToast(
-        "Telegram Error",
-        "Your Telegram account was not detected."
-      );
-
-      return false;
-    }
-
-    return true;
-
-  } catch (error) {
-
-    console.error(
-      "Telegram initialization:",
-      error
-    );
-
-    hideLoading();
-
-    return false;
-  }
-}
-
-
-/* =====================================================
-   USER AUTH
-===================================================== */
+/* =========================================================
+   AUTHENTICATION
+   ========================================================= */
 
 async function authenticateUser() {
-
-  if (!telegramUser) {
-    return false;
-  }
-
-  try {
-
-    const result =
-      await callFunction(
-        "telegram-auth",
-        {
-          initData:
-            tg?.initData || "",
-
-          telegram_id:
-            telegramUser.id,
-
-          user:
-            telegramUser
-        }
-      );
-
-    currentUser =
-      result?.user ||
-      result?.data ||
-      result;
-
-    if (!currentUser) {
-      return false;
+    if (!telegramUser) {
+        createFallbackUser();
+        return;
     }
-
-    updateInterface();
-
-    return true;
-
-  } catch (error) {
-
-    console.error(
-      "Authentication error:",
-      error
-    );
-
-    createFallbackUser();
-
-    return false;
-  }
-}
-
-
-/* =====================================================
-   FALLBACK USER
-===================================================== */
-
-function createFallbackUser() {
-
-  if (!telegramUser) {
-    return;
-  }
-
-  currentUser = {
-
-    telegram_id:
-      telegramUser.id,
-
-    first_name:
-      telegramUser.first_name ||
-      "XEARN User",
-
-    username:
-      telegramUser.username ||
-      "",
-
-    balance_xcoin: 0,
-
-    total_earned_xcoin: 0,
-
-    referral_earnings_xcoin: 0,
-
-    referral_count: 0,
-
-    tasks_completed: 0,
-
-    streak_days: 0,
-
-    tier: "FREE",
-
-    videos_completed: 0
-
-  };
-
-  updateInterface();
-}
-
-
-/* =====================================================
-   REFRESH USER
-===================================================== */
-
-async function refreshUser() {
-
-  if (!telegramUser) {
-    return;
-  }
-
-  try {
-
-    const result =
-      await callFunction(
-        "telegram-auth",
-        {
-          initData:
-            tg?.initData || "",
-
-          telegram_id:
-            telegramUser.id,
-
-          user:
-            telegramUser
-        }
-      );
-
-    currentUser =
-      result?.user ||
-      result?.data ||
-      result;
-
-    if (currentUser) {
-      updateInterface();
-    }
-
-  } catch (error) {
-
-    console.error(
-      "Refresh failed:",
-      error
-    );
-  }
-}
-
-
-/* =====================================================
-   UPDATE UI
-===================================================== */
-
-function updateInterface() {
-
-  if (!currentUser) {
-    return;
-  }
-
-  const balance =
-    Number(
-      currentUser.balance_xcoin || 0
-    );
-
-  const tasks =
-    Number(
-      currentUser.tasks_completed ||
-      currentUser.completed_tasks ||
-      0
-    );
-
-  const streak =
-    Number(
-      currentUser.streak_days ||
-      currentUser.checkin_streak ||
-      0
-    );
-
-  const referrals =
-    Number(
-      currentUser.referral_count ||
-      currentUser.total_referrals ||
-      0
-    );
-
-  const referralEarnings =
-    Number(
-      currentUser.referral_earnings_xcoin ||
-      0
-    );
-
-  const tier =
-    String(
-      currentUser.tier ||
-      currentUser.plan ||
-      "FREE"
-    ).toUpperCase();
-
-
-  /* Balance */
-
-  setText(
-    "balanceAmount",
-    formatNumber(balance)
-  );
-
-  setText(
-    "balanceUsdt",
-    "$" +
-    (balance / 1300).toFixed(4)
-  );
-
-
-  /* Stats */
-
-  setText(
-    "tasksCount",
-    formatNumber(tasks)
-  );
-
-  setText(
-    "streakCount",
-    formatNumber(streak)
-  );
-
-  setText(
-    "referralsCount",
-    formatNumber(referrals)
-  );
-
-
-  /* Tier */
-
-  setText(
-    "tierBadge",
-    tier
-  );
-
-  setText(
-    "currentTier",
-    tier
-  );
-
-
-  /* Mining */
-
-  const rewards = {
-    FREE: 50,
-    BRONZE: 100,
-    SILVER: 200,
-    GOLD: 400
-  };
-
-  setText(
-    "miningReward",
-    "+" +
-    (rewards[tier] || 50) +
-    " XCOIN"
-  );
-
-
-  /* Referral */
-
-  setText(
-    "referralTotal",
-    formatNumber(referrals)
-  );
-
-  setText(
-    "referralEarnings",
-    formatNumber(
-      referralEarnings
-    ) +
-    " XCOIN"
-  );
-
-
-  /* Account */
-
-  const name =
-    currentUser.full_name ||
-    currentUser.first_name ||
-    telegramUser?.first_name ||
-    "XEARN User";
-
-  setText(
-    "userName",
-    name
-  );
-
-  setText(
-    "userTelegram",
-    telegramUser?.username
-      ? "@" +
-        telegramUser.username
-      : "Telegram User"
-  );
-
-
-  /* Videos */
-
-  const videos =
-    Number(
-      currentUser.videos_completed ||
-      currentUser.video_count ||
-      0
-    );
-
-  const limits = {
-    FREE: 20,
-    BRONZE: 20,
-    SILVER: 30,
-    GOLD: 50
-  };
-
-  const limit =
-    limits[tier] || 20;
-
-  setText(
-    "videosCompleted",
-    videos
-  );
-
-  setText(
-    "videosLimit",
-    limit
-  );
-
-  const percentage =
-    Math.min(
-      100,
-      (videos / limit) * 100
-    );
-
-  const progress =
-    $("videoProgress");
-
-  if (progress) {
-    progress.style.width =
-      percentage + "%";
-  }
-
-
-  /* Referral link */
-
-  const referralLink =
-    $("referralLink");
-
-  if (referralLink) {
-
-    referralLink.textContent =
-      "https://t.me/XEarnmining_bot?start=ref_" +
-      telegramUser.id;
-
-  }
-}
-
-
-/* =====================================================
-   NAVIGATION
-===================================================== */
-
-const SCREENS = {
-  home: "homeScreen",
-  earn: "earnScreen",
-  upgrade: "upgradeScreen",
-  refer: "referScreen",
-  account: "accountScreen"
-};
-
-function showScreen(name) {
-
-  const target =
-    SCREENS[name];
-
-  if (!target) {
-    return;
-  }
-
-  document
-    .querySelectorAll(".screen")
-    .forEach(screen => {
-      screen.classList.remove(
-        "active"
-      );
-    });
-
-  const screen =
-    $(target);
-
-  if (screen) {
-    screen.classList.add(
-      "active"
-    );
-  }
-
-  document
-    .querySelectorAll(
-      ".bottom-nav .nav-item"
-    )
-    .forEach(button => {
-
-      button.classList.toggle(
-        "active",
-        button.dataset.target ===
-          name
-      );
-
-    });
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-}
-
-
-/* =====================================================
-   MONETAG — WATCH VIDEO
-===================================================== */
-
-async function watchVideo() {
-
-  if (videoRunning) {
-    return;
-  }
-
-  if (!telegramUser) {
-    showToast(
-      "Telegram Required",
-      "Open XEARN inside Telegram."
-    );
-    return;
-  }
-
-  if (
-    typeof window.show_11747212 !==
-    "function"
-  ) {
-    showToast(
-      "Video Unavailable",
-      "Please try again shortly."
-    );
-    return;
-  }
-
-  videoRunning = true;
-
-  const button =
-    $("watchVideoButton");
-
-  if (button) {
-    button.disabled = true;
-  }
-
-  const oldBalance =
-    Number(
-      currentUser?.balance_xcoin || 0
-    );
-
-  try {
-
-    const ymid =
-      telegramUser.id +
-      "_video_" +
-      Date.now();
-
-    await window.show_11747212({
-      type: "end",
-      ymid: ymid,
-      requestVar: "video"
-    });
-
-
-    /*
-      DO NOT CREDIT HERE.
-
-      Monetag -> postback ->
-      Supabase -> verified reward.
-    */
-
-    let verified = false;
-
-    for (
-      let i = 0;
-      i < 5;
-      i++
-    ) {
-
-      await new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            1500
-          )
-      );
-
-      await refreshUser();
-
-      const newBalance =
-        Number(
-          currentUser?.balance_xcoin ||
-          0
-        );
-
-      if (
-        newBalance >
-        oldBalance
-      ) {
-
-        verified = true;
-
-        const earned =
-          newBalance -
-          oldBalance;
-
-        showToast(
-          "Awesome!",
-          "+" +
-          formatNumber(earned) +
-          " XCOIN"
-        );
-
-        break;
-      }
-    }
-
-    if (!verified) {
-
-      showToast(
-        "Video Completed",
-        "Reward is still being verified."
-      );
-
-    }
-
-  } catch (error) {
-
-    console.error(
-      "Video error:",
-      error
-    );
-
-    showToast(
-      "Video Not Completed",
-      "No reward was added."
-    );
-
-  } finally {
-
-    videoRunning = false;
-
-    if (button) {
-      button.disabled = false;
-    }
-  }
-}
-
-
-/* =====================================================
-   MONETAG — TASK
-===================================================== */
-
-async function startTask() {
-
-  if (taskRunning) {
-    return;
-  }
-
-  if (!telegramUser) {
-    showToast(
-      "Telegram Required",
-      "Open XEARN inside Telegram."
-    );
-    return;
-  }
-
-  if (
-    typeof window.show_11747212 !==
-    "function"
-  ) {
-    showToast(
-      "Task Unavailable",
-      "Please try again shortly."
-    );
-    return;
-  }
-
-  taskRunning = true;
-
-  const oldBalance =
-    Number(
-      currentUser?.balance_xcoin ||
-      0
-    );
-
-  const oldTaskCount =
-    Number(
-      currentUser?.tasks_completed_today ??
-      currentUser?.tasks_completed ??
-      currentUser?.completed_tasks ??
-      0
-    );
-
-  try {
-
-    showToast(
-      "Task Started",
-      "Complete the task exactly as instructed. Only successfully verified tasks earn XCOIN."
-    );
-
-    const ymid =
-      telegramUser.id +
-      "_task_" +
-      Date.now();
-
-    await window.show_11747212({
-      type: "pop",
-      ymid: ymid,
-      requestVar: "task"
-    });
-
-    let verified = false;
-
-    for (
-      let i = 0;
-      i < 10;
-      i++
-    ) {
-
-      await new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            2000
-          )
-      );
-
-      await refreshUser();
-
-      const newBalance =
-        Number(
-          currentUser?.balance_xcoin ||
-          0
-        );
-
-      const newTaskCount =
-        Number(
-          currentUser?.tasks_completed_today ??
-          currentUser?.tasks_completed ??
-          currentUser?.completed_tasks ??
-          0
-        );
-
-      if (
-        newBalance >
-          oldBalance ||
-        newTaskCount >
-          oldTaskCount
-      ) {
-
-        verified = true;
-
-        const earned =
-          Math.max(
-            0,
-            newBalance -
-            oldBalance
-          );
-
-        showToast(
-          "Task Completed",
-          earned > 0
-            ? "+" +
-              formatNumber(
-                earned
-              ) +
-              " XCOIN"
-            : "Your task was successfully verified."
-        );
-
-        break;
-      }
-    }
-
-    if (!verified) {
-
-      showToast(
-        "Task Pending",
-        "The task was not verified yet. Incomplete tasks do not receive a reward."
-      );
-
-    }
-
-  } catch (error) {
-
-    console.error(
-      "Task error:",
-      error
-    );
-
-    showToast(
-      "Task Not Completed",
-      "The task was not completed or verified. No reward was added."
-    );
-
-  } finally {
-
-    taskRunning = false;
-
-  }
-}
-
-
-/* =====================================================
-   DAILY CHECK-IN
-   MONETAG IN-APP INTERSTITIAL
-   NO AUTOMATIC REWARD
-===================================================== */
-
-async function claimDailyCheckin() {
-
-  if (checkinRunning) {
-    return;
-  }
-
-  if (
-    typeof window.show_11747212 !==
-    "function"
-  ) {
-    showToast(
-      "Check-in Unavailable",
-      "Please try again shortly."
-    );
-    return;
-  }
-
-  checkinRunning = true;
-
-  const button =
-    $("checkinButton");
-
-  if (button) {
-    button.disabled = true;
-  }
-
-  try {
-
-    await window.show_11747212({
-
-      type: "inApp",
-
-      inAppSettings: {
-
-        frequency: 2,
-
-        capping: 0.1,
-
-        interval: 30,
-
-        timeout: 5,
-
-        everyPage: false
-
-      }
-
-    });
-
-    showToast(
-      "Daily Check-in",
-      "Today's check-in has been opened."
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Check-in error:",
-      error
-    );
-
-    showToast(
-      "Check-in",
-      "Please try again later."
-    );
-
-  } finally {
-
-    setTimeout(
-      () => {
-
-        checkinRunning = false;
-
-        if (button) {
-          button.disabled = false;
-        }
-
-      },
-      2000
-    );
-
-  }
-}
-
-
-/* =====================================================
-   MINING
-===================================================== */
-
-async function mineXcoin() {
-
-  if (miningRunning) {
-    return;
-  }
-
-  if (!telegramUser) {
-    showToast(
-      "Telegram Required",
-      "Open XEARN inside Telegram."
-    );
-    return;
-  }
-
-  miningRunning = true;
-
-  const button =
-    $("mineButton");
-
-  if (button) {
-    button.disabled = true;
-  }
-
-  try {
-
-    const result =
-      await callFunction(
-        "mine-xcoin",
-        {
-          telegram_id:
-            telegramUser.id
-        }
-      );
-
-    const reward =
-      Number(
-        result?.reward_xcoin ||
-        result?.reward ||
-        0
-      );
-
-    if (reward <= 0) {
-
-      throw new Error(
-        result?.message ||
-        "Mining reward was not confirmed."
-      );
-
-    }
-
-    await refreshUser();
-
-    showToast(
-      "Mining Complete!",
-      "+" +
-      formatNumber(reward) +
-      " XCOIN"
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Mining error:",
-      error
-    );
-
-    showToast(
-      "Mining Unavailable",
-      error.message ||
-      "Unable to complete mining."
-    );
-
-  } finally {
-
-    miningRunning = false;
-
-    if (button) {
-      button.disabled = false;
-    }
-
-  }
-}
-
-
-/* =====================================================
-   COPY REFERRAL
-===================================================== */
-
-async function copyReferral() {
-
-  const link =
-    $("referralLink")?.textContent;
-
-  if (!link) {
-    return;
-  }
-
-  try {
-
-    await navigator.clipboard.writeText(
-      link
-    );
-
-    showToast(
-      "Copied!",
-      "Referral link copied."
-    );
-
-  } catch (_) {
-
-    showToast(
-      "Referral Link",
-      link
-    );
-
-  }
-}
-
-
-/* =====================================================
-   UPGRADE SYSTEM
-   PAYMENT -> PENDING -> ADMIN APPROVAL
-===================================================== */
-
-const XEARN_UPGRADE_TIERS = {
-
-  BRONZE: {
-    price: 5
-  },
-
-  SILVER: {
-    price: 15
-  },
-
-  GOLD: {
-    price: 30
-  }
-
-};
-
-const XEARN_PAYMENT_METHODS = {
-
-  USDT: {
-
-    BEP20:
-      "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
-
-    ERC20:
-      "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
-
-    TRC20:
-      "TSvw8wApc97mYsq59eohym2Bv5jpxNAdTJ",
-
-    TON:
-      "UQB4IcjcNbzsQ-MRchgdspVZ4tPuFFM6CVRtfU709kelf2D",
-
-    SOL:
-      "CEPxJr7nhrne1Bnu1n2hXnZjYwawthy8xMEZxTc4Dztd"
-
-  },
-
-  USDC: {
-
-    BEP20:
-      "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
-
-    ERC20:
-      "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995"
-
-  }
-
-};
-
-
-/* =====================================================
-   SAVE PENDING UPGRADE
-===================================================== */
-
-function savePendingUpgrade(
-  orderId,
-  tier
-) {
-
-  pendingUpgradeOrderId =
-    String(
-      orderId || ""
-    );
-
-  pendingUpgradeTier =
-    String(
-      tier || ""
-    ).toUpperCase();
-
-  upgradeStatus =
-    "pending";
-
-  try {
-
-    localStorage.setItem(
-      "xearn_pending_upgrade_order_id",
-      pendingUpgradeOrderId
-    );
-
-    localStorage.setItem(
-      "xearn_pending_upgrade_tier",
-      pendingUpgradeTier
-    );
-
-    localStorage.setItem(
-      "xearn_upgrade_status",
-      "pending"
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Unable to save upgrade state:",
-      error
-    );
-
-  }
-}
-
-
-/* =====================================================
-   LOAD PENDING UPGRADE
-===================================================== */
-
-function loadPendingUpgrade() {
-
-  try {
-
-    pendingUpgradeOrderId =
-      localStorage.getItem(
-        "xearn_pending_upgrade_order_id"
-      ) || null;
-
-    pendingUpgradeTier =
-      localStorage.getItem(
-        "xearn_pending_upgrade_tier"
-      ) || null;
-
-    upgradeStatus =
-      localStorage.getItem(
-        "xearn_upgrade_status"
-      ) || null;
-
-  } catch (error) {
-
-    console.error(
-      "Unable to load upgrade state:",
-      error
-    );
-
-  }
-
-  if (!pendingUpgradeOrderId) {
-
-    pendingUpgradeOrderId =
-      null;
-
-    pendingUpgradeTier =
-      null;
-
-    upgradeStatus =
-      null;
-
-  }
-
-}
-
-
-/* =====================================================
-   CLEAR PENDING UPGRADE
-===================================================== */
-
-function clearPendingUpgrade() {
-
-  pendingUpgradeOrderId =
-    null;
-
-  pendingUpgradeTier =
-    null;
-
-  upgradeStatus =
-    null;
-
-  upgradeApprovalNotified =
-    false;
-
-  try {
-
-    localStorage.removeItem(
-      "xearn_pending_upgrade_order_id"
-    );
-
-    localStorage.removeItem(
-      "xearn_pending_upgrade_tier"
-    );
-
-    localStorage.removeItem(
-      "xearn_upgrade_status"
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Unable to clear upgrade state:",
-      error
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   STATUS BOX
-===================================================== */
-
-function getUpgradeStatusBox() {
-
-  return $(
-    "xearnUpgradeStatus"
-  );
-
-}
-
-
-/* =====================================================
-   UPDATE UPGRADE STATUS UI
-===================================================== */
-
-function updateUpgradeStatusUI(
-  status,
-  tier,
-  note = ""
-) {
-
-  const box =
-    getUpgradeStatusBox();
-
-  const button =
-    $("xearnSubmitUpgrade");
-
-  const txidInput =
-    $("xearnTxid");
-
-  const normalizedStatus =
-    String(
-      status || ""
-    )
-    .trim()
-    .toLowerCase();
-
-  const normalizedTier =
-    String(
-      tier ||
-      pendingUpgradeTier ||
-      selectedUpgradeTier ||
-      ""
-    )
-    .toUpperCase();
-
-  if (!box) {
-    return;
-  }
-
-  box.style.display =
-    "block";
-
-  box.className =
-    "xearn-upgrade-status xearn-status-" +
-    (
-      normalizedStatus ||
-      "pending"
-    );
-
-
-  /* APPROVED */
-
-  if (
-    normalizedStatus ===
-    "approved"
-  ) {
-
-    box.innerHTML =
-      "<strong>Upgrade Approved</strong>" +
-      "<span>Your " +
-      normalizedTier +
-      " upgrade has been approved and activated.</span>";
-
-    if (button) {
-
-      button.disabled =
-        true;
-
-      button.textContent =
-        "Upgrade Approved";
-
-    }
-
-    if (txidInput) {
-
-      txidInput.disabled =
-        true;
-
-    }
-
-    return;
-  }
-
-
-  /* REJECTED */
-
-  if (
-    normalizedStatus ===
-    "rejected"
-  ) {
-
-    box.innerHTML =
-      "<strong>Upgrade Rejected</strong>" +
-      "<span>" +
-      (
-        note ||
-        "Your payment could not be approved. Please check your transaction details and submit again."
-      ) +
-      "</span>";
-
-    if (button) {
-
-      button.disabled =
-        false;
-
-      button.textContent =
-        "I've Paid";
-
-    }
-
-    if (txidInput) {
-
-      txidInput.disabled =
-        false;
-
-    }
-
-    return;
-  }
-
-
-  /* CANCELLED */
-
-  if (
-    normalizedStatus ===
-    "cancelled"
-  ) {
-
-    box.innerHTML =
-      "<strong>Upgrade Cancelled</strong>" +
-      "<span>This upgrade request was cancelled.</span>";
-
-    if (button) {
-
-      button.disabled =
-        false;
-
-      button.textContent =
-        "I've Paid";
-
-    }
-
-    if (txidInput) {
-
-      txidInput.disabled =
-        false;
-
-    }
-
-    return;
-  }
-
-
-  /* PENDING */
-
-  box.innerHTML =
-    "<strong>Pending Approval</strong>" +
-    "<span>Your " +
-    normalizedTier +
-    " upgrade is waiting for admin payment verification.</span>";
-
-  if (button) {
-
-    button.disabled =
-      true;
-
-    button.textContent =
-      "Pending Approval";
-
-  }
-
-  if (txidInput) {
-
-    txidInput.disabled =
-      true;
-
-  }
-
-}
-
-
-/* =====================================================
-   CHECK UPGRADE STATUS
-===================================================== */
-
-async function checkUpgradeStatus(
-  showMessages = true
-) {
-
-  if (
-    !telegramUser ||
-    !pendingUpgradeOrderId
-  ) {
-
-    return null;
-
-  }
-
-  try {
-
-    const result =
-      await callFunction(
-        "get-upgrade-status",
-        {
-          telegram_id:
-            Number(
-              telegramUser.id
-            ),
-
-          order_id:
-            String(
-              pendingUpgradeOrderId
-            )
-        },
-        15000
-      );
-
-    if (!result?.success) {
-
-      throw new Error(
-        result?.message ||
-        "Unable to check upgrade status."
-      );
-
-    }
-
-    const status =
-      String(
-        result.status ||
-        "pending"
-      )
-      .toLowerCase();
-
-    const tier =
-      String(
-        result.requested_tier ||
-        pendingUpgradeTier ||
-        ""
-      )
-      .toUpperCase();
-
-    upgradeStatus =
-      status;
-
-    pendingUpgradeTier =
-      tier;
 
     try {
-
-      localStorage.setItem(
-        "xearn_upgrade_status",
-        status
-      );
-
-      localStorage.setItem(
-        "xearn_pending_upgrade_tier",
-        tier
-      );
-
-    } catch (_) {}
-
-
-    updateUpgradeStatusUI(
-      status,
-      tier,
-      result.admin_note ||
-      ""
-    );
-
-
-    /* APPROVED */
-
-    if (
-      status ===
-      "approved"
-    ) {
-
-      if (
-        !upgradeApprovalNotified &&
-        showMessages
-      ) {
-
-        upgradeApprovalNotified =
-          true;
-
-        showToast(
-          "Upgrade Successful",
-          "Your " +
-            tier +
-            " upgrade has been approved and activated."
+        const result = await callFunction(
+            "telegram-auth",
+            {
+                telegram_id: telegramUser.id,
+                username: telegramUser.username || null,
+                first_name: telegramUser.first_name || null,
+                last_name: telegramUser.last_name || null,
+                photo_url: telegramUser.photo_url || null
+            }
         );
 
-      }
+        currentUser =
+            result?.user ||
+            result ||
+            null;
 
-      await refreshUser();
-
-      clearPendingUpgrade();
-
-      stopUpgradeStatusPolling();
-
-      const box =
-        getUpgradeStatusBox();
-
-      if (box) {
-
-        box.style.display =
-          "block";
-
-        box.className =
-          "xearn-upgrade-status xearn-status-approved";
-
-        box.innerHTML =
-          "<strong>Upgrade Successful</strong>" +
-          "<span>Your " +
-          tier +
-          " plan is now active.</span>";
-
-      }
-
-      const button =
-        $("xearnSubmitUpgrade");
-
-      if (button) {
-
-        button.disabled =
-          true;
-
-        button.textContent =
-          "Upgrade Approved";
-
-      }
-
-      const txidInput =
-        $("xearnTxid");
-
-      if (txidInput) {
-
-        txidInput.disabled =
-          true;
-
-      }
-
-      return result;
-    }
-
-
-    /* REJECTED */
-
-    if (
-      status ===
-      "rejected"
-    ) {
-
-      if (showMessages) {
-
-        showToast(
-          "Upgrade Rejected",
-          result.admin_note ||
-            "Your upgrade payment was not approved."
-        );
-
-      }
-
-      clearPendingUpgrade();
-
-      stopUpgradeStatusPolling();
-
-      updateUpgradeStatusUI(
-        "rejected",
-        tier,
-        result.admin_note ||
-        ""
-      );
-
-      return result;
-
-    }
-
-
-    /* CANCELLED */
-
-    if (
-      status ===
-      "cancelled"
-    ) {
-
-      if (showMessages) {
-
-        showToast(
-          "Upgrade Cancelled",
-          "Your upgrade request was cancelled."
-        );
-
-      }
-
-      clearPendingUpgrade();
-
-      stopUpgradeStatusPolling();
-
-      updateUpgradeStatusUI(
-        "cancelled",
-        tier
-      );
-
-      return result;
-
-    }
-
-
-    return result;
-
-  } catch (error) {
-
-    console.error(
-      "Upgrade status check failed:",
-      error
-    );
-
-    /*
-      Do not erase a pending order because of
-      a temporary network/server error.
-    */
-
-    return null;
-
-  }
-
-}
-
-
-/* =====================================================
-   START UPGRADE STATUS POLLING
-===================================================== */
-
-function startUpgradeStatusPolling() {
-
-  stopUpgradeStatusPolling();
-
-  if (
-    !telegramUser ||
-    !pendingUpgradeOrderId
-  ) {
-
-    return;
-
-  }
-
-  checkUpgradeStatus(
-    false
-  );
-
-  upgradeStatusPollTimer =
-    setInterval(
-      () => {
-
-        if (
-          !telegramUser ||
-          !pendingUpgradeOrderId
-        ) {
-
-          stopUpgradeStatusPolling();
-
-          return;
-
+        if (!currentUser) {
+            throw new Error(
+                "User authentication failed."
+            );
         }
 
-        checkUpgradeStatus(
-          true
+        updateInterface();
+
+    } catch (error) {
+        console.error(
+            "Authentication error:",
+            error
         );
 
-      },
-      15000
-    );
-
+        createFallbackUser();
+    }
 }
 
 
-/* =====================================================
-   STOP UPGRADE STATUS POLLING
-===================================================== */
+function createFallbackUser() {
+    currentUser = {
+        telegram_id:
+            telegramUser?.id || null,
 
-function stopUpgradeStatusPolling() {
+        username:
+            telegramUser?.username || null,
 
-  if (
-    upgradeStatusPollTimer
-  ) {
+        first_name:
+            telegramUser?.first_name ||
+            "XEARN User",
 
-    clearInterval(
-      upgradeStatusPollTimer
-    );
+        last_name:
+            telegramUser?.last_name || "",
 
-    upgradeStatusPollTimer =
-      null;
+        tier: "FREE",
 
-  }
+        balance_xcoin: 0,
 
+        total_earned_xcoin: 0,
+
+        referral_earnings_xcoin: 0,
+
+        videos_watched_today: 0,
+
+        tasks_completed_today: 0,
+
+        referral_count: 0,
+
+        streak_days: 0
+    };
+
+    updateInterface();
 }
 
 
-/* =====================================================
-   PAYMENT NETWORKS
-===================================================== */
-
-function getPaymentNetworks(
-  asset
-) {
-
-  const methods =
-    XEARN_PAYMENT_METHODS[
-      asset
-    ] || {};
-
-  return Object.keys(
-    methods
-  );
-
-}
-
-
-/* =====================================================
-   UPDATE UPGRADE WALLET
-===================================================== */
-
-function updateUpgradeWallet() {
-
-  const assetSelect =
-    $("xearnPaymentAsset");
-
-  const networkSelect =
-    $("xearnPaymentNetwork");
-
-  const wallet =
-    $("xearnWalletAddress");
-
-  if (
-    !assetSelect ||
-    !networkSelect ||
-    !wallet
-  ) {
-
-    return;
-
-  }
-
-  selectedPaymentAsset =
-    String(
-      assetSelect.value ||
-      "USDT"
-    ).toUpperCase();
-
-  const networks =
-    getPaymentNetworks(
-      selectedPaymentAsset
-    );
-
-  const currentNetwork =
-    String(
-      networkSelect.value ||
-      selectedPaymentNetwork ||
-      ""
-    ).toUpperCase();
-
-  networkSelect.innerHTML =
-    networks
-      .map(
-        network =>
-          '<option value="' +
-          network +
-          '">' +
-          network +
-          "</option>"
-      )
-      .join("");
-
-  if (
-    networks.includes(
-      currentNetwork
-    )
-  ) {
-
-    networkSelect.value =
-      currentNetwork;
-
-  } else if (
-    networks.length
-  ) {
-
-    networkSelect.value =
-      networks[0];
-
-  }
-
-  selectedPaymentNetwork =
-    String(
-      networkSelect.value ||
-      ""
-    ).toUpperCase();
-
-  wallet.textContent =
-    XEARN_PAYMENT_METHODS[
-      selectedPaymentAsset
-    ]?.[
-      selectedPaymentNetwork
-    ] ||
-    "Payment address unavailable";
-
-}
-
-
-/* =====================================================
-   COPY UPGRADE WALLET
-===================================================== */
-
-async function copyUpgradeWallet() {
-
-  const wallet =
-    $("xearnWalletAddress")
-      ?.textContent
-      ?.trim();
-
-  if (
-    !wallet ||
-    wallet ===
-      "Payment address unavailable"
-  ) {
-
-    return;
-
-  }
-
-  try {
-
-    await navigator.clipboard.writeText(
-      wallet
-    );
-
-    showToast(
-      "Wallet Copied",
-      "Payment address copied."
-    );
-
-  } catch (_) {
-
-    showToast(
-      "Payment Address",
-      wallet
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   CLOSE UPGRADE MODAL
-===================================================== */
-
-function closeUpgradeModal() {
-
-  const overlay =
-    $("xearnUpgradeModal");
-
-  if (overlay) {
-
-    overlay.classList.remove(
-      "show"
-    );
-
-  }
-
-  if (
-    pendingUpgradeOrderId
-  ) {
-
-    updateUpgradeStatusUI(
-      upgradeStatus ||
-        "pending",
-
-      pendingUpgradeTier ||
-        selectedUpgradeTier
-    );
-
-  }
-
-}
-
-
-/* =====================================================
-   OPEN UPGRADE MODAL
-===================================================== */
-
-function openUpgradeModal(
-  tier = null
-) {
-
-  createUpgradeModal();
-
-  loadPendingUpgrade();
-
-
-  /* EXISTING PENDING ORDER */
-
-  if (
-    pendingUpgradeOrderId
-  ) {
-
-    selectedUpgradeTier =
-      pendingUpgradeTier ||
-      tier ||
-      "";
-
-    const overlay =
-      $("xearnUpgradeModal");
-
-    const title =
-      $("xearnUpgradeTitle");
-
-    const price =
-      $("xearnUpgradePrice");
-
-    if (title) {
-
-      title.textContent =
-        "Upgrade to " +
-        String(
-          selectedUpgradeTier
-        ).toUpperCase();
-
+async function refreshUser() {
+    if (!telegramUser) {
+        return;
     }
 
-    if (price) {
+    try {
+        const result = await callFunction(
+            "telegram-auth",
+            {
+                telegram_id: telegramUser.id,
+                username: telegramUser.username || null,
+                first_name: telegramUser.first_name || null,
+                last_name: telegramUser.last_name || null,
+                photo_url: telegramUser.photo_url || null
+            }
+        );
 
-      price.textContent =
-        "$" +
+        const refreshedUser =
+            result?.user ||
+            result ||
+            null;
+
+        if (refreshedUser) {
+            currentUser =
+                refreshedUser;
+
+            updateInterface();
+        }
+
+    } catch (error) {
+        console.error(
+            "Refresh user error:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   SCREEN NAVIGATION
+   ========================================================= */
+
+function showScreen(screenName) {
+    const screenMap = {
+        home: "homeScreen",
+        earn: "earnScreen",
+        upgrade: "upgradeScreen",
+        refer: "referScreen",
+        account: "accountScreen"
+    };
+
+    const targetId =
+        screenMap[screenName] ||
+        screenName;
+
+    document
+        .querySelectorAll(".screen")
+        .forEach(screen => {
+            screen.classList.remove("active");
+        });
+
+    const target = $(targetId);
+
+    if (!target) {
+        console.error(
+            "Screen not found:",
+            targetId
+        );
+        return;
+    }
+
+    target.classList.add("active");
+
+    document
+        .querySelectorAll(
+            ".bottom-nav .nav-item"
+        )
+        .forEach(item => {
+            item.classList.remove("active");
+
+            if (
+                item.dataset.target ===
+                screenName
+            ) {
+                item.classList.add("active");
+            }
+        });
+}
+
+
+/* =========================================================
+   CURRENT USER DATA
+   ========================================================= */
+
+function getTier() {
+    return String(
+        currentUser?.tier ||
+        currentUser?.plan ||
+        "FREE"
+    ).toUpperCase();
+}
+
+function getVideoCount() {
+    return Number(
+        currentUser?.videos_watched_today ??
+        currentUser?.videos_completed ??
+        currentUser?.video_count ??
+        0
+    );
+}
+
+function getTaskCount() {
+    return Number(
+        currentUser?.tasks_completed_today ??
+        currentUser?.tasks_completed ??
+        currentUser?.completed_tasks ??
+        0
+    );
+}
+
+
+/* =========================================================
+   UPDATE INTERFACE
+   ========================================================= */
+
+function updateInterface() {
+    if (!currentUser) {
+        return;
+    }
+
+    const tier = getTier();
+
+    const balance =
+        Number(
+            currentUser.balance_xcoin || 0
+        );
+
+    const totalEarned =
+        Number(
+            currentUser.total_earned_xcoin || 0
+        );
+
+    const videos =
+        getVideoCount();
+
+    const tasks =
+        getTaskCount();
+
+    const videoLimit =
+        VIDEO_LIMITS[tier] || 20;
+
+    const taskLimit =
+        TASK_LIMITS[tier] || 10;
+
+    const referrals =
+        Number(
+            currentUser.referral_count ||
+            currentUser.total_referrals ||
+            0
+        );
+
+    const referralEarnings =
+        Number(
+            currentUser.referral_earnings_xcoin ||
+            0
+        );
+
+    const streak =
+        Number(
+            currentUser.streak_days ||
+            currentUser.checkin_streak ||
+            0
+        );
+
+
+    /* BALANCE */
+
+    setText(
+        "balanceAmount",
+        formatNumber(balance)
+    );
+
+    setText(
+        "balanceUsdt",
+        "≈ $" +
         (
-          XEARN_UPGRADE_TIERS[
-            selectedUpgradeTier
-          ]?.price ||
-          ""
+            balance /
+            XCOIN_PER_USDT
+        ).toFixed(4)
+    );
+
+
+    /* TOTAL */
+
+    setText(
+        "totalEarned",
+        formatNumber(totalEarned)
+    );
+
+
+    /* TASKS */
+
+    const safeTasks =
+        Math.min(
+            tasks,
+            taskLimit
         );
 
-    }
-
-    updateUpgradeStatusUI(
-      upgradeStatus ||
-        "pending",
-
-      selectedUpgradeTier
+    setText(
+        "tasksCount",
+        formatNumber(safeTasks)
     );
 
-    if (overlay) {
-
-      overlay.classList.add(
-        "show"
-      );
-
-    }
-
-    startUpgradeStatusPolling();
-
-    return;
-
-  }
-
-
-  /* NEW UPGRADE */
-
-  selectedUpgradeTier =
-    String(
-      tier ||
-      selectedUpgradeTier ||
-      "BRONZE"
-    ).toUpperCase();
-
-  if (
-    !XEARN_UPGRADE_TIERS[
-      selectedUpgradeTier
-    ]
-  ) {
-
-    selectedUpgradeTier =
-      "BRONZE";
-
-  }
-
-  const overlay =
-    $("xearnUpgradeModal");
-
-  const title =
-    $("xearnUpgradeTitle");
-
-  const price =
-    $("xearnUpgradePrice");
-
-  const txidInput =
-    $("xearnTxid");
-
-  const button =
-    $("xearnSubmitUpgrade");
-
-  const statusBox =
-    $("xearnUpgradeStatus");
-
-
-  if (title) {
-
-    title.textContent =
-      "Upgrade to " +
-      selectedUpgradeTier;
-
-  }
-
-  if (price) {
-
-    price.textContent =
-      "$" +
-      XEARN_UPGRADE_TIERS[
-        selectedUpgradeTier
-      ].price;
-
-  }
-
-  if (txidInput) {
-
-    txidInput.value =
-      "";
-
-    txidInput.disabled =
-      false;
-
-  }
-
-  if (button) {
-
-    button.disabled =
-      false;
-
-    button.textContent =
-      "I've Paid";
-
-  }
-
-  if (statusBox) {
-
-    statusBox.style.display =
-      "none";
-
-    statusBox.innerHTML =
-      "";
-
-  }
-
-  selectedPaymentAsset =
-    "USDT";
-
-  selectedPaymentNetwork =
-    "TRC20";
-
-  const assetSelect =
-    $("xearnPaymentAsset");
-
-  if (assetSelect) {
-
-    assetSelect.value =
-      "USDT";
-
-  }
-
-  updateUpgradeWallet();
-
-  if (overlay) {
-
-    overlay.classList.add(
-      "show"
+    setText(
+        "tasksCompleted",
+        formatNumber(safeTasks)
     );
 
-  }
+    setText(
+        "tasksLimit",
+        taskLimit
+    );
 
-}
+    setText(
+        "taskCounter",
+        safeTasks +
+        "/" +
+        taskLimit
+    );
+
+    setText(
+        "tasksCounter",
+        safeTasks +
+        "/" +
+        taskLimit
+    );
 
 
-/* =====================================================
-   OPEN UPGRADE SCREEN
-===================================================== */
+    const taskProgress =
+        $("taskProgress");
 
-function openUpgradeScreen(
-  tier = null
-) {
+    if (taskProgress) {
+        taskProgress.style.width =
+            (
+                Math.min(
+                    100,
+                    (
+                        safeTasks /
+                        taskLimit
+                    ) *
+                    100
+                )
+            ) +
+            "%";
+    }
 
-  showScreen(
-    "upgrade"
-  );
 
-  if (tier) {
+    /* VIDEOS */
 
-    selectedUpgradeTier =
-      String(
+    const safeVideos =
+        Math.min(
+            videos,
+            videoLimit
+        );
+
+    setText(
+        "videosCompleted",
+        safeVideos
+    );
+
+    setText(
+        "videosLimit",
+        videoLimit
+    );
+
+    setText(
+        "videoCounter",
+        safeVideos +
+        "/" +
+        videoLimit
+    );
+
+    setText(
+        "videosCounter",
+        safeVideos +
+        "/" +
+        videoLimit
+    );
+
+
+    const videoProgress =
+        $("videoProgress");
+
+    if (videoProgress) {
+        videoProgress.style.width =
+            (
+                Math.min(
+                    100,
+                    (
+                        safeVideos /
+                        videoLimit
+                    ) *
+                    100
+                )
+            ) +
+            "%";
+    }
+
+
+    /* STREAK */
+
+    setText(
+        "streakCount",
+        formatNumber(streak)
+    );
+
+
+    /* REFERRALS */
+
+    setText(
+        "referralsCount",
+        formatNumber(referrals)
+    );
+
+    setText(
+        "referralTotal",
+        formatNumber(referrals)
+    );
+
+    setText(
+        "referralEarnings",
+        formatNumber(
+            referralEarnings
+        ) +
+        " XCOIN"
+    );
+
+
+    /* TIER */
+
+    setText(
+        "tierBadge",
         tier
-      ).toUpperCase();
-
-  }
-
-  openUpgradeModal(
-    selectedUpgradeTier ||
-      null
-  );
-
-}
-
-
-/* =====================================================
-   CREATE UPGRADE MODAL
-===================================================== */
-
-function createUpgradeModal() {
-
-  if (
-    upgradeModalCreated ||
-    $("xearnUpgradeModal")
-  ) {
-
-    upgradeModalCreated =
-      true;
-
-    return;
-
-  }
-
-
-  const style =
-    document.createElement(
-      "style"
     );
 
-  style.textContent = `
-
-    #xearnUpgradeModal {
-
-      position: fixed;
-
-      inset: 0;
-
-      z-index: 99999;
-
-      display: none;
-
-      align-items: flex-end;
-
-      justify-content: center;
-
-      background:
-        rgba(0,0,0,.72);
-
-      padding: 14px;
-
-    }
-
-    #xearnUpgradeModal.show {
-
-      display: flex;
-
-    }
-
-    .xearn-upgrade-modal-card {
-
-      width:
-        min(100%, 460px);
-
-      max-height:
-        92vh;
-
-      overflow-y:
-        auto;
-
-      background:
-        #07130f;
-
-      color:
-        #fff;
-
-      border:
-        1px solid
-        rgba(88,255,145,.18);
-
-      border-radius:
-        22px;
-
-      box-shadow:
-        0 24px 80px
-        rgba(0,0,0,.55);
-
-      padding:
-        20px;
-
-    }
-
-    .xearn-upgrade-modal-head {
-
-      display:
-        flex;
-
-      align-items:
-        center;
-
-      justify-content:
-        space-between;
-
-      gap:
-        15px;
-
-      margin-bottom:
-        18px;
-
-    }
-
-    .xearn-upgrade-modal-head h3 {
-
-      margin:
-        0;
-
-      font-size:
-        20px;
-
-    }
-
-    .xearn-upgrade-close {
-
-      width:
-        36px;
-
-      height:
-        36px;
-
-      border:
-        1px solid
-        rgba(255,255,255,.12);
-
-      border-radius:
-        10px;
-
-      background:
-        rgba(255,255,255,.05);
-
-      color:
-        #fff;
-
-      font-size:
-        20px;
-
-      cursor:
-        pointer;
-
-    }
-
-    .xearn-upgrade-price {
-
-      color:
-        #58ff91;
-
-      font-size:
-        26px;
-
-      font-weight:
-        900;
-
-      margin-top:
-        3px;
-
-    }
-
-    .xearn-upgrade-label {
-
-      display:
-        block;
-
-      margin:
-        15px 0 7px;
-
-      color:
-        #a9b5af;
-
-      font-size:
-        12px;
-
-      font-weight:
-        700;
-
-      text-transform:
-        uppercase;
-
-      letter-spacing:
-        .5px;
-
-    }
-
-    .xearn-upgrade-select,
-    .xearn-upgrade-input {
-
-      width:
-        100%;
-
-      min-height:
-        48px;
-
-      border:
-        1px solid
-        rgba(255,255,255,.12);
-
-      border-radius:
-        12px;
-
-      background:
-        #0c1d16;
-
-      color:
-        #fff;
-
-      padding:
-        0 13px;
-
-      outline:
-        none;
-
-      font:
-        inherit;
-
-    }
-
-    .xearn-upgrade-select:focus,
-    .xearn-upgrade-input:focus {
-
-      border-color:
-        #58ff91;
-
-    }
-
-    .xearn-wallet-box {
-
-      margin-top:
-        12px;
-
-      padding:
-        13px;
-
-      border-radius:
-        12px;
-
-      background:
-        #0c1d16;
-
-      border:
-        1px solid
-        rgba(88,255,145,.12);
-
-    }
-
-    .xearn-wallet-address {
-
-      word-break:
-        break-all;
-
-      color:
-        #dfffea;
-
-      font-size:
-        12px;
-
-      line-height:
-        1.55;
-
-      margin-bottom:
-        10px;
-
-    }
-
-    .xearn-copy-wallet {
-
-      width:
-        100%;
-
-      min-height:
-        42px;
-
-      border:
-        0;
-
-      border-radius:
-        10px;
-
-      background:
-        #58ff91;
-
-      color:
-        #06100c;
-
-      font-weight:
-        900;
-
-      cursor:
-        pointer;
-
-    }
-
-    .xearn-submit-upgrade {
-
-      width:
-        100%;
-
-      min-height:
-        52px;
-
-      margin-top:
-        15px;
-
-      border:
-        0;
-
-      border-radius:
-        13px;
-
-      background:
-        #58ff91;
-
-      color:
-        #06100c;
-
-      font-weight:
-        900;
-
-      cursor:
-        pointer;
-
-      font-size:
-        15px;
-
-    }
-
-    .xearn-submit-upgrade:disabled {
-
-      opacity:
-        .55;
-
-      cursor:
-        not-allowed;
-
-    }
-
-    .xearn-upgrade-note {
-
-      color:
-        #87968f;
-
-      font-size:
-        11px;
-
-      line-height:
-        1.55;
-
-      margin-top:
-        12px;
-
-    }
-
-    .xearn-upgrade-status {
-
-      display:
-        none;
-
-      margin-top:
-        14px;
-
-      padding:
-        13px;
-
-      border-radius:
-        12px;
-
-      border:
-        1px solid
-        rgba(255,255,255,.1);
-
-      background:
-        rgba(255,255,255,.04);
-
-    }
-
-    .xearn-upgrade-status strong,
-    .xearn-upgrade-status span {
-
-      display:
-        block;
-
-    }
-
-    .xearn-upgrade-status strong {
-
-      font-size:
-        13px;
-
-      margin-bottom:
-        4px;
-
-    }
-
-    .xearn-upgrade-status span {
-
-      color:
-        #aebbb5;
-
-      font-size:
-        11px;
-
-      line-height:
-        1.5;
-
-    }
-
-    .xearn-status-pending {
-
-      border-color:
-        rgba(255,204,92,.25);
-
-    }
-
-    .xearn-status-pending strong {
-
-      color:
-        #ffcc5c;
-
-    }
-
-    .xearn-status-approved {
-
-      border-color:
-        rgba(88,255,145,.28);
-
-    }
-
-    .xearn-status-approved strong {
-
-      color:
-        #58ff91;
-
-    }
-
-    .xearn-status-rejected,
-    .xearn-status-cancelled {
-
-      border-color:
-        rgba(255,100,100,.25);
-
-    }
-
-    .xearn-status-rejected strong,
-    .xearn-status-cancelled strong {
-
-      color:
-        #ff7f7f;
-
-    }
-
-    @media (min-width: 700px) {
-
-      #xearnUpgradeModal {
-
-        align-items:
-          center;
-
-      }
-
-    }
-
-  `;
-
-  document.head.appendChild(
-    style
-  );
-
-
-  const overlay =
-    document.createElement(
-      "div"
+    setText(
+        "currentTier",
+        tier
     );
 
-  overlay.id =
-    "xearnUpgradeModal";
-
-  overlay.innerHTML = `
-
-    <div
-      class="xearn-upgrade-modal-card"
-      role="dialog"
-      aria-modal="true"
-    >
-
-      <div
-        class="xearn-upgrade-modal-head"
-      >
-
-        <div>
-
-          <h3
-            id="xearnUpgradeTitle"
-          >
-            Upgrade to BRONZE
-          </h3>
-
-          <div
-            class="xearn-upgrade-price"
-            id="xearnUpgradePrice"
-          >
-            $5
-          </div>
-
-        </div>
-
-        <button
-          type="button"
-          class="xearn-upgrade-close"
-          id="xearnUpgradeClose"
-        >
-          ×
-        </button>
-
-      </div>
-
-
-      <label
-        class="xearn-upgrade-label"
-        for="xearnPaymentAsset"
-      >
-        Payment Asset
-      </label>
-
-      <select
-        class="xearn-upgrade-select"
-        id="xearnPaymentAsset"
-      >
-
-        <option value="USDT">
-          USDT
-        </option>
-
-        <option value="USDC">
-          USDC
-        </option>
-
-      </select>
-
-
-      <label
-        class="xearn-upgrade-label"
-        for="xearnPaymentNetwork"
-      >
-        Network
-      </label>
-
-      <select
-        class="xearn-upgrade-select"
-        id="xearnPaymentNetwork"
-      ></select>
-
-
-      <div
-        class="xearn-wallet-box"
-      >
-
-        <div
-          class="xearn-upgrade-label"
-          style="margin-top:0"
-        >
-          Payment Address
-        </div>
-
-        <div
-          class="xearn-wallet-address"
-          id="xearnWalletAddress"
-        >
-          Loading...
-        </div>
-
-        <button
-          type="button"
-          class="xearn-copy-wallet"
-          id="xearnCopyWallet"
-        >
-          COPY ADDRESS
-        </button>
-
-      </div>
-
-
-      <label
-        class="xearn-upgrade-label"
-        for="xearnTxid"
-      >
-        Transaction ID / TXID
-      </label>
-
-      <input
-        class="xearn-upgrade-input"
-        id="xearnTxid"
-        type="text"
-        autocomplete="off"
-        placeholder="Enter your transaction ID"
-      >
-
-
-      <div
-        id="xearnUpgradeStatus"
-        class="xearn-upgrade-status"
-      ></div>
-
-
-      <button
-        type="button"
-        class="xearn-submit-upgrade"
-        id="xearnSubmitUpgrade"
-      >
-        I've Paid
-      </button>
-
-
-      <div
-        class="xearn-upgrade-note"
-      >
-        Send the exact upgrade amount to the selected address and network. Enter the transaction ID after payment. Your upgrade remains pending until an admin verifies the payment.
-      </div>
-
-    </div>
-
-  `;
-
-  document.body.appendChild(
-    overlay
-  );
-
-
-  $("xearnUpgradeClose")
-    ?.addEventListener(
-      "click",
-      closeUpgradeModal
+    setText(
+        "miningTier",
+        tier
     );
 
 
-  overlay.addEventListener(
-    "click",
-    event => {
+    /* MINING REWARD */
 
-      if (
-        event.target ===
-        overlay
-      ) {
+    const miningReward =
+        MINING_REWARDS[tier] || 50;
 
-        closeUpgradeModal();
-
-      }
-
-    }
-  );
-
-
-  $("xearnPaymentAsset")
-    ?.addEventListener(
-      "change",
-      () => {
-
-        selectedPaymentAsset =
-          String(
-            $("xearnPaymentAsset")
-              .value ||
-            "USDT"
-          ).toUpperCase();
-
-        updateUpgradeWallet();
-
-      }
+    setText(
+        "miningReward",
+        "+" +
+        miningReward +
+        " XCOIN"
     );
 
 
-  $("xearnPaymentNetwork")
-    ?.addEventListener(
-      "change",
-      () => {
+    /* REFERRAL LINK */
 
-        selectedPaymentNetwork =
-          String(
-            $("xearnPaymentNetwork")
-              .value ||
-            ""
-          ).toUpperCase();
-
-        updateUpgradeWallet();
-
-      }
-    );
-
-
-  $("xearnCopyWallet")
-    ?.addEventListener(
-      "click",
-      copyUpgradeWallet
-    );
-
-
-  $("xearnSubmitUpgrade")
-    ?.addEventListener(
-      "click",
-      submitUpgradeOrder
-    );
-
-
-  upgradeModalCreated =
-    true;
-
-  updateUpgradeWallet();
-
-}
-
-
-/* =====================================================
-   SUBMIT UPGRADE ORDER
-===================================================== */
-
-async function submitUpgradeOrder() {
-
-  const button =
-    $("xearnSubmitUpgrade");
-
-  const txidInput =
-    $("xearnTxid");
-
-  const assetSelect =
-    $("xearnPaymentAsset");
-
-  const networkSelect =
-    $("xearnPaymentNetwork");
-
-
-  if (!telegramUser?.id) {
-
-    showToast(
-      "Telegram Required",
-      "Open XEARN inside Telegram."
-    );
-
-    return;
-
-  }
-
-
-  if (
-    pendingUpgradeOrderId
-  ) {
-
-    showToast(
-      "Pending Upgrade",
-      "You already have an upgrade waiting for approval."
-    );
-
-    updateUpgradeStatusUI(
-      upgradeStatus ||
-        "pending",
-
-      pendingUpgradeTier
-    );
-
-    startUpgradeStatusPolling();
-
-    return;
-
-  }
-
-
-  const tier =
-    String(
-      selectedUpgradeTier ||
-      ""
-    ).toUpperCase();
-
-  const txid =
-    String(
-      txidInput?.value ||
-      ""
-    ).trim();
-
-  const payment_asset =
-    String(
-      assetSelect?.value ||
-      selectedPaymentAsset ||
-      ""
-    )
-    .trim()
-    .toUpperCase();
-
-  const payment_network =
-    String(
-      networkSelect?.value ||
-      selectedPaymentNetwork ||
-      ""
-    )
-    .trim()
-    .toUpperCase();
-
-
-  if (
-    !XEARN_UPGRADE_TIERS[
-      tier
-    ]
-  ) {
-
-    showToast(
-      "Select Upgrade",
-      "Please select a valid upgrade tier."
-    );
-
-    return;
-
-  }
-
-
-  if (
-    !payment_asset ||
-    !payment_network
-  ) {
-
-    showToast(
-      "Payment Details",
-      "Please select a payment asset and network."
-    );
-
-    return;
-
-  }
-
-
-  if (
-    txid.length < 8
-  ) {
-
-    showToast(
-      "Transaction ID Required",
-      "Please enter a valid transaction ID."
-    );
-
-    txidInput?.focus();
-
-    return;
-
-  }
-
-
-  selectedPaymentAsset =
-    payment_asset;
-
-  selectedPaymentNetwork =
-    payment_network;
-
-
-  if (button) {
-
-    button.disabled =
-      true;
-
-    button.textContent =
-      "Submitting...";
-
-  }
-
-
-  try {
-
-    const result =
-      await callFunction(
-        "create-upgrade-order",
-        {
-          telegram_id:
-            Number(
-              telegramUser.id
-            ),
-
-          requested_tier:
-            tier,
-
-          payment_asset:
-            payment_asset,
-
-          payment_network:
-            payment_network,
-
-          txid:
-            txid
-        },
-        20000
-      );
-
+    const referralLink =
+        $("referralLink");
 
     if (
-      !result?.success
+        referralLink &&
+        telegramUser?.id
     ) {
-
-      throw new Error(
-        result?.message ||
-        "Unable to submit upgrade."
-      );
-
+        referralLink.textContent =
+            "https://t.me/XEarnmining_bot?start=ref_" +
+            telegramUser.id;
     }
 
 
-    const orderId =
-      result?.order_id ||
-      result?.orderId ||
-      result?.id ||
-      result?.result?.order_id ||
-      result?.result?.orderId ||
-      result?.result?.id;
+    /* USER NAME */
+
+    const name =
+        currentUser.full_name ||
+        currentUser.first_name ||
+        telegramUser?.first_name ||
+        "XEARN User";
+
+    setText(
+        "userName",
+        name
+    );
 
 
-    if (!orderId) {
+    /* USERNAME */
 
-      throw new Error(
-        "The upgrade was submitted but no order ID was returned."
-      );
+    setText(
+        "userTelegram",
 
+        telegramUser?.username
+            ? "@" +
+              telegramUser.username
+            : "Telegram User"
+    );
+
+
+    /* AVATAR */
+
+    const avatar =
+        document.querySelector(".avatar");
+
+    if (avatar) {
+        avatar.textContent =
+            (
+                currentUser.first_name ||
+                "X"
+            )
+                .charAt(0)
+                .toUpperCase();
     }
 
 
-    savePendingUpgrade(
-      orderId,
-      tier
-    );
-
-    upgradeApprovalNotified =
-      false;
-
-
-    if (txidInput) {
-
-      txidInput.value =
-        "";
-
-      txidInput.disabled =
-        true;
-
-    }
-
-
-    updateUpgradeStatusUI(
-      "pending",
-      tier
-    );
-
-
-    showToast(
-      "Upgrade Submitted",
-      "Thank you. Your payment is pending admin verification."
-    );
-
-
-    startUpgradeStatusPolling();
-
-
-    setTimeout(
-      () => {
-
-        closeUpgradeModal();
-
-      },
-      3500
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "Upgrade submission error:",
-      error
-    );
-
-
-    if (button) {
-
-      button.disabled =
-        false;
-
-      button.textContent =
-        "I've Paid";
-
-    }
-
-
-    if (txidInput) {
-
-      txidInput.disabled =
-        false;
-
-    }
-
-
-    showToast(
-      "Upgrade Failed",
-      error?.message ||
-        "Unable to submit your upgrade. Please try again."
-    );
-
-  }
-
+    updateMiningDisplay();
 }
 
 
-/* =====================================================
-   BUTTONS
-===================================================== */
+/* =========================================================
+   MINING DISPLAY
+   ========================================================= */
+
+function updateMiningDisplay() {
+    if (!currentUser) {
+        return;
+    }
+
+    const lastMine =
+        currentUser.last_mine_time;
+
+    const progressBar =
+        $("mineProgressBar");
+
+    const countdown =
+        $("mineCountdown");
+
+    if (!lastMine) {
+        if (progressBar) {
+            progressBar.style.width =
+                "100%";
+        }
+
+        if (countdown) {
+            countdown.textContent =
+                "Ready";
+        }
+
+        return;
+    }
+
+    const lastTime =
+        new Date(lastMine).getTime();
+
+    if (!Number.isFinite(lastTime)) {
+        if (countdown) {
+            countdown.textContent =
+                "Ready";
+        }
+
+        return;
+    }
+
+    const cycle =
+        2 *
+        60 *
+        60 *
+        1000;
+
+    const elapsed =
+        Date.now() -
+        lastTime;
+
+    if (elapsed >= cycle) {
+        if (progressBar) {
+            progressBar.style.width =
+                "100%";
+        }
+
+        if (countdown) {
+            countdown.textContent =
+                "Ready";
+        }
+
+        return;
+    }
+
+    const remaining =
+        cycle -
+        elapsed;
+
+    const percentage =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                (
+                    elapsed /
+                    cycle
+                ) *
+                100
+            )
+        );
+
+    if (progressBar) {
+        progressBar.style.width =
+            percentage +
+            "%";
+    }
+
+    const hours =
+        Math.floor(
+            remaining /
+            3600000
+        );
+
+    const minutes =
+        Math.floor(
+            (
+                remaining %
+                3600000
+            ) /
+            60000
+        );
+
+    const seconds =
+        Math.floor(
+            (
+                remaining %
+                60000
+            ) /
+            1000
+        );
+
+    if (countdown) {
+        countdown.textContent =
+            String(hours)
+                .padStart(2, "0") +
+            ":" +
+            String(minutes)
+                .padStart(2, "0") +
+            ":" +
+            String(seconds)
+                .padStart(2, "0");
+    }
+}
+
+
+setInterval(() => {
+    if (currentUser) {
+        updateMiningDisplay();
+    }
+}, 1000);
+
+
+/* =========================================================
+   WATCH VIDEO
+   MONETAG REWARDED INTERSTITIAL
+   ========================================================= */
+
+async function watchVideo() {
+    if (videoRunning) {
+        return;
+    }
+
+    if (!telegramUser?.id) {
+        showToast(
+            "Telegram Required",
+            "Open XEARN inside Telegram."
+        );
+        return;
+    }
+
+    if (
+        typeof window.show_11747212 !==
+        "function"
+    ) {
+        showToast(
+            "Video Unavailable",
+            "Please try again shortly."
+        );
+        return;
+    }
+
+    const tier =
+        getTier();
+
+    const videoLimit =
+        VIDEO_LIMITS[tier] ||
+        20;
+
+    const videosBefore =
+        getVideoCount();
+
+    if (
+        videosBefore >=
+        videoLimit
+    ) {
+        showToast(
+            "Daily Limit",
+            "You have reached today's video limit."
+        );
+        return;
+    }
+
+    videoRunning = true;
+
+    const button =
+        $("watchVideoButton");
+
+    if (button) {
+        button.disabled =
+            true;
+    }
+
+    try {
+        const ymid =
+            telegramUser.id +
+            "_video_" +
+            Date.now();
+
+        await window.show_11747212({
+            type: "end",
+            ymid: ymid,
+            requestVar: "video"
+        });
+
+        showToast(
+            "Video Finished",
+            "Waiting for reward verification..."
+        );
+
+        let verified = false;
+
+        for (
+            let attempt = 0;
+            attempt < 10;
+            attempt++
+        ) {
+            await new Promise(
+                resolve =>
+                    setTimeout(
+                        resolve,
+                        2000
+                    )
+            );
+
+            await refreshUser();
+
+            const videosAfter =
+                getVideoCount();
+
+            console.log(
+                "Video verification:",
+                {
+                    attempt:
+                        attempt + 1,
+                    before:
+                        videosBefore,
+                    after:
+                        videosAfter
+                }
+            );
+
+            if (
+                videosAfter >
+                videosBefore
+            ) {
+                verified = true;
+
+                break;
+            }
+        }
+
+        if (verified) {
+            showToast(
+                "Video Reward",
+                "Your video reward has been credited."
+            );
+        } else {
+            showToast(
+                "Reward Pending",
+                "Your reward is still being verified."
+            );
+        }
+
+    } catch (error) {
+        console.error(
+            "Video error:",
+            error
+        );
+
+        showToast(
+            "Video Not Completed",
+            "No reward was confirmed."
+        );
+
+    } finally {
+        videoRunning =
+            false;
+
+        if (button) {
+            button.disabled =
+                false;
+        }
+
+        await refreshUser();
+    }
+}
+
+
+/* =========================================================
+   START TASK
+   MONETAG REWARDED POPUP
+   ========================================================= */
+
+async function startTask() {
+    if (taskRunning) {
+        return;
+    }
+
+    if (!telegramUser?.id) {
+        showToast(
+            "Telegram Required",
+            "Please open XEARN from Telegram."
+        );
+        return;
+    }
+
+    if (
+        typeof window.show_11747212 !==
+        "function"
+    ) {
+        showToast(
+            "Task Unavailable",
+            "The task service is temporarily unavailable."
+        );
+        return;
+    }
+
+    const tier =
+        getTier();
+
+    const taskLimit =
+        TASK_LIMITS[tier] ||
+        10;
+
+    const tasksBefore =
+        getTaskCount();
+
+    if (
+        tasksBefore >=
+        taskLimit
+    ) {
+        showToast(
+            "Daily Limit",
+            "You have reached today's task limit."
+        );
+        return;
+    }
+
+
+    const confirmed =
+        window.confirm(
+            "TASK NOTICE\n\n" +
+            "Complete the task exactly as instructed.\n\n" +
+            "Tasks that are not fully completed will NOT be approved and no reward will be credited.\n\n" +
+            "Only successfully completed and verified tasks are eligible for a reward.\n\n" +
+            "Do you want to continue?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    taskRunning = true;
+
+    try {
+        const ymid =
+            telegramUser.id +
+            "_task_" +
+            Date.now();
+
+        showToast(
+            "Task Started",
+            "Complete the task exactly as instructed."
+        );
+
+
+        const adResult =
+            await window.show_11747212({
+                type: "pop",
+                ymid: ymid,
+                requestVar: "task"
+            });
+
+        console.log(
+            "Monetag task result:",
+            adResult
+        );
+
+
+        showToast(
+            "Task Submitted",
+            "Waiting for completion verification..."
+        );
+
+
+        let verified =
+            false;
+
+        for (
+            let attempt = 0;
+            attempt < 10;
+            attempt++
+        ) {
+            await new Promise(
+                resolve =>
+                    setTimeout(
+                        resolve,
+                        2000
+                    )
+            );
+
+            await refreshUser();
+
+            const tasksAfter =
+                getTaskCount();
+
+            console.log(
+                "Task verification:",
+                {
+                    attempt:
+                        attempt + 1,
+                    before:
+                        tasksBefore,
+                    after:
+                        tasksAfter
+                }
+            );
+
+            if (
+                tasksAfter >
+                tasksBefore
+            ) {
+                verified =
+                    true;
+
+                break;
+            }
+        }
+
+
+        if (verified) {
+            showToast(
+                "Task Verified",
+                "Your task reward has been credited."
+            );
+
+            await refreshUser();
+
+        } else {
+            showToast(
+                "Task Pending",
+                "Complete the task fully. Your reward will be added only after successful verification."
+            );
+        }
+
+    } catch (error) {
+        console.error(
+            "Task error:",
+            error
+        );
+
+        showToast(
+            "Task Not Completed",
+            "The task could not be completed or verified."
+        );
+
+    } finally {
+        taskRunning =
+            false;
+
+        await refreshUser();
+    }
+}
+
+
+/* =========================================================
+   DAILY CHECK-IN
+   ========================================================= */
+
+async function claimDailyCheckin() {
+    if (checkinRunning) {
+        return;
+    }
+
+    if (
+        typeof window.show_11747212 !==
+        "function"
+    ) {
+        showToast(
+            "Check-in Unavailable",
+            "Please try again shortly."
+        );
+        return;
+    }
+
+    checkinRunning =
+        true;
+
+    try {
+        await window.show_11747212({
+            type: "inApp",
+
+            inAppSettings: {
+                frequency: 2,
+                capping: 0.1,
+                interval: 30,
+                timeout: 5,
+                everyPage: false
+            }
+        });
+
+        showToast(
+            "Daily Check-in",
+            "Today's check-in has been opened."
+        );
+
+    } catch (error) {
+        console.error(
+            "Check-in error:",
+            error
+        );
+
+        showToast(
+            "Check-in",
+            "Please try again later."
+        );
+
+    } finally {
+        setTimeout(
+            () => {
+                checkinRunning =
+                    false;
+            },
+            2000
+        );
+    }
+}
+
+
+/* =========================================================
+   MINING
+   ========================================================= */
+
+async function mineXcoin() {
+    if (miningRunning) {
+        return;
+    }
+
+    if (!telegramUser?.id) {
+        showToast(
+            "Telegram Required",
+            "Open XEARN inside Telegram."
+        );
+        return;
+    }
+
+    miningRunning =
+        true;
+
+    const button =
+        $("mineButton");
+
+    if (button) {
+        button.disabled =
+            true;
+    }
+
+    try {
+        const result =
+            await callFunction(
+                "mine-xcoin",
+                {
+                    telegram_id:
+                        telegramUser.id
+                }
+            );
+
+        const reward =
+            Number(
+                result?.reward_xcoin ||
+                result?.reward ||
+                0
+            );
+
+        if (reward <= 0) {
+            throw new Error(
+                result?.message ||
+                "Mining reward was not confirmed."
+            );
+        }
+
+        await refreshUser();
+
+        showToast(
+            "Mining Complete",
+            "+" +
+            formatNumber(reward) +
+            " XCOIN"
+        );
+
+    } catch (error) {
+        console.error(
+            "Mining error:",
+            error
+        );
+
+        showToast(
+            "Mining Unavailable",
+            error.message ||
+            "Unable to complete mining."
+        );
+
+    } finally {
+        miningRunning =
+            false;
+
+        if (button) {
+            button.disabled =
+                false;
+        }
+    }
+}
+
+
+/* =========================================================
+   REFERRAL
+   ========================================================= */
+
+async function copyReferral() {
+    if (!telegramUser?.id) {
+        showToast(
+            "Referral",
+            "Telegram account not available."
+        );
+        return;
+    }
+
+    const link =
+        "https://t.me/XEarnmining_bot?start=ref_" +
+        telegramUser.id;
+
+    try {
+        await navigator.clipboard.writeText(
+            link
+        );
+
+        showToast(
+            "Copied",
+            "Your referral link has been copied."
+        );
+
+    } catch (error) {
+        console.error(
+            "Clipboard error:",
+            error
+        );
+
+        showToast(
+            "Referral Link",
+            link
+        );
+    }
+}
+
+
+/* =========================================================
+   CREATE UPGRADE MODAL
+   ========================================================= */
+
+function createUpgradeModal() {
+    if ($("xearnUpgradeModal")) {
+        return;
+    }
+
+    const modal =
+        document.createElement("div");
+
+    modal.id =
+        "xearnUpgradeModal";
+
+    modal.style.display =
+        "none";
+
+    modal.innerHTML = `
+        <div class="xearn-upgrade-overlay">
+
+            <div class="xearn-upgrade-box">
+
+                <div class="xearn-upgrade-header">
+
+                    <div>
+
+                        <div class="xearn-upgrade-title">
+                            Upgrade
+                        </div>
+
+                        <div class="xearn-upgrade-subtitle">
+                            Choose a tier to unlock higher earning limits.
+                        </div>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        id="xearnUpgradeClose"
+                        class="xearn-upgrade-close"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+
+                <div class="xearn-upgrade-section">
+
+                    <div class="xearn-upgrade-label">
+                        Select Tier
+                    </div>
+
+                    <div class="xearn-tier-grid">
+
+                        <button
+                            type="button"
+                            class="xearn-tier-option"
+                            data-upgrade-tier="BRONZE"
+                        >
+                            <strong>BRONZE</strong>
+                            <span>$5</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="xearn-tier-option"
+                            data-upgrade-tier="SILVER"
+                        >
+                            <strong>SILVER</strong>
+                            <span>$15</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="xearn-tier-option"
+                            data-upgrade-tier="GOLD"
+                        >
+                            <strong>GOLD</strong>
+                            <span>$30</span>
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="xearnUpgradePaymentArea"
+                    style="display:none;"
+                >
+
+                    <div class="xearn-upgrade-selected">
+
+                        Selected:
+
+                        <strong
+                            id="xearnSelectedTier"
+                        >
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="xearn-upgrade-section">
+
+                        <div class="xearn-upgrade-label">
+                            Payment Asset
+                        </div>
+
+                        <div class="xearn-payment-grid">
+
+                            <button
+                                type="button"
+                                class="xearn-payment-option"
+                                data-payment-asset="USDT"
+                            >
+                                USDT
+                            </button>
+
+                            <button
+                                type="button"
+                                class="xearn-payment-option"
+                                data-payment-asset="USDC"
+                            >
+                                USDC
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="xearnNetworkArea"
+                        class="xearn-upgrade-section"
+                        style="display:none;"
+                    >
+
+                        <div class="xearn-upgrade-label">
+                            Network
+                        </div>
+
+                        <div
+                            id="xearnNetworkGrid"
+                            class="xearn-network-grid"
+                        ></div>
+
+                    </div>
+
+
+                    <div
+                        id="xearnWalletArea"
+                        style="display:none;"
+                    >
+
+                        <div class="xearn-wallet-card">
+
+                            <div class="xearn-wallet-label">
+                                Send payment to:
+                            </div>
+
+                            <div
+                                id="xearnWalletNetwork"
+                                class="xearn-wallet-network"
+                            >
+                                -
+                            </div>
+
+                            <div
+                                id="xearnWalletAddress"
+                                class="xearn-wallet-address"
+                            >
+                                -
+                            </div>
+
+                            <button
+                                type="button"
+                                id="xearnCopyWallet"
+                                class="xearn-copy-wallet"
+                            >
+                                Copy Address
+                            </button>
+
+                        </div>
+
+
+                        <div class="xearn-payment-warning">
+
+                            Send exactly the required amount
+                            on the selected network.
+
+                            <br><br>
+
+                            After sending the payment,
+                            submit your transaction ID below.
+
+                        </div>
+
+
+                        <div class="xearn-tx-section">
+
+                            <label
+                                for="xearnTxid"
+                                class="xearn-upgrade-label"
+                            >
+                                Transaction ID / TXID
+                            </label>
+
+                            <input
+                                id="xearnTxid"
+                                type="text"
+                                placeholder="Paste your transaction ID"
+                                autocomplete="off"
+                            />
+
+                            <button
+                                type="button"
+                                id="xearnSubmitUpgrade"
+                                class="xearn-submit-upgrade"
+                            >
+                                I've Paid
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(
+        modal
+    );
+
+    injectUpgradeStyles();
+
+    $("xearnUpgradeClose")
+        ?.addEventListener(
+            "click",
+            closeUpgradeModal
+        );
+
+    modal
+        .querySelector(
+            ".xearn-upgrade-overlay"
+        )
+        ?.addEventListener(
+            "click",
+            event => {
+                if (
+                    event.target.classList.contains(
+                        "xearn-upgrade-overlay"
+                    )
+                ) {
+                    closeUpgradeModal();
+                }
+            }
+        );
+
+    modal
+        .querySelectorAll(
+            "[data-upgrade-tier]"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+                    selectUpgradeTier(
+                        button.dataset.upgradeTier
+                    );
+                }
+            );
+
+        });
+
+    modal
+        .querySelectorAll(
+            "[data-payment-asset]"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+                    selectPaymentAsset(
+                        button.dataset.paymentAsset
+                    );
+                }
+            );
+
+        });
+
+    $("xearnCopyWallet")
+        ?.addEventListener(
+            "click",
+            copyUpgradeWallet
+        );
+
+    $("xearnSubmitUpgrade")
+        ?.addEventListener(
+            "click",
+            submitUpgradeOrder
+        );
+}
+
+
+/* =========================================================
+   UPGRADE STYLES
+   ========================================================= */
+
+function injectUpgradeStyles() {
+    if ($("xearnUpgradeStyles")) {
+        return;
+    }
+
+    const style =
+        document.createElement("style");
+
+    style.id =
+        "xearnUpgradeStyles";
+
+    style.textContent = `
+
+        #xearnUpgradeModal {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+        }
+
+        .xearn-upgrade-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,.80);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .xearn-upgrade-box {
+            width: 100%;
+            max-width: 480px;
+            max-height: 92vh;
+            overflow-y: auto;
+            background: #07130e;
+            border: 1px solid rgba(95,255,157,.18);
+            border-radius: 22px;
+            box-shadow: 0 25px 80px rgba(0,0,0,.6);
+            color: #fff;
+        }
+
+        .xearn-upgrade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,.07);
+        }
+
+        .xearn-upgrade-title {
+            font-size: 23px;
+            font-weight: 800;
+        }
+
+        .xearn-upgrade-subtitle {
+            margin-top: 5px;
+            color: #9caea5;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .xearn-upgrade-close {
+            width: 36px;
+            height: 36px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,.08);
+            color: #fff;
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        .xearn-upgrade-section {
+            padding: 18px 20px;
+        }
+
+        .xearn-upgrade-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #b8c9c0;
+            margin-bottom: 10px;
+        }
+
+        .xearn-tier-grid {
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap: 9px;
+        }
+
+        .xearn-tier-option,
+        .xearn-payment-option,
+        .xearn-network-option {
+            border: 1px solid rgba(255,255,255,.09);
+            background: #0d2118;
+            color: #fff;
+            border-radius: 13px;
+            padding: 13px 8px;
+            cursor: pointer;
+        }
+
+        .xearn-tier-option {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .xearn-tier-option strong {
+            font-size: 13px;
+        }
+
+        .xearn-tier-option span {
+            font-size: 12px;
+            color: #91a99d;
+        }
+
+        .xearn-tier-option.selected,
+        .xearn-payment-option.selected,
+        .xearn-network-option.selected {
+            border-color: #62ef9c;
+            background: #123522;
+            box-shadow: 0 0 0 1px rgba(98,239,156,.15);
+        }
+
+        .xearn-upgrade-payment-area {
+            border-top: 1px solid rgba(255,255,255,.06);
+        }
+
+        .xearn-upgrade-selected {
+            margin: 0 20px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(98,239,156,.07);
+            color: #a7b8af;
+            font-size: 13px;
+        }
+
+        .xearn-upgrade-selected strong {
+            color: #62ef9c;
+        }
+
+        .xearn-payment-grid {
+            display: grid;
+            grid-template-columns: repeat(2,1fr);
+            gap: 10px;
+        }
+
+        .xearn-payment-option {
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .xearn-network-grid {
+            display: grid;
+            grid-template-columns: repeat(2,1fr);
+            gap: 9px;
+        }
+
+        .xearn-network-option {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .xearn-wallet-card {
+            margin: 0 20px 15px;
+            padding: 16px;
+            background: #0a1c13;
+            border: 1px solid rgba(98,239,156,.12);
+            border-radius: 15px;
+        }
+
+        .xearn-wallet-label {
+            font-size: 12px;
+            color: #91a99d;
+        }
+
+        .xearn-wallet-network {
+            margin-top: 5px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #62ef9c;
+        }
+
+        .xearn-wallet-address {
+            margin-top: 10px;
+            padding: 12px;
+            background: #050b08;
+            border-radius: 10px;
+            word-break: break-all;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #e9f5ef;
+        }
+
+        .xearn-copy-wallet {
+            width: 100%;
+            margin-top: 10px;
+            padding: 11px;
+            border: 0;
+            border-radius: 10px;
+            background: #153b27;
+            color: #8dffb7;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .xearn-payment-warning {
+            margin: 0 20px 15px;
+            padding: 13px;
+            border-radius: 12px;
+            background: rgba(255,193,7,.06);
+            border: 1px solid rgba(255,193,7,.1);
+            color: #bfcac4;
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .xearn-tx-section {
+            padding: 0 20px 20px;
+        }
+
+        #xearnTxid {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 13px;
+            border-radius: 11px;
+            border: 1px solid rgba(255,255,255,.1);
+            background: #050b08;
+            color: #fff;
+            outline: none;
+            font-size: 13px;
+        }
+
+        #xearnTxid:focus {
+            border-color: #62ef9c;
+        }
+
+        .xearn-submit-upgrade {
+            width: 100%;
+            margin-top: 12px;
+            padding: 14px;
+            border: 0;
+            border-radius: 12px;
+            background: #62ef9c;
+            color: #06120b;
+            font-size: 14px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .xearn-submit-upgrade:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        @media(max-width:360px) {
+            .xearn-tier-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .xearn-network-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    `;
+
+    document.head.appendChild(
+        style
+    );
+}
+
+
+/* =========================================================
+   OPEN UPGRADE MODAL
+   ========================================================= */
+
+function openUpgradeModal() {
+    createUpgradeModal();
+
+    const modal =
+        $("xearnUpgradeModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display =
+        "block";
+
+    selectedUpgradeTier =
+        null;
+
+    selectedPaymentAsset =
+        "USDT";
+
+    selectedPaymentNetwork =
+        "TRC20";
+
+    const paymentArea =
+        $("xearnUpgradePaymentArea");
+
+    if (paymentArea) {
+        paymentArea.style.display =
+            "none";
+    }
+
+    document
+        .querySelectorAll(
+            ".xearn-tier-option"
+        )
+        .forEach(button => {
+            button.classList.remove(
+                "selected"
+            );
+        });
+
+    document
+        .querySelectorAll(
+            ".xearn-payment-option"
+        )
+        .forEach(button => {
+            button.classList.remove(
+                "selected"
+            );
+        });
+
+    const networkArea =
+        $("xearnNetworkArea");
+
+    if (networkArea) {
+        networkArea.style.display =
+            "none";
+    }
+
+    const walletArea =
+        $("xearnWalletArea");
+
+    if (walletArea) {
+        walletArea.style.display =
+            "none";
+    }
+
+    const txid =
+        $("xearnTxid");
+
+    if (txid) {
+        txid.value = "";
+    }
+}
+
+
+/* =========================================================
+   CLOSE UPGRADE MODAL
+   ========================================================= */
+
+function closeUpgradeModal() {
+    const modal =
+        $("xearnUpgradeModal");
+
+    if (modal) {
+        modal.style.display =
+            "none";
+    }
+}
+
+
+/* =========================================================
+   SELECT UPGRADE TIER
+   ========================================================= */
+
+function selectUpgradeTier(tier) {
+    if (!UPGRADE_TIERS[tier]) {
+        return;
+    }
+
+    selectedUpgradeTier =
+        tier;
+
+    document
+        .querySelectorAll(
+            ".xearn-tier-option"
+        )
+        .forEach(button => {
+            button.classList.toggle(
+                "selected",
+                button.dataset.upgradeTier ===
+                tier
+            );
+        });
+
+    setText(
+        "xearnSelectedTier",
+        tier +
+        " - $" +
+        UPGRADE_TIERS[tier]
+    );
+
+    const paymentArea =
+        $("xearnUpgradePaymentArea");
+
+    if (paymentArea) {
+        paymentArea.style.display =
+            "block";
+    }
+
+    selectPaymentAsset(
+        selectedPaymentAsset
+    );
+}
+
+
+/* =========================================================
+   SELECT PAYMENT ASSET
+   ========================================================= */
+
+function selectPaymentAsset(asset) {
+    if (!PAYMENT_METHODS[asset]) {
+        return;
+    }
+
+    if (!selectedUpgradeTier) {
+        showToast(
+            "Upgrade",
+            "Select a tier first."
+        );
+        return;
+    }
+
+    selectedPaymentAsset =
+        asset;
+
+    selectedPaymentNetwork =
+        null;
+
+    document
+        .querySelectorAll(
+            ".xearn-payment-option"
+        )
+        .forEach(button => {
+            button.classList.toggle(
+                "selected",
+                button.dataset.paymentAsset ===
+                asset
+            );
+        });
+
+    renderPaymentNetworks(
+        asset
+    );
+}
+
+
+/* =========================================================
+   RENDER PAYMENT NETWORKS
+   ========================================================= */
+
+function renderPaymentNetworks(asset) {
+    const networkGrid =
+        $("xearnNetworkGrid");
+
+    const networkArea =
+        $("xearnNetworkArea");
+
+    const walletArea =
+        $("xearnWalletArea");
+
+    if (!networkGrid) {
+        return;
+    }
+
+    networkGrid.innerHTML =
+        "";
+
+    const networks =
+        Object.keys(
+            PAYMENT_METHODS[asset]
+        );
+
+    networks.forEach(
+        network => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.type =
+                "button";
+
+            button.className =
+                "xearn-network-option";
+
+            button.dataset.network =
+                network;
+
+            button.textContent =
+                network;
+
+            button.addEventListener(
+                "click",
+                () => {
+                    selectPaymentNetwork(
+                        network
+                    );
+                }
+            );
+
+            networkGrid.appendChild(
+                button
+            );
+        }
+    );
+
+    if (networkArea) {
+        networkArea.style.display =
+            "block";
+    }
+
+    if (walletArea) {
+        walletArea.style.display =
+            "none";
+    }
+}
+
+
+/* =========================================================
+   SELECT PAYMENT NETWORK
+   ========================================================= */
+
+function selectPaymentNetwork(network) {
+    if (!selectedPaymentAsset) {
+        return;
+    }
+
+    const wallet =
+        PAYMENT_METHODS[
+            selectedPaymentAsset
+        ]?.[network];
+
+    if (!wallet) {
+        showToast(
+            "Network Error",
+            "This payment network is not available."
+        );
+        return;
+    }
+
+    selectedPaymentNetwork =
+        network;
+
+    document
+        .querySelectorAll(
+            ".xearn-network-option"
+        )
+        .forEach(button => {
+            button.classList.toggle(
+                "selected",
+                button.dataset.network ===
+                network
+            );
+        });
+
+    setText(
+        "xearnWalletNetwork",
+        selectedPaymentAsset +
+        " " +
+        network
+    );
+
+    setText(
+        "xearnWalletAddress",
+        wallet
+    );
+
+    const walletArea =
+        $("xearnWalletArea");
+
+    if (walletArea) {
+        walletArea.style.display =
+            "block";
+    }
+}
+
+
+/* =========================================================
+   COPY UPGRADE WALLET
+   ========================================================= */
+
+async function copyUpgradeWallet() {
+    if (
+        !selectedPaymentAsset ||
+        !selectedPaymentNetwork
+    ) {
+        showToast(
+            "Payment",
+            "Select a payment network first."
+        );
+        return;
+    }
+
+    const wallet =
+        PAYMENT_METHODS[
+            selectedPaymentAsset
+        ]?.[
+            selectedPaymentNetwork
+        ];
+
+    if (!wallet) {
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(
+            wallet
+        );
+
+        showToast(
+            "Copied",
+            "Wallet address copied."
+        );
+
+    } catch {
+        showToast(
+            "Wallet Address",
+            wallet
+        );
+    }
+}
+
+
+/* =========================================================
+   SUBMIT UPGRADE
+   ========================================================= */
+
+async function submitUpgradeOrder() {
+    console.log(
+        "XEARN upgrade submit clicked"
+    );
+
+    if (
+        !telegramUser ||
+        !telegramUser.id
+    ) {
+        showToast(
+            "Error",
+            "Telegram account not detected."
+        );
+        return;
+    }
+
+    const txidInput =
+        $("xearnTxid");
+
+    if (!txidInput) {
+        showToast(
+            "Error",
+            "TXID field not found."
+        );
+        return;
+    }
+
+    const txid =
+        txidInput.value.trim();
+
+    if (!txid) {
+        showToast(
+            "TXID Required",
+            "Please enter your transaction ID."
+        );
+        return;
+    }
+
+    if (txid.length < 8) {
+        showToast(
+            "Invalid TXID",
+            "Please enter a valid transaction ID."
+        );
+        return;
+    }
+
+    if (!selectedUpgradeTier) {
+        showToast(
+            "Select Tier",
+            "Please select an upgrade tier."
+        );
+        return;
+    }
+
+    if (!selectedPaymentAsset) {
+        showToast(
+            "Select Payment",
+            "Please select USDT or USDC."
+        );
+        return;
+    }
+
+    if (!selectedPaymentNetwork) {
+        showToast(
+            "Select Network",
+            "Please select a payment network."
+        );
+        return;
+    }
+
+    const button =
+        $("xearnSubmitUpgrade");
+
+    if (button) {
+        button.disabled =
+            true;
+
+        button.textContent =
+            "Submitting...";
+    }
+
+    try {
+        const payload = {
+            telegram_id:
+                Number(
+                    telegramUser.id
+                ),
+
+            requested_tier:
+                String(
+                    selectedUpgradeTier
+                ).toUpperCase(),
+
+            payment_asset:
+                String(
+                    selectedPaymentAsset
+                ).toUpperCase(),
+
+            payment_network:
+                String(
+                    selectedPaymentNetwork
+                ).toUpperCase(),
+
+            txid:
+                txid
+        };
+
+        const result =
+            await callFunction(
+                "create-upgrade-order",
+                payload
+            );
+
+        console.log(
+            "XEARN upgrade response:",
+            result
+        );
+
+        if (
+            result &&
+            result.success === true
+        ) {
+            showToast(
+                "Payment Submitted",
+                "Your payment is pending admin verification."
+            );
+
+            txidInput.value =
+                "";
+
+            setTimeout(
+                () => {
+                    closeUpgradeModal();
+                },
+                1800
+            );
+
+            return;
+        }
+
+        throw new Error(
+            result?.message ||
+            result?.error ||
+            "The upgrade order could not be submitted."
+        );
+
+    } catch (error) {
+        console.error(
+            "XEARN upgrade error:",
+            error
+        );
+
+        showToast(
+            "Submission Failed",
+            error?.message ||
+            "Unable to submit your upgrade."
+        );
+
+    } finally {
+        if (button) {
+            button.disabled =
+                false;
+
+            button.textContent =
+                "I've Paid";
+        }
+    }
+}
+
+
+/* =========================================================
+   OPEN UPGRADE SCREEN
+   ========================================================= */
+
+function openUpgradeScreen() {
+    showScreen(
+        "upgrade"
+    );
+
+    openUpgradeModal();
+}
+
+
+/* =========================================================
+   BUTTON SETUP
+   ========================================================= */
 
 function setupButtons() {
 
-
-  /* Navigation */
-
-  document
-    .querySelectorAll(
-      ".bottom-nav .nav-item"
-    )
-    .forEach(
-      button => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            showScreen(
-              button.dataset.target
-            );
-
-
-            if (
-              button.dataset.target ===
-              "upgrade"
-            ) {
-
-              openUpgradeScreen();
-
-            }
-
-          }
-        );
-
-      }
+    console.log(
+        "Setting up XEARN buttons..."
     );
 
 
-  /* Home Earn */
+    /* BOTTOM NAV */
 
-  $("earnButton")
-    ?.addEventListener(
-      "click",
-      () =>
-        showScreen(
-          "earn"
+    document
+        .querySelectorAll(
+            ".bottom-nav .nav-item"
         )
-    );
+        .forEach(button => {
 
+            button.addEventListener(
+                "click",
+                () => {
 
-  /* Upgrade navigation button */
+                    const target =
+                        button.dataset.target;
 
-  document
-    .querySelectorAll(
-      '[data-target="upgrade"], #upgradeButton'
-    )
-    .forEach(
-      button => {
+                    if (!target) {
+                        return;
+                    }
 
-        button.addEventListener(
-          "click",
-          event => {
-
-            event.preventDefault();
-
-            openUpgradeScreen();
-
-          }
-        );
-
-      }
-    );
-
-
-  /* Upgrade tier cards */
-
-  document
-    .querySelectorAll(
-      ".plan-card[data-plan]"
-    )
-    .forEach(
-      button => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            const tier =
-              String(
-                button.dataset.plan ||
-                ""
-              ).toUpperCase();
-
-            openUpgradeScreen(
-              tier
+                    if (
+                        target ===
+                        "upgrade"
+                    ) {
+                        openUpgradeScreen();
+                    } else {
+                        showScreen(
+                            target
+                        );
+                    }
+                }
             );
 
-          }
+        });
+
+
+    /* EARN */
+
+    $("earnButton")
+        ?.addEventListener(
+            "click",
+            () => {
+                showScreen(
+                    "earn"
+                );
+            }
         );
 
-      }
-    );
 
+    /* WATCH VIDEO */
 
-  /* Video */
-
-  $("watchVideoButton")
-    ?.addEventListener(
-      "click",
-      watchVideo
-    );
-
-
-  $("earnVideoItem")
-    ?.addEventListener(
-      "click",
-      watchVideo
-    );
-
-
-  /* Task */
-
-  $("taskItem")
-    ?.addEventListener(
-      "click",
-      startTask
-    );
-
-
-  /* Check-in */
-
-  $("checkinButton")
-    ?.addEventListener(
-      "click",
-      claimDailyCheckin
-    );
-
-
-  $("checkinItem")
-    ?.addEventListener(
-      "click",
-      claimDailyCheckin
-    );
-
-
-  /* Mining */
-
-  $("mineButton")
-    ?.addEventListener(
-      "click",
-      mineXcoin
-    );
-
-
-  /* Referral */
-
-  $("copyReferralButton")
-    ?.addEventListener(
-      "click",
-      copyReferral
-    );
-
-
-  /* Withdraw */
-
-  $("withdrawButton")
-    ?.addEventListener(
-      "click",
-      () => {
-
-        showToast(
-          "Withdraw",
-          "Withdrawal section is being connected."
+    $("watchVideoButton")
+        ?.addEventListener(
+            "click",
+            watchVideo
         );
 
-      }
-    );
-
-
-  $("withdrawAccountButton")
-    ?.addEventListener(
-      "click",
-      () => {
-
-        showToast(
-          "Withdraw",
-          "Withdrawal section is being connected."
+    $("earnVideoItem")
+        ?.addEventListener(
+            "click",
+            watchVideo
         );
 
-      }
-    );
 
+    /* TASK */
 
-  /* History */
-
-  $("historyButton")
-    ?.addEventListener(
-      "click",
-      () => {
-
-        showToast(
-          "History",
-          "Transaction history is being connected."
+    $("taskItem")
+        ?.addEventListener(
+            "click",
+            startTask
         );
 
-      }
-    );
+    $("earnTaskItem")
+        ?.addEventListener(
+            "click",
+            startTask
+        );
 
+
+    /* CHECK-IN */
+
+    $("checkinItem")
+        ?.addEventListener(
+            "click",
+            claimDailyCheckin
+        );
+
+    $("earnCheckinItem")
+        ?.addEventListener(
+            "click",
+            claimDailyCheckin
+        );
+
+
+    /* MINING */
+
+    $("mineButton")
+        ?.addEventListener(
+            "click",
+            mineXcoin
+        );
+
+
+    /* REFERRAL */
+
+    $("copyReferralButton")
+        ?.addEventListener(
+            "click",
+            copyReferral
+        );
+
+
+    /* WITHDRAW */
+
+    $("withdrawButton")
+        ?.addEventListener(
+            "click",
+            () => {
+                showToast(
+                    "Withdraw",
+                    "Withdrawal section is being connected."
+                );
+            }
+        );
+
+    $("withdrawAccountButton")
+        ?.addEventListener(
+            "click",
+            () => {
+                showToast(
+                    "Withdraw",
+                    "Withdrawal section is being connected."
+                );
+            }
+        );
+
+
+    /* HISTORY */
+
+    $("historyButton")
+        ?.addEventListener(
+            "click",
+            () => {
+                showToast(
+                    "History",
+                    "Transaction history is being connected."
+                );
+            }
+        );
+
+
+    /* UPGRADE */
+
+    $("upgradeButton")
+        ?.addEventListener(
+            "click",
+            openUpgradeScreen
+        );
+
+
+    console.log(
+        "XEARN buttons ready."
+    );
 }
 
 
-/* =====================================================
+/* =========================================================
    START XEARN
-===================================================== */
+   ========================================================= */
 
 async function startXEARN() {
 
-  console.log(
-    "XEARN starting..."
-  );
-
-
-  /*
-    CRITICAL:
-    The dashboard is shown immediately.
-    Authentication happens afterwards.
-  */
-
-  hideLoading();
-
-  showScreen(
-    "home"
-  );
-
-
-  try {
-
-    const ready =
-      initializeTelegram();
-
-    if (!ready) {
-
-      return;
-
-    }
-
-
-    createUpgradeModal();
-
-    loadPendingUpgrade();
-
-    setupButtons();
-
-
-    /*
-      Authenticate in the background.
-    */
-
-    await authenticateUser();
-
-
-    /*
-      If a user submitted an upgrade before
-      closing the Mini App, continue checking it.
-    */
-
-    if (
-      pendingUpgradeOrderId
-    ) {
-
-      updateUpgradeStatusUI(
-        upgradeStatus ||
-          "pending",
-
-        pendingUpgradeTier
-      );
-
-      startUpgradeStatusPolling();
-
-    }
-
-
-  } catch (error) {
-
-    console.error(
-      "Startup error:",
-      error
+    console.log(
+        "XEARN starting..."
     );
-
-    createFallbackUser();
-
-  } finally {
 
     hideLoading();
 
-  }
+    createUpgradeModal();
 
+    showScreen(
+        "home"
+    );
+
+    try {
+
+        const ready =
+            initializeTelegram();
+
+        setupButtons();
+
+        if (!ready) {
+            createFallbackUser();
+            return;
+        }
+
+        await authenticateUser();
+
+    } catch (error) {
+
+        console.error(
+            "XEARN startup error:",
+            error
+        );
+
+        createFallbackUser();
+
+    } finally {
+        hideLoading();
+    }
 }
 
 
-/* =====================================================
-   REFRESH EVERY 30 SECONDS
-===================================================== */
+/* =========================================================
+   REFRESH USER EVERY 30 SECONDS
+   ========================================================= */
 
 setInterval(
-  () => {
+    () => {
 
-    if (
-      telegramUser &&
-      currentUser
-    ) {
+        if (
+            telegramUser &&
+            currentUser
+        ) {
+            refreshUser();
+        }
 
-      refreshUser();
-
-    }
-
-  },
-  30000
+    },
+    30000
 );
 
 
-/* =====================================================
+/* =========================================================
    BOOT
-===================================================== */
+   ========================================================= */
 
 if (
-  document.readyState ===
-  "loading"
+    document.readyState ===
+    "loading"
 ) {
 
-  document.addEventListener(
-    "DOMContentLoaded",
-    startXEARN
-  );
+    document.addEventListener(
+        "DOMContentLoaded",
+        startXEARN
+    );
 
 } else {
 
-  startXEARN();
+    startXEARN();
 
 }
