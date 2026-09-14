@@ -1433,211 +1433,225 @@ async function watchVideo() {
    START TASK
    MONETAG REWARDED POPUP
    ========================================================= */
-
 async function startTask() {
+  try {
+    // Make sure Telegram user exists
+    if (!telegramUser || !telegramUser.id) {
+      showToast("Please open XEARN from Telegram.");
+      return;
+    }
 
-  if (taskRunning) {
-    return;
-  }
+    // Make sure Monetag SDK is available
+    if (typeof show_11747212 !== "function") {
+      showToast("Task service is temporarily unavailable.");
+      return;
+    }
 
-
-  if (!telegramUser) {
-
-    showToast(
-      "Telegram Required",
-      "Open XEARN inside Telegram."
+    // Check current task count
+    const tasks = Number(
+      currentUser?.tasks_completed_today ||
+      currentUser?.tasks_completed ||
+      currentUser?.completed_tasks ||
+      0
     );
 
-    return;
-
-  }
-
-
-  if (
-    typeof window.show_11747212 !==
-    "function"
-  ) {
-
-    showToast(
-      "Task Unavailable",
-      "Please try again shortly."
-    );
-
-    return;
-
-  }
-
-
-  const tier =
-    String(
-      currentUser?.tier ||
-      "FREE"
+    const tier = String(
+      currentUser?.tier || "FREE"
     ).toUpperCase();
 
+    const taskLimits = {
+      FREE: 10,
+      BRONZE: 20,
+      SILVER: 30,
+      GOLD: 50
+    };
 
-  const taskLimits = {
+    const taskLimit = taskLimits[tier] || 10;
 
-    FREE: 10,
+    if (tasks >= taskLimit) {
+      showToast(
+        `You have reached today's ${taskLimit} task limit.`
+      );
+      return;
+    }
 
-    BRONZE: 20,
+    /*
+      Confirmation / task rules notice.
 
-    SILVER: 30,
+      Clicking the task button does NOT mean
+      the task is completed.
+    */
 
-    GOLD: 50
-
-  };
-
-
-  const taskLimit =
-    taskLimits[tier] ||
-    10;
-
-
-  const tasks =
-    Number(
-      currentUser?.tasks_completed_today ||
-      0
+    const confirmed = window.confirm(
+      "TASK NOTICE\n\n" +
+      "Complete the task exactly as instructed.\n\n" +
+      "Tasks that are not fully completed will NOT be approved and no reward will be credited.\n\n" +
+      "Only successfully completed and verified tasks are eligible for a reward.\n\n" +
+      "Do you want to continue?"
     );
 
+    if (!confirmed) {
+      return;
+    }
 
-  if (
-    tasks >=
-    taskLimit
-  ) {
-
-    showToast(
-      "Daily Limit",
-      "You have reached today's task limit."
-    );
-
-    return;
-
-  }
-
-
-  taskRunning =
-    true;
-
-
-  const oldBalance =
-    Number(
-      currentUser?.balance_xcoin ||
-      0
-    );
-
-
-  try {
-
+    // Generate a unique Monetag YMID
     const ymid =
-      telegramUser.id +
-      "_task_" +
-      Date.now();
+      `${telegramUser.id}_task_${Date.now()}`;
 
+    // Show task loading message
+    showToast("Opening task...");
 
-    await window.show_11747212({
+    /*
+      Open Monetag Rewarded Popup.
 
-      type:
-        "pop",
+      requestVar remains "task" on the frontend.
+      Monetag may return its own request_var such as
+      "11747212_task" in the server postback.
+    */
 
-      ymid:
-        ymid,
+    let adResult = null;
 
-      requestVar:
-        "task"
-
-    });
-
-
-    let verified =
-      false;
-
-
-    for (
-      let i = 0;
-      i < 5;
-      i++
-    ) {
-
-      await new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            1500
-          )
+    try {
+      adResult = await show_11747212({
+        type: "pop",
+        ymid: ymid,
+        requestVar: "task"
+      });
+    } catch (adError) {
+      console.error(
+        "Monetag task error:",
+        adError
       );
 
+      showToast(
+        "The task could not be opened. Please try again."
+      );
 
-      await refreshUser();
+      return;
+    }
 
+    console.log(
+      "Monetag task result:",
+      adResult
+    );
 
-      const newBalance =
-        Number(
-          currentUser?.balance_xcoin ||
+    /*
+      IMPORTANT:
+
+      Opening the task is NOT the same as completing it.
+
+      We now give the Monetag postback some time
+      to reach Supabase and verify the result.
+    */
+
+    showToast(
+      "Task submitted. Waiting for verification..."
+    );
+
+    const balanceBefore = Number(
+      currentUser?.balance_xcoin || 0
+    );
+
+    let verified = false;
+
+    /*
+      Check the account several times.
+
+      We check BOTH:
+      - balance
+      - tasks_completed_today
+
+      This prevents the frontend from assuming
+      that simply opening the task earned a reward.
+    */
+
+    for (let i = 0; i < 10; i++) {
+      await new Promise(resolve =>
+        setTimeout(resolve, 2000)
+      );
+
+      try {
+        await refreshUser();
+
+        const newBalance = Number(
+          currentUser?.balance_xcoin || 0
+        );
+
+        const newTasks = Number(
+          currentUser?.tasks_completed_today ||
+          currentUser?.tasks_completed ||
+          currentUser?.completed_tasks ||
           0
         );
 
-
-      if (
-        newBalance >
-        oldBalance
-      ) {
-
-        verified =
-          true;
-
-
-        const earned =
-          newBalance -
-          oldBalance;
-
-
-        showToast(
-          "Task Completed!",
-          "+" +
-          formatNumber(
-            earned
-          ) +
-          " XCOIN"
+        console.log(
+          "Task verification:",
+          {
+            attempt: i + 1,
+            balanceBefore,
+            newBalance,
+            tasksBefore: tasks,
+            newTasks
+          }
         );
 
+        /*
+          A task is considered verified only when
+          the backend actually records the task/reward.
+        */
 
-        break;
-
+        if (
+          newTasks > tasks ||
+          newBalance > balanceBefore
+        ) {
+          verified = true;
+          break;
+        }
+      } catch (refreshError) {
+        console.error(
+          "Task verification refresh error:",
+          refreshError
+        );
       }
-
     }
 
-
-    if (!verified) {
-
+    if (verified) {
       showToast(
-        "Task Submitted",
-        "Your reward is being verified."
+        "Task verified. Your reward has been credited."
       );
 
+      // Refresh the interface immediately
+      await refreshUser();
+
+      return;
     }
 
-  } catch (error) {
+    /*
+      No verified reward yet.
 
+      This does NOT mean the user failed.
+      Monetag may send the final postback later.
+    */
+
+    showToast(
+      "Task submitted. Your reward is being verified."
+    );
+
+  } catch (error) {
     console.error(
-      "Task error:",
+      "startTask error:",
       error
     );
 
-
     showToast(
-      "Task Not Completed",
-      "Please try again."
+      "Unable to start the task. Please try again."
     );
-
-  } finally {
-
-    taskRunning =
-      false;
-
   }
-
 }
+
+        
+
+
 
 
 /* =========================================================
