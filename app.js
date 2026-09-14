@@ -685,6 +685,7 @@ async function watchVideo() {
       requestVar: "video"
     });
 
+
     /*
       DO NOT CREDIT HERE.
 
@@ -803,10 +804,24 @@ async function startTask() {
 
   const oldBalance =
     Number(
-      currentUser?.balance_xcoin || 0
+      currentUser?.balance_xcoin ||
+      0
+    );
+
+  const oldTaskCount =
+    Number(
+      currentUser?.tasks_completed_today ??
+      currentUser?.tasks_completed ??
+      currentUser?.completed_tasks ??
+      0
     );
 
   try {
+
+    showToast(
+      "Task Started",
+      "Complete the task exactly as instructed. Only successfully verified tasks earn XCOIN."
+    );
 
     const ymid =
       telegramUser.id +
@@ -823,7 +838,7 @@ async function startTask() {
 
     for (
       let i = 0;
-      i < 5;
+      i < 10;
       i++
     ) {
 
@@ -831,7 +846,7 @@ async function startTask() {
         resolve =>
           setTimeout(
             resolve,
-            1500
+            2000
           )
       );
 
@@ -843,22 +858,39 @@ async function startTask() {
           0
         );
 
+      const newTaskCount =
+        Number(
+          currentUser?.tasks_completed_today ??
+          currentUser?.tasks_completed ??
+          currentUser?.completed_tasks ??
+          0
+        );
+
       if (
         newBalance >
-        oldBalance
+          oldBalance ||
+        newTaskCount >
+          oldTaskCount
       ) {
 
         verified = true;
 
         const earned =
-          newBalance -
-          oldBalance;
+          Math.max(
+            0,
+            newBalance -
+            oldBalance
+          );
 
         showToast(
-          "Task Completed!",
-          "+" +
-          formatNumber(earned) +
-          " XCOIN"
+          "Task Completed",
+          earned > 0
+            ? "+" +
+              formatNumber(
+                earned
+              ) +
+              " XCOIN"
+            : "Your task was successfully verified."
         );
 
         break;
@@ -868,8 +900,8 @@ async function startTask() {
     if (!verified) {
 
       showToast(
-        "Task Submitted",
-        "Your reward is being verified."
+        "Task Pending",
+        "The task was not verified yet. Incomplete tasks do not receive a reward."
       );
 
     }
@@ -883,12 +915,13 @@ async function startTask() {
 
     showToast(
       "Task Not Completed",
-      "Please try again."
+      "The task was not completed or verified. No reward was added."
     );
 
   } finally {
 
     taskRunning = false;
+
   }
 }
 
@@ -966,15 +999,19 @@ async function claimDailyCheckin() {
 
   } finally {
 
-    setTimeout(() => {
+    setTimeout(
+      () => {
 
-      checkinRunning = false;
+        checkinRunning = false;
 
-      if (button) {
-        button.disabled = false;
-      }
+        if (button) {
+          button.disabled = false;
+        }
 
-    }, 2000);
+      },
+      2000
+    );
+
   }
 }
 
@@ -1030,6 +1067,7 @@ async function mineXcoin() {
         result?.message ||
         "Mining reward was not confirmed."
       );
+
     }
 
     await refreshUser();
@@ -1061,6 +1099,7 @@ async function mineXcoin() {
     if (button) {
       button.disabled = false;
     }
+
   }
 }
 
@@ -1095,6 +1134,7 @@ async function copyReferral() {
       "Referral Link",
       link
     );
+
   }
 }
 
@@ -1105,31 +1145,79 @@ async function copyReferral() {
 ===================================================== */
 
 const XEARN_UPGRADE_TIERS = {
-  BRONZE: { price: 5 },
-  SILVER: { price: 15 },
-  GOLD: { price: 30 }
+
+  BRONZE: {
+    price: 5
+  },
+
+  SILVER: {
+    price: 15
+  },
+
+  GOLD: {
+    price: 30
+  }
+
 };
 
 const XEARN_PAYMENT_METHODS = {
+
   USDT: {
-    BEP20: "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
-    ERC20: "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
-    TRC20: "TSvw8wApc97mYsq59eohym2Bv5jpxNAdTJ",
-    TON: "UQB4IcjcNbzsQ-MRchgdspVZ4tPuFFM6CVRtfU709kelf2D",
-    SOL: "CEPxJr7nhrne1Bnu1n2hXnZjYwawthy8xMEZxTc4Dztd"
+
+    BEP20:
+      "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
+
+    ERC20:
+      "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
+
+    TRC20:
+      "TSvw8wApc97mYsq59eohym2Bv5jpxNAdTJ",
+
+    TON:
+      "UQB4IcjcNbzsQ-MRchgdspVZ4tPuFFM6CVRtfU709kelf2D",
+
+    SOL:
+      "CEPxJr7nhrne1Bnu1n2hXnZjYwawthy8xMEZxTc4Dztd"
+
   },
+
   USDC: {
-    BEP20: "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
-    ERC20: "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995"
+
+    BEP20:
+      "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
+
+    ERC20:
+      "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995"
+
   }
+
 };
 
-function savePendingUpgrade(orderId, tier) {
-  pendingUpgradeOrderId = String(orderId || "");
-  pendingUpgradeTier = String(tier || "").toUpperCase();
-  upgradeStatus = "pending";
+
+/* =====================================================
+   SAVE PENDING UPGRADE
+===================================================== */
+
+function savePendingUpgrade(
+  orderId,
+  tier
+) {
+
+  pendingUpgradeOrderId =
+    String(
+      orderId || ""
+    );
+
+  pendingUpgradeTier =
+    String(
+      tier || ""
+    ).toUpperCase();
+
+  upgradeStatus =
+    "pending";
 
   try {
+
     localStorage.setItem(
       "xearn_pending_upgrade_order_id",
       pendingUpgradeOrderId
@@ -1151,8 +1239,14 @@ function savePendingUpgrade(orderId, tier) {
       "Unable to save upgrade state:",
       error
     );
+
   }
 }
+
+
+/* =====================================================
+   LOAD PENDING UPGRADE
+===================================================== */
 
 function loadPendingUpgrade() {
 
@@ -1179,23 +1273,42 @@ function loadPendingUpgrade() {
       "Unable to load upgrade state:",
       error
     );
+
   }
 
   if (!pendingUpgradeOrderId) {
 
-    pendingUpgradeOrderId = null;
-    pendingUpgradeTier = null;
-    upgradeStatus = null;
+    pendingUpgradeOrderId =
+      null;
+
+    pendingUpgradeTier =
+      null;
+
+    upgradeStatus =
+      null;
 
   }
+
 }
+
+
+/* =====================================================
+   CLEAR PENDING UPGRADE
+===================================================== */
 
 function clearPendingUpgrade() {
 
-  pendingUpgradeOrderId = null;
-  pendingUpgradeTier = null;
-  upgradeStatus = null;
-  upgradeApprovalNotified = false;
+  pendingUpgradeOrderId =
+    null;
+
+  pendingUpgradeTier =
+    null;
+
+  upgradeStatus =
+    null;
+
+  upgradeApprovalNotified =
+    false;
 
   try {
 
@@ -1217,12 +1330,28 @@ function clearPendingUpgrade() {
       "Unable to clear upgrade state:",
       error
     );
+
   }
+
 }
 
+
+/* =====================================================
+   STATUS BOX
+===================================================== */
+
 function getUpgradeStatusBox() {
-  return $("xearnUpgradeStatus");
+
+  return $(
+    "xearnUpgradeStatus"
+  );
+
 }
+
+
+/* =====================================================
+   UPDATE UPGRADE STATUS UI
+===================================================== */
 
 function updateUpgradeStatusUI(
   status,
@@ -1240,9 +1369,11 @@ function updateUpgradeStatusUI(
     $("xearnTxid");
 
   const normalizedStatus =
-    String(status || "")
-      .trim()
-      .toLowerCase();
+    String(
+      status || ""
+    )
+    .trim()
+    .toLowerCase();
 
   const normalizedTier =
     String(
@@ -1250,17 +1381,25 @@ function updateUpgradeStatusUI(
       pendingUpgradeTier ||
       selectedUpgradeTier ||
       ""
-    ).toUpperCase();
+    )
+    .toUpperCase();
 
   if (!box) {
     return;
   }
 
-  box.style.display = "block";
+  box.style.display =
+    "block";
 
   box.className =
     "xearn-upgrade-status xearn-status-" +
-    (normalizedStatus || "pending");
+    (
+      normalizedStatus ||
+      "pending"
+    );
+
+
+  /* APPROVED */
 
   if (
     normalizedStatus ===
@@ -1274,17 +1413,27 @@ function updateUpgradeStatusUI(
       " upgrade has been approved and activated.</span>";
 
     if (button) {
-      button.disabled = true;
+
+      button.disabled =
+        true;
+
       button.textContent =
         "Upgrade Approved";
+
     }
 
     if (txidInput) {
-      txidInput.disabled = true;
+
+      txidInput.disabled =
+        true;
+
     }
 
     return;
   }
+
+
+  /* REJECTED */
 
   if (
     normalizedStatus ===
@@ -1301,17 +1450,27 @@ function updateUpgradeStatusUI(
       "</span>";
 
     if (button) {
-      button.disabled = false;
+
+      button.disabled =
+        false;
+
       button.textContent =
         "I've Paid";
+
     }
 
     if (txidInput) {
-      txidInput.disabled = false;
+
+      txidInput.disabled =
+        false;
+
     }
 
     return;
   }
+
+
+  /* CANCELLED */
 
   if (
     normalizedStatus ===
@@ -1323,17 +1482,27 @@ function updateUpgradeStatusUI(
       "<span>This upgrade request was cancelled.</span>";
 
     if (button) {
-      button.disabled = false;
+
+      button.disabled =
+        false;
+
       button.textContent =
         "I've Paid";
+
     }
 
     if (txidInput) {
-      txidInput.disabled = false;
+
+      txidInput.disabled =
+        false;
+
     }
 
     return;
   }
+
+
+  /* PENDING */
 
   box.innerHTML =
     "<strong>Pending Approval</strong>" +
@@ -1342,15 +1511,28 @@ function updateUpgradeStatusUI(
     " upgrade is waiting for admin payment verification.</span>";
 
   if (button) {
-    button.disabled = true;
+
+    button.disabled =
+      true;
+
     button.textContent =
       "Pending Approval";
+
   }
 
   if (txidInput) {
-    txidInput.disabled = true;
+
+    txidInput.disabled =
+      true;
+
   }
+
 }
+
+
+/* =====================================================
+   CHECK UPGRADE STATUS
+===================================================== */
 
 async function checkUpgradeStatus(
   showMessages = true
@@ -1360,7 +1542,9 @@ async function checkUpgradeStatus(
     !telegramUser ||
     !pendingUpgradeOrderId
   ) {
+
     return null;
+
   }
 
   try {
@@ -1388,20 +1572,23 @@ async function checkUpgradeStatus(
         result?.message ||
         "Unable to check upgrade status."
       );
+
     }
 
     const status =
       String(
         result.status ||
         "pending"
-      ).toLowerCase();
+      )
+      .toLowerCase();
 
     const tier =
       String(
         result.requested_tier ||
         pendingUpgradeTier ||
         ""
-      ).toUpperCase();
+      )
+      .toUpperCase();
 
     upgradeStatus =
       status;
@@ -1423,11 +1610,16 @@ async function checkUpgradeStatus(
 
     } catch (_) {}
 
+
     updateUpgradeStatusUI(
       status,
       tier,
-      result.admin_note || ""
+      result.admin_note ||
+      ""
     );
+
+
+    /* APPROVED */
 
     if (
       status ===
@@ -1445,9 +1637,10 @@ async function checkUpgradeStatus(
         showToast(
           "Upgrade Successful",
           "Your " +
-          tier +
-          " upgrade has been approved and activated."
+            tier +
+            " upgrade has been approved and activated."
         );
+
       }
 
       await refreshUser();
@@ -1472,6 +1665,7 @@ async function checkUpgradeStatus(
           "<span>Your " +
           tier +
           " plan is now active.</span>";
+
       }
 
       const button =
@@ -1484,18 +1678,24 @@ async function checkUpgradeStatus(
 
         button.textContent =
           "Upgrade Approved";
+
       }
 
       const txidInput =
         $("xearnTxid");
 
       if (txidInput) {
+
         txidInput.disabled =
           true;
+
       }
 
       return result;
     }
+
+
+    /* REJECTED */
 
     if (
       status ===
@@ -1507,8 +1707,9 @@ async function checkUpgradeStatus(
         showToast(
           "Upgrade Rejected",
           result.admin_note ||
-          "Your upgrade payment was not approved."
+            "Your upgrade payment was not approved."
         );
+
       }
 
       clearPendingUpgrade();
@@ -1518,11 +1719,16 @@ async function checkUpgradeStatus(
       updateUpgradeStatusUI(
         "rejected",
         tier,
-        result.admin_note || ""
+        result.admin_note ||
+        ""
       );
 
       return result;
+
     }
+
+
+    /* CANCELLED */
 
     if (
       status ===
@@ -1535,6 +1741,7 @@ async function checkUpgradeStatus(
           "Upgrade Cancelled",
           "Your upgrade request was cancelled."
         );
+
       }
 
       clearPendingUpgrade();
@@ -1547,7 +1754,9 @@ async function checkUpgradeStatus(
       );
 
       return result;
+
     }
+
 
     return result;
 
@@ -1559,13 +1768,20 @@ async function checkUpgradeStatus(
     );
 
     /*
-      Do not erase a pending order because
-      of a temporary network/server error.
+      Do not erase a pending order because of
+      a temporary network/server error.
     */
 
     return null;
+
   }
+
 }
+
+
+/* =====================================================
+   START UPGRADE STATUS POLLING
+===================================================== */
 
 function startUpgradeStatusPolling() {
 
@@ -1575,32 +1791,50 @@ function startUpgradeStatusPolling() {
     !telegramUser ||
     !pendingUpgradeOrderId
   ) {
+
     return;
+
   }
 
-  checkUpgradeStatus(false);
+  checkUpgradeStatus(
+    false
+  );
 
   upgradeStatusPollTimer =
-    setInterval(() => {
+    setInterval(
+      () => {
 
-      if (
-        !telegramUser ||
-        !pendingUpgradeOrderId
-      ) {
+        if (
+          !telegramUser ||
+          !pendingUpgradeOrderId
+        ) {
 
-        stopUpgradeStatusPolling();
+          stopUpgradeStatusPolling();
 
-        return;
-      }
+          return;
 
-      checkUpgradeStatus(true);
+        }
 
-    }, 15000);
+        checkUpgradeStatus(
+          true
+        );
+
+      },
+      15000
+    );
+
 }
+
+
+/* =====================================================
+   STOP UPGRADE STATUS POLLING
+===================================================== */
 
 function stopUpgradeStatusPolling() {
 
-  if (upgradeStatusPollTimer) {
+  if (
+    upgradeStatusPollTimer
+  ) {
 
     clearInterval(
       upgradeStatusPollTimer
@@ -1608,8 +1842,15 @@ function stopUpgradeStatusPolling() {
 
     upgradeStatusPollTimer =
       null;
+
   }
+
 }
+
+
+/* =====================================================
+   PAYMENT NETWORKS
+===================================================== */
 
 function getPaymentNetworks(
   asset
@@ -1623,7 +1864,13 @@ function getPaymentNetworks(
   return Object.keys(
     methods
   );
+
 }
+
+
+/* =====================================================
+   UPDATE UPGRADE WALLET
+===================================================== */
 
 function updateUpgradeWallet() {
 
@@ -1641,7 +1888,9 @@ function updateUpgradeWallet() {
     !networkSelect ||
     !wallet
   ) {
+
     return;
+
   }
 
   selectedPaymentAsset =
@@ -1689,6 +1938,7 @@ function updateUpgradeWallet() {
 
     networkSelect.value =
       networks[0];
+
   }
 
   selectedPaymentNetwork =
@@ -1704,7 +1954,13 @@ function updateUpgradeWallet() {
       selectedPaymentNetwork
     ] ||
     "Payment address unavailable";
+
 }
+
+
+/* =====================================================
+   COPY UPGRADE WALLET
+===================================================== */
 
 async function copyUpgradeWallet() {
 
@@ -1718,7 +1974,9 @@ async function copyUpgradeWallet() {
     wallet ===
       "Payment address unavailable"
   ) {
+
     return;
+
   }
 
   try {
@@ -1738,8 +1996,15 @@ async function copyUpgradeWallet() {
       "Payment Address",
       wallet
     );
+
   }
+
 }
+
+
+/* =====================================================
+   CLOSE UPGRADE MODAL
+===================================================== */
 
 function closeUpgradeModal() {
 
@@ -1751,9 +2016,12 @@ function closeUpgradeModal() {
     overlay.classList.remove(
       "show"
     );
+
   }
 
-  if (pendingUpgradeOrderId) {
+  if (
+    pendingUpgradeOrderId
+  ) {
 
     updateUpgradeStatusUI(
       upgradeStatus ||
@@ -1762,8 +2030,15 @@ function closeUpgradeModal() {
       pendingUpgradeTier ||
         selectedUpgradeTier
     );
+
   }
+
 }
+
+
+/* =====================================================
+   OPEN UPGRADE MODAL
+===================================================== */
 
 function openUpgradeModal(
   tier = null
@@ -1773,7 +2048,12 @@ function openUpgradeModal(
 
   loadPendingUpgrade();
 
-  if (pendingUpgradeOrderId) {
+
+  /* EXISTING PENDING ORDER */
+
+  if (
+    pendingUpgradeOrderId
+  ) {
 
     selectedUpgradeTier =
       pendingUpgradeTier ||
@@ -1796,6 +2076,7 @@ function openUpgradeModal(
         String(
           selectedUpgradeTier
         ).toUpperCase();
+
     }
 
     if (price) {
@@ -1808,6 +2089,7 @@ function openUpgradeModal(
           ]?.price ||
           ""
         );
+
     }
 
     updateUpgradeStatusUI(
@@ -1822,12 +2104,17 @@ function openUpgradeModal(
       overlay.classList.add(
         "show"
       );
+
     }
 
     startUpgradeStatusPolling();
 
     return;
+
   }
+
+
+  /* NEW UPGRADE */
 
   selectedUpgradeTier =
     String(
@@ -1844,6 +2131,7 @@ function openUpgradeModal(
 
     selectedUpgradeTier =
       "BRONZE";
+
   }
 
   const overlay =
@@ -1864,11 +2152,13 @@ function openUpgradeModal(
   const statusBox =
     $("xearnUpgradeStatus");
 
+
   if (title) {
 
     title.textContent =
       "Upgrade to " +
       selectedUpgradeTier;
+
   }
 
   if (price) {
@@ -1878,6 +2168,7 @@ function openUpgradeModal(
       XEARN_UPGRADE_TIERS[
         selectedUpgradeTier
       ].price;
+
   }
 
   if (txidInput) {
@@ -1887,6 +2178,7 @@ function openUpgradeModal(
 
     txidInput.disabled =
       false;
+
   }
 
   if (button) {
@@ -1896,6 +2188,7 @@ function openUpgradeModal(
 
     button.textContent =
       "I've Paid";
+
   }
 
   if (statusBox) {
@@ -1905,6 +2198,7 @@ function openUpgradeModal(
 
     statusBox.innerHTML =
       "";
+
   }
 
   selectedPaymentAsset =
@@ -1920,6 +2214,7 @@ function openUpgradeModal(
 
     assetSelect.value =
       "USDT";
+
   }
 
   updateUpgradeWallet();
@@ -1929,8 +2224,15 @@ function openUpgradeModal(
     overlay.classList.add(
       "show"
     );
+
   }
+
 }
+
+
+/* =====================================================
+   OPEN UPGRADE SCREEN
+===================================================== */
 
 function openUpgradeScreen(
   tier = null
@@ -1946,13 +2248,20 @@ function openUpgradeScreen(
       String(
         tier
       ).toUpperCase();
+
   }
 
   openUpgradeModal(
     selectedUpgradeTier ||
-    null
+      null
   );
+
 }
+
+
+/* =====================================================
+   CREATE UPGRADE MODAL
+===================================================== */
 
 function createUpgradeModal() {
 
@@ -1965,7 +2274,9 @@ function createUpgradeModal() {
       true;
 
     return;
+
   }
+
 
   const style =
     document.createElement(
@@ -1973,205 +2284,449 @@ function createUpgradeModal() {
     );
 
   style.textContent = `
+
     #xearnUpgradeModal {
+
       position: fixed;
+
       inset: 0;
+
       z-index: 99999;
+
       display: none;
+
       align-items: flex-end;
+
       justify-content: center;
-      background: rgba(0,0,0,.72);
+
+      background:
+        rgba(0,0,0,.72);
+
       padding: 14px;
+
     }
 
     #xearnUpgradeModal.show {
+
       display: flex;
+
     }
 
     .xearn-upgrade-modal-card {
-      width: min(100%, 460px);
-      max-height: 92vh;
-      overflow-y: auto;
-      background: #07130f;
-      color: #fff;
-      border: 1px solid rgba(88,255,145,.18);
-      border-radius: 22px;
-      box-shadow: 0 24px 80px rgba(0,0,0,.55);
-      padding: 20px;
+
+      width:
+        min(100%, 460px);
+
+      max-height:
+        92vh;
+
+      overflow-y:
+        auto;
+
+      background:
+        #07130f;
+
+      color:
+        #fff;
+
+      border:
+        1px solid
+        rgba(88,255,145,.18);
+
+      border-radius:
+        22px;
+
+      box-shadow:
+        0 24px 80px
+        rgba(0,0,0,.55);
+
+      padding:
+        20px;
+
     }
 
     .xearn-upgrade-modal-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-      margin-bottom: 18px;
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      justify-content:
+        space-between;
+
+      gap:
+        15px;
+
+      margin-bottom:
+        18px;
+
     }
 
     .xearn-upgrade-modal-head h3 {
-      margin: 0;
-      font-size: 20px;
+
+      margin:
+        0;
+
+      font-size:
+        20px;
+
     }
 
     .xearn-upgrade-close {
-      width: 36px;
-      height: 36px;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 10px;
-      background: rgba(255,255,255,.05);
-      color: #fff;
-      font-size: 20px;
-      cursor: pointer;
+
+      width:
+        36px;
+
+      height:
+        36px;
+
+      border:
+        1px solid
+        rgba(255,255,255,.12);
+
+      border-radius:
+        10px;
+
+      background:
+        rgba(255,255,255,.05);
+
+      color:
+        #fff;
+
+      font-size:
+        20px;
+
+      cursor:
+        pointer;
+
     }
 
     .xearn-upgrade-price {
-      color: #58ff91;
-      font-size: 26px;
-      font-weight: 900;
-      margin-top: 3px;
+
+      color:
+        #58ff91;
+
+      font-size:
+        26px;
+
+      font-weight:
+        900;
+
+      margin-top:
+        3px;
+
     }
 
     .xearn-upgrade-label {
-      display: block;
-      margin: 15px 0 7px;
-      color: #a9b5af;
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .5px;
+
+      display:
+        block;
+
+      margin:
+        15px 0 7px;
+
+      color:
+        #a9b5af;
+
+      font-size:
+        12px;
+
+      font-weight:
+        700;
+
+      text-transform:
+        uppercase;
+
+      letter-spacing:
+        .5px;
+
     }
 
     .xearn-upgrade-select,
     .xearn-upgrade-input {
-      width: 100%;
-      min-height: 48px;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 12px;
-      background: #0c1d16;
-      color: #fff;
-      padding: 0 13px;
-      outline: none;
-      font: inherit;
+
+      width:
+        100%;
+
+      min-height:
+        48px;
+
+      border:
+        1px solid
+        rgba(255,255,255,.12);
+
+      border-radius:
+        12px;
+
+      background:
+        #0c1d16;
+
+      color:
+        #fff;
+
+      padding:
+        0 13px;
+
+      outline:
+        none;
+
+      font:
+        inherit;
+
     }
 
     .xearn-upgrade-select:focus,
     .xearn-upgrade-input:focus {
-      border-color: #58ff91;
+
+      border-color:
+        #58ff91;
+
     }
 
     .xearn-wallet-box {
-      margin-top: 12px;
-      padding: 13px;
-      border-radius: 12px;
-      background: #0c1d16;
-      border: 1px solid rgba(88,255,145,.12);
+
+      margin-top:
+        12px;
+
+      padding:
+        13px;
+
+      border-radius:
+        12px;
+
+      background:
+        #0c1d16;
+
+      border:
+        1px solid
+        rgba(88,255,145,.12);
+
     }
 
     .xearn-wallet-address {
-      word-break: break-all;
-      color: #dfffea;
-      font-size: 12px;
-      line-height: 1.55;
-      margin-bottom: 10px;
+
+      word-break:
+        break-all;
+
+      color:
+        #dfffea;
+
+      font-size:
+        12px;
+
+      line-height:
+        1.55;
+
+      margin-bottom:
+        10px;
+
     }
 
     .xearn-copy-wallet {
-      width: 100%;
-      min-height: 42px;
-      border: 0;
-      border-radius: 10px;
-      background: #58ff91;
-      color: #06100c;
-      font-weight: 900;
-      cursor: pointer;
+
+      width:
+        100%;
+
+      min-height:
+        42px;
+
+      border:
+        0;
+
+      border-radius:
+        10px;
+
+      background:
+        #58ff91;
+
+      color:
+        #06100c;
+
+      font-weight:
+        900;
+
+      cursor:
+        pointer;
+
     }
 
     .xearn-submit-upgrade {
-      width: 100%;
-      min-height: 52px;
-      margin-top: 15px;
-      border: 0;
-      border-radius: 13px;
-      background: #58ff91;
-      color: #06100c;
-      font-weight: 900;
-      cursor: pointer;
-      font-size: 15px;
+
+      width:
+        100%;
+
+      min-height:
+        52px;
+
+      margin-top:
+        15px;
+
+      border:
+        0;
+
+      border-radius:
+        13px;
+
+      background:
+        #58ff91;
+
+      color:
+        #06100c;
+
+      font-weight:
+        900;
+
+      cursor:
+        pointer;
+
+      font-size:
+        15px;
+
     }
 
     .xearn-submit-upgrade:disabled {
-      opacity: .55;
-      cursor: not-allowed;
+
+      opacity:
+        .55;
+
+      cursor:
+        not-allowed;
+
     }
 
     .xearn-upgrade-note {
-      color: #87968f;
-      font-size: 11px;
-      line-height: 1.55;
-      margin-top: 12px;
+
+      color:
+        #87968f;
+
+      font-size:
+        11px;
+
+      line-height:
+        1.55;
+
+      margin-top:
+        12px;
+
     }
 
     .xearn-upgrade-status {
-      display: none;
-      margin-top: 14px;
-      padding: 13px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.1);
-      background: rgba(255,255,255,.04);
+
+      display:
+        none;
+
+      margin-top:
+        14px;
+
+      padding:
+        13px;
+
+      border-radius:
+        12px;
+
+      border:
+        1px solid
+        rgba(255,255,255,.1);
+
+      background:
+        rgba(255,255,255,.04);
+
     }
 
     .xearn-upgrade-status strong,
     .xearn-upgrade-status span {
-      display: block;
+
+      display:
+        block;
+
     }
 
     .xearn-upgrade-status strong {
-      font-size: 13px;
-      margin-bottom: 4px;
+
+      font-size:
+        13px;
+
+      margin-bottom:
+        4px;
+
     }
 
     .xearn-upgrade-status span {
-      color: #aebbb5;
-      font-size: 11px;
-      line-height: 1.5;
+
+      color:
+        #aebbb5;
+
+      font-size:
+        11px;
+
+      line-height:
+        1.5;
+
     }
 
     .xearn-status-pending {
-      border-color: rgba(255,204,92,.25);
+
+      border-color:
+        rgba(255,204,92,.25);
+
     }
 
     .xearn-status-pending strong {
-      color: #ffcc5c;
+
+      color:
+        #ffcc5c;
+
     }
 
     .xearn-status-approved {
-      border-color: rgba(88,255,145,.28);
+
+      border-color:
+        rgba(88,255,145,.28);
+
     }
 
     .xearn-status-approved strong {
-      color: #58ff91;
+
+      color:
+        #58ff91;
+
     }
 
     .xearn-status-rejected,
     .xearn-status-cancelled {
-      border-color: rgba(255,100,100,.25);
+
+      border-color:
+        rgba(255,100,100,.25);
+
     }
 
     .xearn-status-rejected strong,
     .xearn-status-cancelled strong {
-      color: #ff7f7f;
+
+      color:
+        #ff7f7f;
+
     }
 
     @media (min-width: 700px) {
+
       #xearnUpgradeModal {
-        align-items: center;
+
+        align-items:
+          center;
+
       }
+
     }
+
   `;
 
   document.head.appendChild(
     style
   );
+
 
   const overlay =
     document.createElement(
@@ -2182,19 +2737,44 @@ function createUpgradeModal() {
     "xearnUpgradeModal";
 
   overlay.innerHTML = `
-    <div class="xearn-upgrade-modal-card" role="dialog" aria-modal="true">
-      <div class="xearn-upgrade-modal-head">
+
+    <div
+      class="xearn-upgrade-modal-card"
+      role="dialog"
+      aria-modal="true"
+    >
+
+      <div
+        class="xearn-upgrade-modal-head"
+      >
+
         <div>
-          <h3 id="xearnUpgradeTitle">Upgrade to BRONZE</h3>
-          <div class="xearn-upgrade-price" id="xearnUpgradePrice">$5</div>
+
+          <h3
+            id="xearnUpgradeTitle"
+          >
+            Upgrade to BRONZE
+          </h3>
+
+          <div
+            class="xearn-upgrade-price"
+            id="xearnUpgradePrice"
+          >
+            $5
+          </div>
+
         </div>
 
         <button
           type="button"
           class="xearn-upgrade-close"
           id="xearnUpgradeClose"
-        >×</button>
+        >
+          ×
+        </button>
+
       </div>
+
 
       <label
         class="xearn-upgrade-label"
@@ -2207,6 +2787,7 @@ function createUpgradeModal() {
         class="xearn-upgrade-select"
         id="xearnPaymentAsset"
       >
+
         <option value="USDT">
           USDT
         </option>
@@ -2214,7 +2795,9 @@ function createUpgradeModal() {
         <option value="USDC">
           USDC
         </option>
+
       </select>
+
 
       <label
         class="xearn-upgrade-label"
@@ -2228,7 +2811,10 @@ function createUpgradeModal() {
         id="xearnPaymentNetwork"
       ></select>
 
-      <div class="xearn-wallet-box">
+
+      <div
+        class="xearn-wallet-box"
+      >
 
         <div
           class="xearn-upgrade-label"
@@ -2254,6 +2840,7 @@ function createUpgradeModal() {
 
       </div>
 
+
       <label
         class="xearn-upgrade-label"
         for="xearnTxid"
@@ -2269,10 +2856,12 @@ function createUpgradeModal() {
         placeholder="Enter your transaction ID"
       >
 
+
       <div
         id="xearnUpgradeStatus"
         class="xearn-upgrade-status"
       ></div>
+
 
       <button
         type="button"
@@ -2282,22 +2871,28 @@ function createUpgradeModal() {
         I've Paid
       </button>
 
-      <div class="xearn-upgrade-note">
+
+      <div
+        class="xearn-upgrade-note"
+      >
         Send the exact upgrade amount to the selected address and network. Enter the transaction ID after payment. Your upgrade remains pending until an admin verifies the payment.
       </div>
 
     </div>
+
   `;
 
   document.body.appendChild(
     overlay
   );
 
+
   $("xearnUpgradeClose")
     ?.addEventListener(
       "click",
       closeUpgradeModal
     );
+
 
   overlay.addEventListener(
     "click",
@@ -2314,6 +2909,7 @@ function createUpgradeModal() {
 
     }
   );
+
 
   $("xearnPaymentAsset")
     ?.addEventListener(
@@ -2332,6 +2928,7 @@ function createUpgradeModal() {
       }
     );
 
+
   $("xearnPaymentNetwork")
     ?.addEventListener(
       "change",
@@ -2349,11 +2946,13 @@ function createUpgradeModal() {
       }
     );
 
+
   $("xearnCopyWallet")
     ?.addEventListener(
       "click",
       copyUpgradeWallet
     );
+
 
   $("xearnSubmitUpgrade")
     ?.addEventListener(
@@ -2361,11 +2960,18 @@ function createUpgradeModal() {
       submitUpgradeOrder
     );
 
+
   upgradeModalCreated =
     true;
 
   updateUpgradeWallet();
+
 }
+
+
+/* =====================================================
+   SUBMIT UPGRADE ORDER
+===================================================== */
 
 async function submitUpgradeOrder() {
 
@@ -2381,6 +2987,7 @@ async function submitUpgradeOrder() {
   const networkSelect =
     $("xearnPaymentNetwork");
 
+
   if (!telegramUser?.id) {
 
     showToast(
@@ -2389,9 +2996,13 @@ async function submitUpgradeOrder() {
     );
 
     return;
+
   }
 
-  if (pendingUpgradeOrderId) {
+
+  if (
+    pendingUpgradeOrderId
+  ) {
 
     showToast(
       "Pending Upgrade",
@@ -2401,13 +3012,16 @@ async function submitUpgradeOrder() {
     updateUpgradeStatusUI(
       upgradeStatus ||
         "pending",
+
       pendingUpgradeTier
     );
 
     startUpgradeStatusPolling();
 
     return;
+
   }
+
 
   const tier =
     String(
@@ -2427,8 +3041,8 @@ async function submitUpgradeOrder() {
       selectedPaymentAsset ||
       ""
     )
-      .trim()
-      .toUpperCase();
+    .trim()
+    .toUpperCase();
 
   const payment_network =
     String(
@@ -2436,8 +3050,9 @@ async function submitUpgradeOrder() {
       selectedPaymentNetwork ||
       ""
     )
-      .trim()
-      .toUpperCase();
+    .trim()
+    .toUpperCase();
+
 
   if (
     !XEARN_UPGRADE_TIERS[
@@ -2451,7 +3066,9 @@ async function submitUpgradeOrder() {
     );
 
     return;
+
   }
+
 
   if (
     !payment_asset ||
@@ -2464,11 +3081,12 @@ async function submitUpgradeOrder() {
     );
 
     return;
+
   }
 
+
   if (
-    txid.length <
-    8
+    txid.length < 8
   ) {
 
     showToast(
@@ -2479,13 +3097,16 @@ async function submitUpgradeOrder() {
     txidInput?.focus();
 
     return;
+
   }
+
 
   selectedPaymentAsset =
     payment_asset;
 
   selectedPaymentNetwork =
     payment_network;
+
 
   if (button) {
 
@@ -2494,7 +3115,9 @@ async function submitUpgradeOrder() {
 
     button.textContent =
       "Submitting...";
+
   }
+
 
   try {
 
@@ -2522,13 +3145,18 @@ async function submitUpgradeOrder() {
         20000
       );
 
-    if (!result?.success) {
+
+    if (
+      !result?.success
+    ) {
 
       throw new Error(
         result?.message ||
         "Unable to submit upgrade."
       );
+
     }
+
 
     const orderId =
       result?.order_id ||
@@ -2538,12 +3166,15 @@ async function submitUpgradeOrder() {
       result?.result?.orderId ||
       result?.result?.id;
 
+
     if (!orderId) {
 
       throw new Error(
         "The upgrade was submitted but no order ID was returned."
       );
+
     }
+
 
     savePendingUpgrade(
       orderId,
@@ -2553,6 +3184,7 @@ async function submitUpgradeOrder() {
     upgradeApprovalNotified =
       false;
 
+
     if (txidInput) {
 
       txidInput.value =
@@ -2560,26 +3192,34 @@ async function submitUpgradeOrder() {
 
       txidInput.disabled =
         true;
+
     }
+
 
     updateUpgradeStatusUI(
       "pending",
       tier
     );
 
+
     showToast(
       "Upgrade Submitted",
       "Thank you. Your payment is pending admin verification."
     );
 
+
     startUpgradeStatusPolling();
+
 
     setTimeout(
       () => {
+
         closeUpgradeModal();
+
       },
       3500
     );
+
 
   } catch (error) {
 
@@ -2588,6 +3228,7 @@ async function submitUpgradeOrder() {
       error
     );
 
+
     if (button) {
 
       button.disabled =
@@ -2595,19 +3236,26 @@ async function submitUpgradeOrder() {
 
       button.textContent =
         "I've Paid";
+
     }
 
+
     if (txidInput) {
+
       txidInput.disabled =
         false;
+
     }
+
 
     showToast(
       "Upgrade Failed",
       error?.message ||
-      "Unable to submit your upgrade. Please try again."
+        "Unable to submit your upgrade. Please try again."
     );
+
   }
+
 }
 
 
@@ -2616,6 +3264,7 @@ async function submitUpgradeOrder() {
 ===================================================== */
 
 function setupButtons() {
+
 
   /* Navigation */
 
@@ -2633,6 +3282,7 @@ function setupButtons() {
             showScreen(
               button.dataset.target
             );
+
 
             if (
               button.dataset.target ===
@@ -2662,7 +3312,7 @@ function setupButtons() {
     );
 
 
-  /* Upgrade navigation */
+  /* Upgrade navigation button */
 
   document
     .querySelectorAll(
@@ -2724,6 +3374,7 @@ function setupButtons() {
       watchVideo
     );
 
+
   $("earnVideoItem")
     ?.addEventListener(
       "click",
@@ -2747,6 +3398,7 @@ function setupButtons() {
       "click",
       claimDailyCheckin
     );
+
 
   $("checkinItem")
     ?.addEventListener(
@@ -2788,6 +3440,7 @@ function setupButtons() {
       }
     );
 
+
   $("withdrawAccountButton")
     ?.addEventListener(
       "click",
@@ -2816,6 +3469,7 @@ function setupButtons() {
 
       }
     );
+
 }
 
 
@@ -2829,6 +3483,7 @@ async function startXEARN() {
     "XEARN starting..."
   );
 
+
   /*
     CRITICAL:
     The dashboard is shown immediately.
@@ -2841,14 +3496,18 @@ async function startXEARN() {
     "home"
   );
 
+
   try {
 
     const ready =
       initializeTelegram();
 
     if (!ready) {
+
       return;
+
     }
+
 
     createUpgradeModal();
 
@@ -2856,15 +3515,17 @@ async function startXEARN() {
 
     setupButtons();
 
+
     /*
       Authenticate in the background.
     */
 
     await authenticateUser();
 
+
     /*
-      If a user submitted an upgrade before closing
-      the Mini App, continue checking it automatically.
+      If a user submitted an upgrade before
+      closing the Mini App, continue checking it.
     */
 
     if (
@@ -2874,12 +3535,14 @@ async function startXEARN() {
       updateUpgradeStatusUI(
         upgradeStatus ||
           "pending",
+
         pendingUpgradeTier
       );
 
       startUpgradeStatusPolling();
 
     }
+
 
   } catch (error) {
 
@@ -2895,6 +3558,7 @@ async function startXEARN() {
     hideLoading();
 
   }
+
 }
 
 
