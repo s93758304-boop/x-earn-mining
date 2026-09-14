@@ -2946,115 +2946,258 @@ async function copyUpgradeWallet() {
 /* =========================================================
    SUBMIT UPGRADE ORDER
 ========================================================= */
+
 async function submitUpgradeOrder() {
-  if (!telegramUser || !telegramUser.id) {
-    showToast("Error", "Telegram account not detected.");
-    return;
-  }
 
-  const txidInput = document.getElementById("upgradeTxid");
+    console.log("XEARN: I've Paid button clicked");
 
-  if (!txidInput) {
-    showToast("Error", "TXID field not found.");
-    return;
-  }
 
-  const txid = txidInput.value.trim();
+    if (!telegramUser || !telegramUser.id) {
 
-  if (!txid) {
-    showToast("TXID Required", "Please enter your transaction ID.");
-    return;
-  }
+        showToast(
+            "Error",
+            "Telegram account not detected."
+        );
 
-  if (txid.length < 8) {
-    showToast("Invalid TXID", "Please enter a valid transaction ID.");
-    return;
-  }
-
-  if (!selectedUpgradeTier) {
-    showToast("Select Tier", "Please select an upgrade tier.");
-    return;
-  }
-
-  if (!selectedPaymentAsset) {
-    showToast("Select Payment", "Please select USDT or USDC.");
-    return;
-  }
-
-  if (!selectedPaymentNetwork) {
-    showToast("Select Network", "Please select a payment network.");
-    return;
-  }
-
-  const button = document.getElementById("upgradePaidButton");
-
-  if (button) {
-    button.disabled = true;
-    button.textContent = "Submitting...";
-  }
-
-  try {
-    const payload = {
-      telegram_id: Number(telegramUser.id),
-      requested_tier: String(selectedUpgradeTier).toUpperCase(),
-      payment_asset: String(selectedPaymentAsset).toUpperCase(),
-      payment_network: String(selectedPaymentNetwork).toUpperCase(),
-      txid: txid
-    };
-
-    console.log("XEARN upgrade payload:", payload);
-
-    if (typeof callFunction !== "function") {
-      throw new Error(
-        "callFunction is not available. The frontend function is missing."
-      );
+        return;
     }
 
-    const result = await callFunction(
-      "create-upgrade-order",
-      payload
-    );
 
-    console.log("XEARN upgrade response:", result);
+    /* =====================================================
+       CORRECT TXID ELEMENT
+    ===================================================== */
 
-    if (result && result.success === true) {
-      showToast(
-        "Payment Submitted",
-        "Your payment has been submitted and is pending verification."
-      );
+    const txidInput =
+        $("xearnTxid");
 
-      txidInput.value = "";
 
-      setTimeout(() => {
-        if (typeof closeUpgradeModal === "function") {
-          closeUpgradeModal();
-        }
-      }, 1800);
+    if (!txidInput) {
 
-      return;
+        showToast(
+            "Error",
+            "TXID field not found."
+        );
+
+        console.error(
+            "XEARN: xearnTxid element not found."
+        );
+
+        return;
     }
 
-    throw new Error(
-      result?.message ||
-      result?.error ||
-      "The upgrade order could not be submitted."
-    );
 
-  } catch (error) {
-    console.error("XEARN upgrade error:", error);
+    const txid =
+        txidInput.value.trim();
+
+
+    if (!txid) {
+
+        showToast(
+            "TXID Required",
+            "Please enter your transaction ID."
+        );
+
+        return;
+    }
+
+
+    if (txid.length < 8) {
+
+        showToast(
+            "Invalid TXID",
+            "Please enter a valid transaction ID."
+        );
+
+        return;
+    }
+
+
+    if (!selectedUpgradeTier) {
+
+        showToast(
+            "Select Tier",
+            "Please select an upgrade tier."
+        );
+
+        return;
+    }
+
+
+    if (!selectedPaymentAsset) {
+
+        showToast(
+            "Select Payment",
+            "Please select USDT or USDC."
+        );
+
+        return;
+    }
+
+
+    if (!selectedPaymentNetwork) {
+
+        showToast(
+            "Select Network",
+            "Please select a payment network."
+        );
+
+        return;
+    }
+
+
+    /* =====================================================
+       CORRECT BUTTON ELEMENT
+    ===================================================== */
+
+    const button =
+        $("xearnSubmitUpgrade");
+
+
+    if (button) {
+
+        button.disabled = true;
+
+        button.textContent =
+            "Submitting...";
+    }
+
+
+    /* =====================================================
+       SHOW IMMEDIATE FEEDBACK
+    ===================================================== */
 
     showToast(
-      "Submission Failed",
-      error?.message ||
-      "Unable to submit your upgrade. Please try again."
+        "Submitting",
+        "Submitting your upgrade payment for verification..."
     );
 
-  } finally {
-    if (button) {
-      button.disabled = false;
-      button.textContent = "I've Paid";
+
+    try {
+
+        const payload = {
+
+            telegram_id:
+                Number(
+                    telegramUser.id
+                ),
+
+            requested_tier:
+                String(
+                    selectedUpgradeTier
+                ).toUpperCase(),
+
+            payment_asset:
+                String(
+                    selectedPaymentAsset
+                ).toUpperCase(),
+
+            payment_network:
+                String(
+                    selectedPaymentNetwork
+                ).toUpperCase(),
+
+            txid:
+                txid
+        };
+
+
+        console.log(
+            "XEARN upgrade payload:",
+            payload
+        );
+
+
+        /* =================================================
+           CALL SUPABASE EDGE FUNCTION
+        ================================================= */
+
+        const result =
+            await callFunction(
+                "create-upgrade-order",
+                payload
+            );
+
+
+        console.log(
+            "XEARN upgrade response:",
+            result
+        );
+
+
+        /* =================================================
+           SUCCESS
+        ================================================= */
+
+        if (
+            result &&
+            result.success === true
+        ) {
+
+            showToast(
+                "Payment Submitted",
+                "Your payment has been submitted and is pending verification."
+            );
+
+
+            txidInput.value =
+                "";
+
+
+            setTimeout(
+                () => {
+
+                    closeUpgradeModal();
+
+                },
+                1800
+            );
+
+
+            return;
+        }
+
+
+        /* =================================================
+           FAILED RESPONSE
+        ================================================= */
+
+        const errorMessage =
+            result?.message ||
+            result?.error ||
+            "The upgrade order could not be submitted.";
+
+
+        throw new Error(
+            errorMessage
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "XEARN upgrade submission error:",
+            error
+        );
+
+
+        showToast(
+            "Submission Failed",
+            error?.message ||
+            "Unable to submit your upgrade. Please try again."
+        );
+
+
+    } finally {
+
+        if (button) {
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "I've Paid";
+        }
     }
-  }
 }
 /* =========================================================
    OPEN UPGRADE SCREEN / BUTTON
