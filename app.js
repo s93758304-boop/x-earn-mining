@@ -2365,35 +2365,26 @@ function updateWithdrawalPreview() {
 
 async function submitWithdrawal() {
 
-    if (
-        !telegramUser?.id
-    ) {
-
+    if (!telegramUser?.id) {
         showToast(
             "Telegram Required",
             "Please open XEARN inside Telegram."
         );
-
         return;
     }
-
 
     const selectedNetwork =
         document.querySelector(
             ".xearn-withdraw-network.selected"
         );
 
-
     if (!selectedNetwork) {
-
         showToast(
             "Network Required",
             "Please select a withdrawal network."
         );
-
         return;
     }
-
 
     const addressInput =
         $("xearnWithdrawAddress");
@@ -2401,77 +2392,54 @@ async function submitWithdrawal() {
     const amountInput =
         $("xearnWithdrawAmount");
 
-
     const address =
-        addressInput?.value.trim() ||
-        "";
+        addressInput?.value.trim() || "";
 
     const amount =
         Number(
-            amountInput?.value ||
-            0
+            amountInput?.value || 0
         );
 
-
     if (!address) {
-
         showToast(
             "Wallet Required",
             "Please enter your own withdrawal wallet address."
         );
-
         return;
     }
 
-
     if (address.length < 10) {
-
         showToast(
             "Invalid Address",
             "Please enter a valid wallet address."
         );
-
         return;
     }
-
 
     if (
         !Number.isFinite(amount) ||
         amount < MIN_WITHDRAW_USDT
     ) {
-
         showToast(
             "Minimum Withdrawal",
             "The minimum withdrawal is $10."
         );
-
         return;
     }
-
 
     const availableUsdt =
         getBalanceUsdt();
 
-
-    if (
-        amount >
-        availableUsdt
-    ) {
-
+    if (amount > availableUsdt) {
         showToast(
             "Insufficient Balance",
             "You do not have enough balance for this withdrawal."
         );
-
         return;
     }
 
-
     const calculation =
-        calculateWithdrawal(
-            amount
-        );
-
+        calculateWithdrawal(amount);
 
     const asset =
         selectedNetwork.dataset.asset;
@@ -2479,6 +2447,17 @@ async function submitWithdrawal() {
     const network =
         selectedNetwork.dataset.network;
 
+    /*
+     * Backend expects:
+     * USDT-BEP20
+     * USDC-BEP20
+     * USDT-ERC20
+     * etc.
+     */
+    const withdrawalNetwork =
+        asset +
+        "-" +
+        network;
 
     const confirmed =
         window.confirm(
@@ -2502,25 +2481,17 @@ async function submitWithdrawal() {
             "Submit this withdrawal request?"
         );
 
-
     if (!confirmed) {
         return;
     }
 
-
     const button =
         $("xearnSubmitWithdrawal");
 
-
     if (button) {
-
-        button.disabled =
-            true;
-
-        button.textContent =
-            "Submitting...";
+        button.disabled = true;
+        button.textContent = "Submitting...";
     }
-
 
     try {
 
@@ -2528,83 +2499,75 @@ async function submitWithdrawal() {
             await callFunction(
                 "create-withdrawal",
                 {
-
                     telegram_id:
                         Number(
                             telegramUser.id
                         ),
 
+                    /*
+                     * THIS IS REQUIRED BY
+                     * create-withdrawal
+                     */
+                    init_data:
+                        tg?.initData || "",
+
                     amount_usdt:
                         calculation.usdtAmount,
 
-                    amount_xcoin:
-                        calculation.amountXcoin,
-
-                    fee_usdt:
-                        calculation.feeUsdt,
-
-                    fee_xcoin:
-                        calculation.feeXcoin,
-
-                    net_usdt:
-                        calculation.netUsdt,
-
-                    net_xcoin:
-                        calculation.netXcoin,
-
-                    asset:
-                        asset,
-
+                    /*
+                     * Backend uses this
+                     * exact network format.
+                     */
                     network:
-                        network,
+                        withdrawalNetwork,
 
                     address:
                         address
                 }
             );
 
-
         console.log(
             "Withdrawal response:",
             result
         );
-
 
         if (
             result &&
             result.success === true
         ) {
 
+            const withdrawal =
+                result.withdrawal || {};
+
             showToast(
                 "Withdrawal Submitted",
-                "Your withdrawal request is now pending admin review."
+                "Your withdrawal is now Pending admin review."
             );
-
 
             closeWithdrawalModal();
 
-
             await refreshUser();
 
-
+            /*
+             * Open History after the
+             * success message has had
+             * time to appear.
+             */
             setTimeout(
                 () => {
                     openHistoryModal();
                 },
-                700
+                1200
             );
-
 
             return;
         }
-
 
         throw new Error(
             result?.message ||
             result?.error ||
             "Withdrawal could not be submitted."
         );
-
 
     } catch (error) {
 
@@ -2619,21 +2582,14 @@ async function submitWithdrawal() {
             "Unable to submit withdrawal."
         );
 
-
     } finally {
 
         if (button) {
-
-            button.disabled =
-                false;
-
-            button.textContent =
-                "Continue";
+            button.disabled = false;
+            button.textContent = "Continue";
         }
     }
 }
-
-
 /* =========================================================
    HISTORY MODAL
    ========================================================= */
