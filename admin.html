@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<!-- Telegram Web App SDK -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
 <title>XEARN Admin</title>
 
 <style>
@@ -480,6 +484,7 @@ td{
 }
 
 @media(max-width:1050px){
+
  .cards{
   grid-template-columns:repeat(2,1fr);
  }
@@ -487,6 +492,7 @@ td{
  .settings{
   grid-template-columns:1fr 1fr;
  }
+
 }
 
 @media(max-width:700px){
@@ -573,8 +579,6 @@ td{
 
 <div class="app">
 
-<!-- SIDEBAR -->
-
 <aside class="sidebar">
 
 <div class="logo">
@@ -605,9 +609,6 @@ Secure administrator session
 
 </aside>
 
-
-<!-- MAIN -->
-
 <main class="main">
 
 <header class="header">
@@ -623,9 +624,6 @@ Secure administrator session
 </div>
 
 </header>
-
-
-<!-- DASHBOARD -->
 
 <section class="page active" id="page-dashboard">
 
@@ -673,7 +671,6 @@ Secure administrator session
 
 </div>
 
-
 <div class="grid2">
 
 <div class="card">
@@ -698,7 +695,6 @@ System Overview
 </div>
 
 </div>
-
 
 <div class="card">
 
@@ -735,9 +731,6 @@ Settings
 </div>
 
 </section>
-
-
-<!-- USERS -->
 
 <section class="page" id="page-users">
 
@@ -788,9 +781,6 @@ Refresh
 
 </section>
 
-
-<!-- UPGRADES -->
-
 <section class="page" id="page-upgrades">
 
 <div class="card">
@@ -837,9 +827,6 @@ Refresh
 </div>
 
 </section>
-
-
-<!-- WITHDRAWALS -->
 
 <section class="page" id="page-withdrawals">
 
@@ -888,9 +875,6 @@ Refresh
 </div>
 
 </section>
-
-
-<!-- TASKS -->
 
 <section class="page" id="page-tasks">
 
@@ -980,7 +964,6 @@ Create Task
 
 </div>
 
-
 <div class="card">
 
 <h3 class="section-title">
@@ -1044,9 +1027,6 @@ Tasks
 
 </section>
 
-
-<!-- MINING -->
-
 <section class="page" id="page-mining">
 
 <div class="card">
@@ -1061,9 +1041,6 @@ Mining Settings
 </div>
 
 </section>
-
-
-<!-- ADS -->
 
 <section class="page" id="page-ads">
 
@@ -1080,9 +1057,6 @@ Videos & Ads
 
 </section>
 
-
-<!-- REFERRALS -->
-
 <section class="page" id="page-referrals">
 
 <div class="grid2">
@@ -1096,7 +1070,6 @@ Referral Settings
 <div id="referralSettings"></div>
 
 </div>
-
 
 <div class="card">
 
@@ -1129,9 +1102,6 @@ Recent Referrals
 </div>
 
 </section>
-
-
-<!-- SETTINGS -->
 
 <section class="page" id="page-settings">
 
@@ -1175,9 +1145,6 @@ Global Controls
 
 </div>
 
-
-<!-- MOBILE NAV -->
-
 <div class="mobile-nav">
 
 <button data-page="dashboard">⌂<br>Home</button>
@@ -1187,9 +1154,6 @@ Global Controls
 <button data-page="settings">⚙<br>Settings</button>
 
 </div>
-
-
-<!-- MODAL -->
 
 <div class="modal" id="modal">
 
@@ -1206,22 +1170,21 @@ Global Controls
 
 </div>
 
-
 <script>
 
-const API=
+const API =
 "https://ynrqdbdgjzmucqcfsyvi.supabase.co/functions/v1/admin-api";
 
-let initData="";
+let initData = "";
 
 
 /* HELPERS */
 
-const $=id=>document.getElementById(id);
+const $ = id => document.getElementById(id);
 
 function escapeHTML(value){
 
- return String(value??"")
+ return String(value ?? "")
  .replace(/&/g,"&amp;")
  .replace(/</g,"&lt;")
  .replace(/>/g,"&gt;")
@@ -1232,7 +1195,7 @@ function escapeHTML(value){
 
 function number(value){
 
- return Number(value||0).toLocaleString();
+ return Number(value || 0).toLocaleString();
 
 }
 
@@ -1246,25 +1209,24 @@ function date(value){
 
 function badge(value){
 
- let v=String(value||"").toLowerCase();
+ let v = String(value || "").toLowerCase();
 
- let cls="blue";
+ let cls = "blue";
 
  if(["approved","paid","active","enabled"].includes(v))
- cls="green-b";
+ cls = "green-b";
 
  if(["rejected","cancelled","blocked"].includes(v))
- cls="red-b";
+ cls = "red-b";
 
- if(v==="pending")
- cls="yellow-b";
+ if(v === "pending")
+ cls = "yellow-b";
 
  return `<span class="badge ${cls}">
- ${escapeHTML(value||"—")}
+ ${escapeHTML(value || "—")}
  </span>`;
 
 }
-
 
 function toast(message){
 
@@ -1272,21 +1234,61 @@ function toast(message){
 
 }
 
-
 function showModal(title,html){
 
- $("modalTitle").textContent=title;
+ $("modalTitle").textContent = title;
 
- $("modalBody").innerHTML=html;
+ $("modalBody").innerHTML = html;
 
  $("modal").classList.add("show");
 
 }
 
-
 function closeModal(){
 
  $("modal").classList.remove("show");
+
+}
+
+
+/* TELEGRAM */
+
+function getTelegramInitData(){
+
+ try{
+
+  if(
+   window.Telegram &&
+   window.Telegram.WebApp
+  ){
+
+   const tg = window.Telegram.WebApp;
+
+   tg.ready();
+   tg.expand();
+
+   try{
+    tg.setHeaderColor("#060d17");
+   }catch(e){}
+
+   try{
+    tg.setBackgroundColor("#060d17");
+   }catch(e){}
+
+   return tg.initData || "";
+
+  }
+
+ }catch(error){
+
+  console.error(
+   "Telegram WebApp error:",
+   error
+  );
+
+ }
+
+ return "";
 
 }
 
@@ -1303,7 +1305,7 @@ async function api(action,data={}){
 
  }
 
- const response=await fetch(API,{
+ const response = await fetch(API,{
 
   method:"POST",
 
@@ -1321,10 +1323,9 @@ async function api(action,data={}){
 
  });
 
- const result=
- await response.json();
+ const result = await response.json();
 
- if(!response.ok || result.success===false){
+ if(!response.ok || result.success === false){
 
   throw new Error(
    result.error ||
@@ -1346,8 +1347,7 @@ function openPage(page){
  .querySelectorAll(".page")
  .forEach(x=>x.classList.remove("active"));
 
- $("page-"+page)
- .classList.add("active");
+ $("page-"+page).classList.add("active");
 
  document
  .querySelectorAll("[data-page]")
@@ -1355,12 +1355,13 @@ function openPage(page){
 
   x.classList.toggle(
    "active",
-   x.dataset.page===page
+   x.dataset.page === page
   );
 
  });
 
- const titles={
+ const titles = {
+
   dashboard:"Dashboard",
   users:"Users",
   upgrades:"Upgrades",
@@ -1370,10 +1371,11 @@ function openPage(page){
   ads:"Videos & Ads",
   referrals:"Referrals",
   settings:"Settings"
+
  };
 
- $("pageTitle").textContent=
- titles[page]||page;
+ $("pageTitle").textContent =
+ titles[page] || page;
 
 
  if(page==="dashboard")
@@ -1389,8 +1391,10 @@ function openPage(page){
  loadWithdrawals();
 
  if(page==="tasks"){
+
   loadTasks();
   loadSubmissions();
+
  }
 
  if(page==="mining")
@@ -1400,8 +1404,10 @@ function openPage(page){
  loadAds();
 
  if(page==="referrals"){
+
   loadReferralSettings();
   loadReferrals();
+
  }
 
  if(page==="settings")
@@ -1414,10 +1420,12 @@ document
 .querySelectorAll("[data-page]")
 .forEach(button=>{
 
- button.onclick=()=>{
+ button.onclick = () => {
+
   openPage(
    button.dataset.page
   );
+
  };
 
 });
@@ -1429,30 +1437,57 @@ async function init(){
 
  try{
 
-  if(
-   window.Telegram &&
-   Telegram.WebApp
+  /*
+   * Wait briefly for Telegram's WebApp
+   * object to be available.
+   */
+
+  let attempts = 0;
+
+  while(
+   (!window.Telegram ||
+    !window.Telegram.WebApp) &&
+   attempts < 20
   ){
 
-   Telegram.WebApp.ready();
+   await new Promise(
+    resolve => setTimeout(resolve,100)
+   );
 
-   Telegram.WebApp.expand();
-
-   initData=
-    Telegram.WebApp.initData ||
-    "";
+   attempts++;
 
   }
+
+
+  initData =
+   getTelegramInitData();
+
+
+  console.log(
+   "Telegram WebApp:",
+   !!window.Telegram?.WebApp
+  );
+
+  console.log(
+   "Telegram initData length:",
+   initData.length
+  );
+
 
   if(!initData){
 
    showModal(
     "Open From Telegram",
     `
-    <p style="color:#9aadc1">
-    This admin panel must be opened
-    from the <b>Admin Control Center</b>
-    button inside your XEARN Telegram bot.
+    <p style="color:#9aadc1;line-height:1.6">
+    Telegram did not provide a valid
+    Web App session.
+    </p>
+
+    <p style="color:#8297ae;font-size:12px">
+    Please close this page and open the
+    Admin Control Center again from inside
+    your XEARN Telegram bot.
     </p>
     `
    );
@@ -1462,12 +1497,16 @@ async function init(){
   }
 
 
-  const result=
+  $("adminName").textContent =
+   "Authenticating...";
+
+
+  const result =
    await api("dashboard");
 
 
-  $("adminName").textContent=
-   "@"+
+  $("adminName").textContent =
+   "@" +
    (
     result.admin.username ||
     result.admin.first_name ||
@@ -1482,7 +1521,12 @@ async function init(){
 
  }catch(error){
 
-  $("adminName").textContent=
+  console.error(
+   "Admin initialization error:",
+   error
+  );
+
+  $("adminName").textContent =
    "Access denied";
 
   showModal(
@@ -1501,47 +1545,46 @@ async function init(){
 
 function renderDashboard(data){
 
- $("totalUsers").textContent=
+ $("totalUsers").textContent =
   number(data.total_users);
 
- $("activeUsers").textContent=
+ $("activeUsers").textContent =
   number(data.active_users);
 
- $("newUsers").textContent=
+ $("newUsers").textContent =
   number(data.new_users);
 
- $("totalXcoin").textContent=
+ $("totalXcoin").textContent =
   number(data.total_xcoin);
 
- $("pendingWithdrawals").textContent=
+ $("pendingWithdrawals").textContent =
   number(data.pending_withdrawals);
 
- $("pendingUpgrades").textContent=
+ $("pendingUpgrades").textContent =
   number(data.pending_upgrades);
 
- $("totalTasks").textContent=
+ $("totalTasks").textContent =
   number(data.total_tasks);
 
- $("pendingSubmissions").textContent=
+ $("pendingSubmissions").textContent =
   number(data.pending_task_submissions);
 
- $("totalReferrals").textContent=
+ $("totalReferrals").textContent =
   number(data.total_referrals);
 
- $("totalMining").textContent=
+ $("totalMining").textContent =
   number(data.total_mining_records);
 
- $("totalAds").textContent=
+ $("totalAds").textContent =
   number(data.total_ad_watches);
 
 }
-
 
 async function loadDashboard(){
 
  try{
 
-  const result=
+  const result =
    await api("dashboard");
 
   renderDashboard(
@@ -1561,9 +1604,9 @@ async function loadDashboard(){
 
 async function loadUsers(){
 
- const body=$("usersBody");
+ const body = $("usersBody");
 
- body.innerHTML=
+ body.innerHTML =
  `<tr>
  <td colspan="8" class="empty">
  Loading users...
@@ -1572,19 +1615,19 @@ async function loadUsers(){
 
  try{
 
-  const result=
+  const result =
    await api(
     "users",
     {
      search:
       $("userSearch").value
-   }
+    }
    );
 
 
   if(!result.users.length){
 
-   body.innerHTML=
+   body.innerHTML =
    `<tr>
    <td colspan="8" class="empty">
    No users found
@@ -1596,7 +1639,7 @@ async function loadUsers(){
   }
 
 
-  body.innerHTML=
+  body.innerHTML =
    result.users
    .map(user=>`
 
@@ -1675,7 +1718,7 @@ async function loadUsers(){
 
  }catch(e){
 
-  body.innerHTML=
+  body.innerHTML =
   `<tr>
   <td colspan="8" class="empty">
   ${escapeHTML(e.message)}
@@ -1693,7 +1736,7 @@ async function manageUser(id){
 
  try{
 
-  const result=
+  const result =
    await api(
     "user",
     {
@@ -1701,7 +1744,7 @@ async function manageUser(id){
     }
    );
 
-  const u=result.user;
+  const u = result.user;
 
 
   showModal(
@@ -2005,10 +2048,10 @@ async function resetDaily(id){
 
 async function loadUpgrades(){
 
- const body=
+ const body =
   $("upgradesBody");
 
- body.innerHTML=
+ body.innerHTML =
  `<tr>
  <td colspan="9"
  class="empty">
@@ -2018,7 +2061,7 @@ async function loadUpgrades(){
 
  try{
 
-  const result=
+  const result =
    await api(
     "upgrades",
     {
@@ -2030,7 +2073,7 @@ async function loadUpgrades(){
 
   if(!result.upgrades.length){
 
-   body.innerHTML=
+   body.innerHTML =
    `<tr>
    <td colspan="9"
    class="empty">
@@ -2043,7 +2086,7 @@ async function loadUpgrades(){
   }
 
 
-  body.innerHTML=
+  body.innerHTML =
    result.upgrades
    .map(order=>`
 
@@ -2131,7 +2174,7 @@ async function loadUpgrades(){
 
  }catch(e){
 
-  body.innerHTML=
+  body.innerHTML =
   `<tr>
   <td colspan="9"
   class="empty">
@@ -2146,7 +2189,7 @@ async function loadUpgrades(){
 
 async function approveUpgrade(id){
 
- const note=
+ const note =
   prompt(
    "Admin note:",
    "Payment verified"
@@ -2179,7 +2222,7 @@ async function approveUpgrade(id){
 
 async function rejectUpgrade(id){
 
- const note=
+ const note =
   prompt(
    "Reason for rejection:"
   );
@@ -2213,10 +2256,10 @@ async function rejectUpgrade(id){
 
 async function loadWithdrawals(){
 
- const body=
+ const body =
   $("withdrawalsBody");
 
- body.innerHTML=
+ body.innerHTML =
  `<tr>
  <td colspan="9"
  class="empty">
@@ -2226,7 +2269,7 @@ async function loadWithdrawals(){
 
  try{
 
-  const result=
+  const result =
    await api(
     "withdrawals",
     {
@@ -2238,7 +2281,7 @@ async function loadWithdrawals(){
 
   if(!result.withdrawals.length){
 
-   body.innerHTML=
+   body.innerHTML =
    `<tr>
    <td colspan="9"
    class="empty">
@@ -2251,12 +2294,12 @@ async function loadWithdrawals(){
   }
 
 
-  body.innerHTML=
+  body.innerHTML =
    result.withdrawals
    .map(w=>{
 
-    const u=
-     w.users||{};
+    const u =
+     w.users || {};
 
     return `
 
@@ -2355,7 +2398,7 @@ async function loadWithdrawals(){
 
  }catch(e){
 
-  body.innerHTML=
+  body.innerHTML =
   `<tr>
   <td colspan="9"
   class="empty">
@@ -2370,7 +2413,7 @@ async function loadWithdrawals(){
 
 async function markPaid(id){
 
- const note=
+ const note =
   prompt(
    "Payment reference / note:",
    "Payment completed"
@@ -2404,7 +2447,7 @@ async function markPaid(id){
 
 async function cancelWithdrawal(id){
 
- const note=
+ const note =
   prompt(
    "Cancellation reason:"
   );
@@ -2439,17 +2482,17 @@ async function cancelWithdrawal(id){
 
 async function loadTasks(){
 
- const body=
+ const body =
   $("tasksBody");
 
  try{
 
-  const result=
+  const result =
    await api("tasks");
 
   if(!result.tasks.length){
 
-   body.innerHTML=
+   body.innerHTML =
    `<tr>
    <td colspan="9"
    class="empty">
@@ -2462,7 +2505,7 @@ async function loadTasks(){
   }
 
 
-  body.innerHTML=
+  body.innerHTML =
    result.tasks
    .map(t=>`
 
@@ -2829,15 +2872,15 @@ async function deleteTask(id){
 
 async function loadSubmissions(){
 
- const box=
+ const box =
   $("submissions");
 
- box.innerHTML=
+ box.innerHTML =
   "Loading...";
 
  try{
 
-  const result=
+  const result =
    await api(
     "task_submissions",
     {
@@ -2849,7 +2892,7 @@ async function loadSubmissions(){
 
   if(!result.submissions.length){
 
-   box.innerHTML=
+   box.innerHTML =
    `<div class="empty">
    No submissions
    </div>`;
@@ -2859,7 +2902,7 @@ async function loadSubmissions(){
   }
 
 
-  box.innerHTML=
+  box.innerHTML =
    result.submissions
    .map(s=>`
 
@@ -2958,7 +3001,7 @@ async function loadSubmissions(){
 
  }catch(e){
 
-  box.innerHTML=
+  box.innerHTML =
    escapeHTML(
     e.message
    );
@@ -2973,7 +3016,7 @@ async function reviewSubmission(
  status
 ){
 
- const note=
+ const note =
   prompt(
    status==="approved"
    ?"Admin note:"
@@ -3015,16 +3058,16 @@ async function loadMining(){
 
  try{
 
-  const result=
+  const result =
    await api(
     "mining_settings"
    );
 
-  const s=
+  const s =
    result.settings;
 
 
-  $("miningSettings").innerHTML=
+  $("miningSettings").innerHTML =
 
   `
 
@@ -3219,16 +3262,16 @@ async function loadAds(){
 
  try{
 
-  const result=
+  const result =
    await api(
     "ad_settings"
    );
 
-  const s=
+  const s =
    result.settings;
 
 
-  $("adSettings").innerHTML=
+  $("adSettings").innerHTML =
 
   `
 
@@ -3391,16 +3434,16 @@ async function loadReferralSettings(){
 
  try{
 
-  const result=
+  const result =
    await api(
     "referral_settings"
    );
 
-  const s=
+  const s =
    result.settings;
 
 
-  $("referralSettings").innerHTML=
+  $("referralSettings").innerHTML =
 
   `
 
@@ -3489,12 +3532,12 @@ async function saveReferralSettings(){
 
 async function loadReferrals(){
 
- const body=
+ const body =
   $("referralsBody");
 
  try{
 
-  const result=
+  const result =
    await api(
     "referrals"
    );
@@ -3502,7 +3545,7 @@ async function loadReferrals(){
 
   if(!result.referrals.length){
 
-   body.innerHTML=
+   body.innerHTML =
    `<tr>
    <td colspan="5"
    class="empty">
@@ -3515,7 +3558,7 @@ async function loadReferrals(){
   }
 
 
-  body.innerHTML=
+  body.innerHTML =
    result.referrals
    .map(r=>`
 
@@ -3558,7 +3601,7 @@ async function loadReferrals(){
 
  }catch(e){
 
-  body.innerHTML=
+  body.innerHTML =
    `<tr>
    <td colspan="5"
    class="empty">
@@ -3577,23 +3620,25 @@ async function loadSettings(){
 
  try{
 
-  const result=
+  const result =
    await api(
     "settings"
    );
 
-  const settings={};
+  const settings = {};
 
   result.settings
   .forEach(s=>{
+
    settings[
     s.setting_key
-   ]=
+   ] =
     s.setting_value;
+
   });
 
 
-  $("economy").innerHTML=
+  $("economy").innerHTML =
 
   `
 
@@ -3620,7 +3665,7 @@ async function loadSettings(){
   `;
 
 
-  $("withdrawalSettings").innerHTML=
+  $("withdrawalSettings").innerHTML =
 
   `
 
@@ -3647,7 +3692,7 @@ async function loadSettings(){
   `;
 
 
-  $("globalSettings").innerHTML=
+  $("globalSettings").innerHTML =
 
   `
 
@@ -3841,7 +3886,14 @@ async function saveGlobalSettings(){
 
 window.addEventListener(
  "load",
- init
+ function(){
+
+  setTimeout(
+   init,
+   100
+  );
+
+ }
 );
 
 </script>
