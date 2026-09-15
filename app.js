@@ -2218,12 +2218,20 @@ function createWithdrawalModal() {
         );
 
 
-    $("xearnSubmitWithdrawal")
-        ?.addEventListener(
-            "click",
-            submitWithdrawal
-        );
-}
+    document.addEventListener("click", function (event) {
+
+    const button =
+        event.target.closest("#xearnSubmitWithdrawal");
+
+    if (!button) {
+        return;
+    }
+
+    console.log("WITHDRAW BUTTON CLICKED");
+
+    submitWithdrawal();
+
+});
 
 
 /* =========================================================
