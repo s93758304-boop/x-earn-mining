@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>XEARN Admin Control Center</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -15,147 +14,100 @@
   padding:0;
 }
 
-:root{
-  --bg:#07111f;
-  --panel:#0d1a2b;
-  --panel2:#111f33;
-  --border:rgba(255,255,255,.08);
-  --text:#f5f7fb;
-  --muted:#8ea0b8;
-  --primary:#35d07f;
-  --primary2:#20a864;
-  --danger:#ff5d6c;
-  --warning:#ffb84d;
-  --blue:#4da3ff;
-}
-
 body{
   font-family:Arial,Helvetica,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
+  background:#f5f7fb;
+  color:#111827;
 }
 
-button{
+button,
+input,
+select{
   font:inherit;
 }
 
+button{
+  cursor:pointer;
+}
+
 .app{
-  display:flex;
   min-height:100vh;
 }
 
 /* SIDEBAR */
 
 .sidebar{
-  width:250px;
-  background:#091522;
-  border-right:1px solid var(--border);
-  padding:22px 14px;
   position:fixed;
   left:0;
   top:0;
   bottom:0;
+  width:240px;
+  background:#111827;
+  color:white;
+  padding:20px 14px;
   z-index:50;
 }
 
 .logo{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:0 10px 25px;
-  border-bottom:1px solid var(--border);
+  font-size:24px;
+  font-weight:800;
+  padding:10px 12px 25px;
 }
 
-.logo-icon{
-  width:38px;
-  height:38px;
-  border-radius:12px;
-  display:grid;
-  place-items:center;
-  background:linear-gradient(135deg,var(--primary),var(--primary2));
-  color:#06120c;
-  font-weight:900;
-}
-
-.logo strong{
-  font-size:19px;
-}
-
-.logo small{
-  display:block;
-  color:var(--muted);
-  font-size:10px;
-  margin-top:2px;
+.logo span{
+  color:#22c55e;
 }
 
 .nav{
-  margin-top:20px;
-}
-
-.nav-title{
-  color:#61738b;
-  font-size:10px;
-  text-transform:uppercase;
-  letter-spacing:1.5px;
-  margin:16px 10px 8px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
 }
 
 .nav button{
   width:100%;
   border:0;
   background:transparent;
-  color:#9db0c8;
-  padding:12px 13px;
-  margin-bottom:4px;
+  color:#cbd5e1;
+  padding:13px 14px;
   border-radius:10px;
   text-align:left;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  gap:11px;
+  font-weight:600;
 }
 
 .nav button:hover,
 .nav button.active{
-  background:rgba(53,208,127,.11);
-  color:#fff;
+  background:#1f2937;
+  color:white;
 }
 
 .nav button.active{
-  border-left:3px solid var(--primary);
+  border-left:3px solid #22c55e;
 }
 
 /* MAIN */
 
 .main{
-  margin-left:250px;
-  width:calc(100% - 250px);
+  margin-left:240px;
   min-height:100vh;
 }
 
 .topbar{
-  height:72px;
-  border-bottom:1px solid var(--border);
+  height:70px;
+  background:white;
+  border-bottom:1px solid #e5e7eb;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 28px;
-  background:rgba(7,17,31,.92);
+  padding:0 25px;
   position:sticky;
   top:0;
   z-index:40;
-  backdrop-filter:blur(12px);
 }
 
-.page-title h1{
+.top-title{
   font-size:20px;
-}
-
-.page-title p{
-  color:var(--muted);
-  font-size:12px;
-  margin-top:4px;
+  font-weight:800;
 }
 
 .admin-profile{
@@ -164,57 +116,49 @@ button{
   gap:10px;
 }
 
-.admin-avatar{
+.avatar{
   width:38px;
   height:38px;
   border-radius:50%;
-  background:linear-gradient(135deg,#35d07f,#4da3ff);
-  display:grid;
-  place-items:center;
+  background:#22c55e;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   font-weight:800;
-  color:#06120c;
 }
 
 .admin-name{
-  font-size:13px;
-}
-
-.admin-role{
-  color:var(--primary);
-  font-size:10px;
-  margin-top:3px;
+  font-weight:700;
 }
 
 .content{
   padding:25px;
 }
 
-/* LOADING / ERROR */
-
-#connectionStatus{
-  margin-bottom:18px;
-}
+/* STATUS */
 
 .status{
   padding:12px 15px;
   border-radius:10px;
-  font-size:12px;
-  border:1px solid var(--border);
+  margin-bottom:20px;
+  font-size:14px;
+  font-weight:600;
 }
 
 .status.loading{
-  background:rgba(77,163,255,.08);
-  color:#7bbcff;
+  background:#fff7ed;
+  color:#c2410c;
 }
 
 .status.success{
-  background:rgba(53,208,127,.08);
-  color:#55e79a;
+  background:#ecfdf5;
+  color:#047857;
 }
 
 .status.error{
-  background:rgba(255,93,108,.08);
-  color:#ff7180;
+  background:#fef2f2;
+  color:#b91c1c;
 }
 
 /* SECTIONS */
@@ -227,83 +171,70 @@ button{
   display:block;
 }
 
-/* STATS */
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:15px;
+.page-header{
   margin-bottom:22px;
 }
 
-.stat{
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:15px;
-  padding:18px;
+.page-header h1{
+  font-size:26px;
+  margin-bottom:6px;
 }
 
-.stat-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.stat-icon{
-  width:38px;
-  height:38px;
-  border-radius:11px;
-  display:grid;
-  place-items:center;
-  background:rgba(53,208,127,.1);
-}
-
-.stat-label{
-  color:var(--muted);
-  font-size:12px;
-  margin-top:15px;
-}
-
-.stat-value{
-  font-size:24px;
-  font-weight:800;
-  margin-top:5px;
+.page-header p{
+  color:#6b7280;
 }
 
 /* CARDS */
 
+.cards{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+  margin-bottom:25px;
+}
+
 .card{
-  background:var(--panel);
-  border:1px solid var(--border);
+  background:white;
+  border:1px solid #e5e7eb;
   border-radius:15px;
   padding:20px;
+  box-shadow:0 2px 8px rgba(0,0,0,.03);
 }
 
-.card-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:15px;
-  margin-bottom:18px;
+.card-label{
+  color:#6b7280;
+  font-size:13px;
+  margin-bottom:10px;
 }
 
-.card-header h2{
-  font-size:16px;
-}
-
-.card-header p{
-  color:var(--muted);
-  font-size:11px;
-  margin-top:4px;
-}
-
-.grid-2{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px;
+.card-value{
+  font-size:27px;
+  font-weight:800;
 }
 
 /* TABLE */
+
+.panel{
+  background:white;
+  border:1px solid #e5e7eb;
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.03);
+}
+
+.panel-header{
+  padding:18px 20px;
+  border-bottom:1px solid #e5e7eb;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+}
+
+.panel-title{
+  font-size:17px;
+  font-weight:800;
+}
 
 .table-wrap{
   overflow-x:auto;
@@ -312,95 +243,269 @@ button{
 table{
   width:100%;
   border-collapse:collapse;
-  min-width:700px;
+  min-width:950px;
 }
 
 th,
 td{
-  padding:13px 10px;
+  padding:14px 15px;
   text-align:left;
-  border-bottom:1px solid var(--border);
-  font-size:12px;
+  border-bottom:1px solid #f1f5f9;
+  font-size:13px;
 }
 
 th{
-  color:#7f91a9;
-  font-weight:600;
+  background:#f8fafc;
+  color:#64748b;
+  font-size:12px;
+  text-transform:uppercase;
 }
 
-td{
-  color:#dce5ef;
+tbody tr:hover{
+  background:#fafafa;
 }
+
+/* SEARCH */
+
+.search-box{
+  display:flex;
+  gap:10px;
+  width:100%;
+  max-width:450px;
+}
+
+.search-box input{
+  flex:1;
+  border:1px solid #d1d5db;
+  border-radius:9px;
+  padding:11px 13px;
+  outline:none;
+}
+
+.search-box input:focus{
+  border-color:#22c55e;
+}
+
+.btn{
+  border:0;
+  border-radius:9px;
+  padding:10px 14px;
+  font-weight:700;
+}
+
+.btn-primary{
+  background:#22c55e;
+  color:white;
+}
+
+.btn-dark{
+  background:#111827;
+  color:white;
+}
+
+.btn-danger{
+  background:#ef4444;
+  color:white;
+}
+
+.btn-warning{
+  background:#f59e0b;
+  color:white;
+}
+
+.btn-light{
+  background:#f1f5f9;
+  color:#334155;
+}
+
+.btn-small{
+  padding:7px 9px;
+  font-size:12px;
+}
+
+/* BADGES */
 
 .badge{
   display:inline-flex;
   padding:5px 9px;
   border-radius:20px;
-  font-size:10px;
+  font-size:11px;
+  font-weight:800;
+}
+
+.badge-green{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.badge-red{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.badge-yellow{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.badge-blue{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+
+/* USER */
+
+.user-name{
   font-weight:700;
 }
 
-.badge.green{
-  color:#55e79a;
-  background:rgba(53,208,127,.1);
+.user-sub{
+  color:#64748b;
+  font-size:11px;
+  margin-top:3px;
 }
 
-.badge.red{
-  color:#ff7180;
-  background:rgba(255,93,108,.1);
-}
-
-.badge.yellow{
-  color:#ffc66c;
-  background:rgba(255,184,77,.1);
-}
-
-.badge.blue{
-  color:#69b3ff;
-  background:rgba(77,163,255,.1);
-}
-
-/* BUTTONS */
-
-.btn{
-  border:0;
-  border-radius:9px;
-  padding:9px 13px;
-  cursor:pointer;
-  color:#fff;
-  background:#17263a;
-}
-
-.btn:hover{
-  opacity:.85;
-}
-
-.btn-primary{
-  background:var(--primary);
-  color:#06120c;
-  font-weight:700;
+.actions{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
 }
 
 /* EMPTY */
 
 .empty{
   text-align:center;
-  padding:45px 20px;
-  color:var(--muted);
+  padding:50px 20px;
+  color:#64748b;
 }
 
-.empty-icon{
-  font-size:35px;
-  margin-bottom:10px;
+/* MODAL */
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:100;
 }
 
-/* MOBILE */
+.modal.show{
+  display:flex;
+}
 
-.bottom-nav{
+.modal-box{
+  background:white;
+  width:100%;
+  max-width:600px;
+  max-height:90vh;
+  overflow:auto;
+  border-radius:16px;
+}
+
+.modal-header{
+  padding:20px;
+  border-bottom:1px solid #e5e7eb;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.modal-title{
+  font-size:19px;
+  font-weight:800;
+}
+
+.close{
+  border:0;
+  background:#f1f5f9;
+  width:35px;
+  height:35px;
+  border-radius:50%;
+}
+
+.modal-body{
+  padding:20px;
+}
+
+.user-details{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.detail{
+  background:#f8fafc;
+  padding:13px;
+  border-radius:10px;
+}
+
+.detail-label{
+  font-size:11px;
+  color:#64748b;
+  margin-bottom:5px;
+}
+
+.detail-value{
+  font-weight:700;
+  word-break:break-word;
+}
+
+.form-group{
+  margin-bottom:15px;
+}
+
+.form-group label{
+  display:block;
+  font-size:13px;
+  font-weight:700;
+  margin-bottom:7px;
+}
+
+.form-group input,
+.form-group select{
+  width:100%;
+  border:1px solid #d1d5db;
+  border-radius:9px;
+  padding:11px;
+  outline:none;
+  background:white;
+}
+
+.modal-actions{
+  display:flex;
+  gap:10px;
+  margin-top:20px;
+  flex-wrap:wrap;
+}
+
+/* MOBILE NAV */
+
+.mobile-nav{
   display:none;
 }
 
-@media(max-width:900px){
+/* LOADER */
+
+.loader{
+  padding:35px;
+  text-align:center;
+  color:#64748b;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1000px){
+
+  .cards{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+}
+
+@media(max-width:700px){
 
   .sidebar{
     display:none;
@@ -408,74 +513,89 @@ td{
 
   .main{
     margin-left:0;
-    width:100%;
     padding-bottom:75px;
   }
 
   .topbar{
-    height:65px;
-    padding:0 16px;
+    padding:0 15px;
+    height:62px;
   }
 
   .content{
     padding:16px;
   }
 
-  .stats{
+  .cards{
     grid-template-columns:1fr 1fr;
     gap:10px;
   }
 
-  .stat{
-    padding:14px;
+  .card{
+    padding:15px;
   }
 
-  .stat-value{
-    font-size:20px;
+  .card-value{
+    font-size:21px;
   }
 
-  .grid-2{
+  .admin-name{
+    display:none;
+  }
+
+  .panel-header{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .search-box{
+    max-width:none;
+  }
+
+  .mobile-nav{
+    position:fixed;
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    left:0;
+    right:0;
+    bottom:0;
+    height:66px;
+    background:white;
+    border-top:1px solid #e5e7eb;
+    z-index:90;
+  }
+
+  .mobile-nav button{
+    border:0;
+    background:white;
+    color:#64748b;
+    font-size:11px;
+    font-weight:700;
+  }
+
+  .mobile-nav button.active{
+    color:#16a34a;
+  }
+
+  .user-details{
     grid-template-columns:1fr;
   }
 
-  .bottom-nav{
-    display:flex;
-    position:fixed;
-    bottom:0;
-    left:0;
-    right:0;
-    height:67px;
-    background:#091522;
-    border-top:1px solid var(--border);
-    z-index:100;
-    justify-content:space-around;
+}
+
+@media(max-width:430px){
+
+  .cards{
+    grid-template-columns:1fr 1fr;
   }
 
-  .bottom-nav button{
-    border:0;
-    background:transparent;
-    color:#71849b;
-    font-size:10px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:4px;
-    min-width:60px;
+  .card-label{
+    font-size:11px;
   }
 
-  .bottom-nav button.active{
-    color:var(--primary);
+  .card-value{
+    font-size:18px;
   }
 
-  .bottom-nav span{
-    font-size:19px;
-  }
-
-  .admin-name,
-  .admin-role{
-    display:none;
-  }
 }
 </style>
 </head>
@@ -484,22 +604,15 @@ td{
 
 <div class="app">
 
+<!-- SIDEBAR -->
+
 <aside class="sidebar">
 
   <div class="logo">
-
-    <div class="logo-icon">X</div>
-
-    <div>
-      <strong>XEARN</strong>
-      <small>CONTROL CENTER</small>
-    </div>
-
+    XE<span>ARN</span>
   </div>
 
-  <div class="nav">
-
-    <div class="nav-title">Main</div>
+  <nav class="nav">
 
     <button class="active" onclick="showSection('dashboard',this)">
       🏠 Dashboard
@@ -517,8 +630,6 @@ td{
       💸 Withdrawals
     </button>
 
-    <div class="nav-title">Management</div>
-
     <button onclick="showSection('tasks',this)">
       🎯 Tasks
     </button>
@@ -535,8 +646,6 @@ td{
       👥 Referrals
     </button>
 
-    <div class="nav-title">System</div>
-
     <button onclick="showSection('analytics',this)">
       📊 Analytics
     </button>
@@ -545,666 +654,374 @@ td{
       ⚙️ Settings
     </button>
 
-  </div>
+  </nav>
 
 </aside>
 
 
+<!-- MAIN -->
+
 <main class="main">
 
-<header class="topbar">
+  <header class="topbar">
 
-  <div class="page-title">
-
-    <h1 id="pageTitle">
+    <div class="top-title" id="topTitle">
       Dashboard
-    </h1>
-
-    <p id="pageSubtitle">
-      XEARN platform overview
-    </p>
-
-  </div>
-
-  <div class="admin-profile">
-
-    <div class="admin-avatar" id="adminAvatar">
-      A
     </div>
 
-    <div>
+    <div class="admin-profile">
 
-      <div class="admin-name" id="adminName">
-        Administrator
+      <div>
+        <div class="admin-name" id="adminName">
+          Administrator
+        </div>
       </div>
 
-      <div class="admin-role">
-        SUPER ADMIN
+      <div class="avatar" id="adminAvatar">
+        A
       </div>
 
     </div>
 
-  </div>
-
-</header>
+  </header>
 
 
-<div class="content">
+  <div class="content">
 
-<div id="connectionStatus">
-
-  <div class="status loading">
-    🔄 Connecting to XEARN admin system...
-  </div>
-
-</div>
+    <div id="connectionStatus">
+      <div class="status loading">
+        🔐 Connecting to XEARN Admin...
+      </div>
+    </div>
 
 
-<!-- DASHBOARD -->
+    <!-- DASHBOARD -->
 
-<section id="dashboard" class="section active">
+    <section id="dashboard" class="section active">
 
-  <div class="stats">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>XEARN platform overview</p>
+      </div>
 
-    <div class="stat">
+      <div class="cards">
 
-      <div class="stat-top">
+        <div class="card">
+          <div class="card-label">
+            👤 Total Users
+          </div>
+          <div class="card-value" id="totalUsers">
+            —
+          </div>
+        </div>
 
-        <span>👥</span>
+        <div class="card">
+          <div class="card-label">
+            ⚡ Active Users
+          </div>
+          <div class="card-value" id="activeUsers">
+            —
+          </div>
+        </div>
 
-        <div class="stat-icon">
-          👤
+        <div class="card">
+          <div class="card-label">
+            💎 Total XCOIN
+          </div>
+          <div class="card-value" id="totalXcoin">
+            —
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">
+            📤 Pending Withdrawals
+          </div>
+          <div class="card-value" id="pendingWithdrawals">
+            —
+          </div>
         </div>
 
       </div>
 
-      <div class="stat-label">
-        Total Users
-      </div>
+      <div class="panel">
 
-      <div class="stat-value" id="totalUsers">
-        —
-      </div>
-
-    </div>
-
-
-    <div class="stat">
-
-      <div class="stat-top">
-
-        <span>🟢</span>
-
-        <div class="stat-icon">
-          ⚡
-        </div>
-
-      </div>
-
-      <div class="stat-label">
-        Active Users
-      </div>
-
-      <div class="stat-value" id="activeUsers">
-        —
-      </div>
-
-    </div>
-
-
-    <div class="stat">
-
-      <div class="stat-top">
-
-        <span>💰</span>
-
-        <div class="stat-icon">
-          💎
-        </div>
-
-      </div>
-
-      <div class="stat-label">
-        Total XCOIN
-      </div>
-
-      <div class="stat-value" id="totalXcoin">
-        —
-      </div>
-
-    </div>
-
-
-    <div class="stat">
-
-      <div class="stat-top">
-
-        <span>💸</span>
-
-        <div class="stat-icon">
-          📤
-        </div>
-
-      </div>
-
-      <div class="stat-label">
-        Pending Withdrawals
-      </div>
-
-      <div class="stat-value" id="pendingWithdrawals">
-        —
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <div class="grid-2">
-
-    <div class="card">
-
-      <div class="card-header">
-
-        <div>
-
-          <h2>
+        <div class="panel-header">
+          <div class="panel-title">
             Platform Activity
-          </h2>
+          </div>
+        </div>
 
-          <p>
-            Latest XEARN activity
-          </p>
+        <div class="empty">
+          📊 Activity analytics will be connected next.
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- USERS -->
+
+    <section id="users" class="section">
+
+      <div class="page-header">
+        <h1>Users</h1>
+        <p>Manage XEARN users and accounts.</p>
+      </div>
+
+      <div class="panel">
+
+        <div class="panel-header">
+
+          <div class="panel-title">
+            👥 User Management
+          </div>
+
+          <div class="search-box">
+
+            <input
+              id="userSearch"
+              type="text"
+              placeholder="Search username, name, country or Telegram ID..."
+              onkeydown="if(event.key==='Enter') loadUsers()"
+            >
+
+            <button
+              class="btn btn-primary"
+              onclick="loadUsers()"
+            >
+              Search
+            </button>
+
+          </div>
+
+        </div>
+
+        <div id="usersContainer">
+
+          <div class="loader">
+            Loading users...
+          </div>
 
         </div>
 
       </div>
 
-      <div class="empty">
+    </section>
 
-        <div class="empty-icon">
-          📊
+
+    <!-- PLACEHOLDER SECTIONS -->
+
+    <section id="upgrades" class="section">
+
+      <div class="page-header">
+        <h1>Upgrades</h1>
+        <p>Manage upgrade payment requests.</p>
+      </div>
+
+      <div class="panel">
+        <div class="empty">
+          💳 Upgrade management will be connected next.
         </div>
-
-        <p>
-          Activity analytics will be connected next.
-        </p>
-
       </div>
 
-    </div>
+    </section>
 
 
-    <div class="card">
+    <section id="withdrawals" class="section">
 
-      <div class="card-header">
+      <div class="page-header">
+        <h1>Withdrawals</h1>
+        <p>Manage withdrawal requests.</p>
+      </div>
 
-        <div>
-
-          <h2>
-            System Status
-          </h2>
-
-          <p>
-            Current platform controls
-          </p>
-
+      <div class="panel">
+        <div class="empty">
+          💸 Withdrawal management will be connected next.
         </div>
-
       </div>
 
-      <div style="display:grid;gap:12px;">
+    </section>
 
-        <div style="display:flex;justify-content:space-between;">
-          <span>Platform</span>
-          <span class="badge green">ONLINE</span>
+
+    <section id="tasks" class="section">
+
+      <div class="page-header">
+        <h1>Tasks</h1>
+        <p>Create and manage earning tasks.</p>
+      </div>
+
+      <div class="panel">
+        <div class="empty">
+          🎯 Task management will be connected next.
         </div>
+      </div>
 
-        <div style="display:flex;justify-content:space-between;">
-          <span>Mining</span>
-          <span class="badge green">ACTIVE</span>
+    </section>
+
+
+    <section id="mining" class="section">
+
+      <div class="page-header">
+        <h1>Mining</h1>
+        <p>Control mining rewards and limits.</p>
+      </div>
+
+      <div class="panel">
+        <div class="empty">
+          ⛏️ Mining controls will be connected next.
         </div>
+      </div>
 
-        <div style="display:flex;justify-content:space-between;">
-          <span>Tasks</span>
-          <span class="badge green">ACTIVE</span>
+    </section>
+
+
+    <section id="videos" class="section">
+
+      <div class="page-header">
+        <h1>Videos & Ads</h1>
+        <p>Manage video and advertising rewards.</p>
+      </div>
+
+      <div class="panel">
+        <div class="empty">
+          🎬 Video and ad controls will be connected next.
         </div>
+      </div>
 
-        <div style="display:flex;justify-content:space-between;">
-          <span>Withdrawals</span>
-          <span class="badge blue">AVAILABLE</span>
+    </section>
+
+
+    <section id="referrals" class="section">
+
+      <div class="page-header">
+        <h1>Referrals</h1>
+        <p>Manage referral rewards and activity.</p>
+      </div>
+
+      <div class="panel">
+        <div class="empty">
+          👥 Referral management will be connected next.
         </div>
-
       </div>
 
-    </div>
+    </section>
+
+
+    <section id="analytics" class="section">
+
+      <div class="page-header">
+        <h1>Analytics</h1>
+        <p>XEARN platform analytics.</p>
+      </div>
+
+      <div class="panel">
+        <div class="empty">
+          📊 Analytics will be connected next.
+        </div>
+      </div>
+
+    </section>
+
+
+    <section id="settings" class="section">
+
+      <div class="page-header">
+        <h1>Settings</h1>
+        <p>Control global XEARN settings.</p>
+      </div>
+
+      <div class="panel">
+        <div class="empty">
+          ⚙️ Platform settings will be connected next.
+        </div>
+      </div>
+
+    </section>
 
   </div>
-
-</section>
-
-
-<!-- USERS -->
-
-<section id="users" class="section">
-
-  <div class="card">
-
-    <div class="card-header">
-
-      <div>
-
-        <h2>
-          Users Management
-        </h2>
-
-        <p>
-          Manage XEARN accounts and earning access
-        </p>
-
-      </div>
-
-    </div>
-
-    <div class="empty">
-
-      <div class="empty-icon">
-        👥
-      </div>
-
-      <p>
-        User management will be connected next.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- UPGRADES -->
-
-<section id="upgrades" class="section">
-
-  <div class="card">
-
-    <div class="card-header">
-
-      <div>
-
-        <h2>
-          Upgrade Requests
-        </h2>
-
-        <p>
-          Review manual tier upgrade payments
-        </p>
-
-      </div>
-
-    </div>
-
-    <div class="empty">
-
-      <div class="empty-icon">
-        💳
-      </div>
-
-      <p>
-        Upgrade management will be connected next.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- WITHDRAWALS -->
-
-<section id="withdrawals" class="section">
-
-  <div class="card">
-
-    <div class="card-header">
-
-      <div>
-
-        <h2>
-          Withdrawals
-        </h2>
-
-        <p>
-          Review and manage withdrawal requests
-        </p>
-
-      </div>
-
-    </div>
-
-    <div class="empty">
-
-      <div class="empty-icon">
-        💸
-      </div>
-
-      <p>
-        Withdrawal management will be connected next.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- TASKS -->
-
-<section id="tasks" class="section">
-
-  <div class="card">
-
-    <div class="card-header">
-
-      <div>
-
-        <h2>
-          Tasks
-        </h2>
-
-        <p>
-          Create and manage earning tasks
-        </p>
-
-      </div>
-
-    </div>
-
-    <div class="empty">
-
-      <div class="empty-icon">
-        🎯
-      </div>
-
-      <p>
-        Task management will be connected next.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- MINING -->
-
-<section id="mining" class="section">
-
-  <div class="card">
-
-    <div class="card-header">
-
-      <div>
-
-        <h2>
-          Mining Control
-        </h2>
-
-        <p>
-          Manage mining rewards and limits
-        </p>
-
-      </div>
-
-    </div>
-
-    <div class="empty">
-
-      <div class="empty-icon">
-        ⛏️
-      </div>
-
-      <p>
-        Mining controls will be connected next.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- VIDEOS -->
-
-<section id="videos" class="section">
-
-  <div class="card">
-
-    <div class="card-header">
-
-      <div>
-
-        <h2>
-          Videos & Ads
-        </h2>
-
-        <p>
-          Control video rewards and daily limits
-        </p>
-
-      </div>
-
-    </div>
-
-    <div class="empty">
-
-      <div class="empty-icon">
-        🎬
-      </div>
-
-      <p>
-        Video controls will be connected next.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- REFERRALS -->
-
-<section id="referrals" class="section">
-
-  <div class="card">
-
-    <div class="card-header">
-
-      <div>
-
-        <h2>
-          Referrals
-        </h2>
-
-        <p>
-          Monitor referral activity and rewards
-        </p>
-
-      </div>
-
-    </div>
-
-    <div class="empty">
-
-      <div class="empty-icon">
-        👥
-      </div>
-
-      <p>
-        Referral controls will be connected next.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- ANALYTICS -->
-
-<section id="analytics" class="section">
-
-  <div class="card">
-
-    <div class="card-header">
-
-      <div>
-
-        <h2>
-          Analytics
-        </h2>
-
-        <p>
-          XEARN platform performance
-        </p>
-
-      </div>
-
-    </div>
-
-    <div class="empty">
-
-      <div class="empty-icon">
-        📊
-      </div>
-
-      <p>
-        Analytics will be connected next.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- SETTINGS -->
-
-<section id="settings" class="section">
-
-  <div class="card">
-
-    <div class="card-header">
-
-      <div>
-
-        <h2>
-          Platform Settings
-        </h2>
-
-        <p>
-          Control global XEARN settings
-        </p>
-
-      </div>
-
-    </div>
-
-    <div style="display:grid;gap:14px;">
-
-      <div class="card">
-
-        <strong>
-          XCOIN Conversion
-        </strong>
-
-        <p style="color:var(--muted);font-size:12px;margin-top:5px;">
-          Configure XCOIN to USDT conversion.
-        </p>
-
-      </div>
-
-
-      <div class="card">
-
-        <strong>
-          Global Earning
-        </strong>
-
-        <p style="color:var(--muted);font-size:12px;margin-top:5px;">
-          Enable or disable platform earning.
-        </p>
-
-      </div>
-
-
-      <div class="card">
-
-        <strong>
-          Maintenance Mode
-        </strong>
-
-        <p style="color:var(--muted);font-size:12px;margin-top:5px;">
-          Temporarily disable platform activity.
-        </p>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-</div>
 
 </main>
 
 
 <!-- MOBILE NAV -->
 
-<nav class="bottom-nav">
+<nav class="mobile-nav">
 
-  <button class="active"
-    onclick="showSection('dashboard',this)">
-    <span>🏠</span>
+  <button
+    class="active"
+    onclick="showSection('dashboard',this)"
+  >
+    🏠<br>
     Home
   </button>
 
   <button
-    onclick="showSection('users',this)">
-    <span>👥</span>
+    onclick="showSection('users',this)"
+  >
+    👥<br>
     Users
   </button>
 
   <button
-    onclick="showSection('upgrades',this)">
-    <span>💳</span>
+    onclick="showSection('upgrades',this)"
+  >
+    💳<br>
     Upgrades
   </button>
 
   <button
-    onclick="showSection('withdrawals',this)">
-    <span>💸</span>
+    onclick="showSection('withdrawals',this)"
+  >
+    💸<br>
     Withdrawals
   </button>
 
   <button
-    onclick="showSection('settings',this)">
-    <span>⚙️</span>
+    onclick="showSection('settings',this)"
+  >
+    ⚙️<br>
     More
   </button>
 
 </nav>
+
+
+<!-- USER MODAL -->
+
+<div
+  class="modal"
+  id="userModal"
+>
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+
+      <div class="modal-title">
+        User Details
+      </div>
+
+      <button
+        class="close"
+        onclick="closeUserModal()"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <div
+      class="modal-body"
+      id="userModalBody"
+    >
+      Loading...
+    </div>
+
+  </div>
+
+</div>
 
 
 <script>
@@ -1212,226 +1029,163 @@ td{
 const ADMIN_API =
 "https://ynrqdbdgjzmucqcfsyvi.supabase.co/functions/v1/admin-api";
 
+let telegramInitData = "";
+let currentUsers = [];
 
-const pageInfo = {
 
-  dashboard:{
-    title:"Dashboard",
-    subtitle:"XEARN platform overview"
-  },
+/*
+==================================================
+TELEGRAM INIT
+==================================================
+*/
 
-  users:{
-    title:"Users",
-    subtitle:"Manage XEARN users"
-  },
+function initializeTelegram(){
 
-  upgrades:{
-    title:"Upgrades",
-    subtitle:"Review tier upgrade requests"
-  },
+  if(
+    !window.Telegram ||
+    !window.Telegram.WebApp
+  ){
 
-  withdrawals:{
-    title:"Withdrawals",
-    subtitle:"Manage withdrawal requests"
-  },
-
-  tasks:{
-    title:"Tasks",
-    subtitle:"Manage earning tasks"
-  },
-
-  mining:{
-    title:"Mining",
-    subtitle:"Control mining rewards"
-  },
-
-  videos:{
-    title:"Videos & Ads",
-    subtitle:"Manage video rewards"
-  },
-
-  referrals:{
-    title:"Referrals",
-    subtitle:"Manage referral activity"
-  },
-
-  analytics:{
-    title:"Analytics",
-    subtitle:"Platform performance"
-  },
-
-  settings:{
-    title:"Settings",
-    subtitle:"XEARN platform controls"
+    throw new Error(
+      "This admin panel must be opened inside Telegram."
+    );
   }
 
-};
+  const tg =
+    window.Telegram.WebApp;
 
+  tg.ready();
+  tg.expand();
 
-function showSection(id,button){
+  telegramInitData =
+    tg.initData;
 
-  document.querySelectorAll(".section")
-    .forEach(section=>{
-      section.classList.remove("active");
-    });
+  if(!telegramInitData){
 
-  const selected =
-    document.getElementById(id);
-
-  if(selected){
-    selected.classList.add("active");
+    throw new Error(
+      "Telegram session data is missing. Open the admin panel from Telegram."
+    );
   }
-
-  document.querySelectorAll(
-    ".nav button,.bottom-nav button"
-  ).forEach(btn=>{
-    btn.classList.remove("active");
-  });
-
-  document.querySelectorAll(
-    `.nav button[onclick*="'${id}'"],
-     .bottom-nav button[onclick*="'${id}'"]`
-  ).forEach(btn=>{
-    btn.classList.add("active");
-  });
-
-  if(pageInfo[id]){
-
-    document.getElementById(
-      "pageTitle"
-    ).textContent =
-      pageInfo[id].title;
-
-    document.getElementById(
-      "pageSubtitle"
-    ).textContent =
-      pageInfo[id].subtitle;
-
-  }
-
-  window.scrollTo({
-    top:0,
-    behavior:"smooth"
-  });
 
 }
 
 
-/* ================================
-   TELEGRAM ADMIN CONNECTION
-================================ */
+/*
+==================================================
+API REQUEST
+==================================================
+*/
 
-async function connectAdmin(){
+async function adminRequest(
+  action,
+  extra = {}
+){
 
-  const status =
-    document.getElementById(
-      "connectionStatus"
+  const response =
+    await fetch(
+      ADMIN_API,
+      {
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
+
+        body:JSON.stringify({
+
+          initData:
+            telegramInitData,
+
+          action:
+            action,
+
+          ...extra
+
+        })
+      }
     );
+
+  const text =
+    await response.text();
+
+  let result;
 
   try{
 
-    if(!window.Telegram ||
-       !window.Telegram.WebApp){
+    result =
+      JSON.parse(text);
 
-      throw new Error(
-        "This admin panel must be opened inside Telegram."
-      );
+  }catch(error){
 
-    }
+    console.error(
+      "Invalid API response:",
+      text
+    );
 
+    throw new Error(
+      "Admin API returned an invalid response."
+    );
+  }
 
-    const tg =
-      window.Telegram.WebApp;
+  if(
+    !response.ok ||
+    !result.success
+  ){
 
-    tg.ready();
+    throw new Error(
+      result.error ||
+      "Admin request failed."
+    );
 
-    tg.expand();
+  }
 
+  return result;
 
-    const initData =
-      tg.initData;
-
-
-    if(!initData){
-
-      throw new Error(
-        "Telegram session data is missing. Open the admin panel from Telegram."
-      );
-
-    }
-
-
-    status.innerHTML =
-      `<div class="status loading">
-        🔐 Verifying administrator...
-      </div>`;
+}
 
 
-    const response =
-      await fetch(
-        ADMIN_API,
-        {
-          method:"POST",
+/*
+==================================================
+DASHBOARD
+==================================================
+*/
 
-          headers:{
-            "Content-Type":
-              "application/json"
-          },
+async function loadDashboard(){
 
-          body:JSON.stringify({
+  const result =
+    await adminRequest(
+      "dashboard"
+    );
 
-            initData:initData,
+  const admin =
+    result.admin || {};
 
-            action:"dashboard"
+  const dashboard =
+    result.dashboard || {};
 
-          })
-        }
-      );
-
-
-    const result =
-      await response.json();
-
-
-    if(!response.ok ||
-       !result.success){
-
-      throw new Error(
-        result.error ||
-        "Admin access denied."
-      );
-
-    }
-
-
-    /* ADMIN PROFILE */
-
-    const admin =
-      result.admin || {};
-
-
-    const fullName =
-      [
-        admin.first_name,
-        admin.last_name
-      ]
+  const fullName =
+    [
+      admin.first_name,
+      admin.last_name
+    ]
       .filter(Boolean)
-      .join(" ")
-      ||
-      admin.username
-      ||
-      "Administrator";
+      .join(" ") ||
+    admin.username ||
+    "Administrator";
 
-
-    document.getElementById(
+  document
+    .getElementById(
       "adminName"
-    ).textContent =
+    )
+    .textContent =
       fullName;
 
-
-    document.getElementById(
+  document
+    .getElementById(
       "adminAvatar"
-    ).textContent =
+    )
+    .textContent =
       (
         admin.first_name ||
         admin.username ||
@@ -1440,79 +1194,1220 @@ async function connectAdmin(){
       .charAt(0)
       .toUpperCase();
 
-
-    /* DASHBOARD DATA */
-
-    const dashboard =
-      result.dashboard || {};
-
-
-    document.getElementById(
+  document
+    .getElementById(
       "totalUsers"
-    ).textContent =
+    )
+    .textContent =
       formatNumber(
         dashboard.total_users
       );
 
-
-    document.getElementById(
+  document
+    .getElementById(
       "activeUsers"
-    ).textContent =
+    )
+    .textContent =
       formatNumber(
         dashboard.active_users
       );
 
-
-    document.getElementById(
+  document
+    .getElementById(
       "totalXcoin"
-    ).textContent =
+    )
+    .textContent =
       formatNumber(
         dashboard.total_xcoin
       );
 
-
-    document.getElementById(
+  document
+    .getElementById(
       "pendingWithdrawals"
-    ).textContent =
+    )
+    .textContent =
       formatNumber(
         dashboard.pending_withdrawals
       );
 
+}
 
-    status.innerHTML =
-      `<div class="status success">
-        ✓ Admin authenticated successfully
-      </div>`;
 
+/*
+==================================================
+LOAD USERS
+==================================================
+*/
+
+async function loadUsers(){
+
+  const container =
+    document.getElementById(
+      "usersContainer"
+    );
+
+  container.innerHTML =
+    `
+      <div class="loader">
+        Loading users...
+      </div>
+    `;
+
+  try{
+
+    const search =
+      document
+        .getElementById(
+          "userSearch"
+        )
+        .value
+        .trim();
+
+    const result =
+      await adminRequest(
+        "users",
+        {
+          search:search
+        }
+      );
+
+    currentUsers =
+      result.users || [];
+
+    renderUsers(
+      currentUsers
+    );
 
   }catch(error){
 
-    console.error(
-      "Admin connection error:",
-      error
-    );
-
-
-    status.innerHTML =
-      `<div class="status error">
-        ❌ ${escapeHtml(
-          error.message ||
-          "Unable to connect to admin system."
-        )}
-      </div>`;
+    container.innerHTML =
+      `
+        <div class="empty">
+          ❌ ${escapeHtml(
+            error.message
+          )}
+        </div>
+      `;
 
   }
 
 }
 
 
-function formatNumber(value){
+/*
+==================================================
+RENDER USERS
+==================================================
+*/
+
+function renderUsers(
+  users
+){
+
+  const container =
+    document.getElementById(
+      "usersContainer"
+    );
+
+  if(
+    !users ||
+    users.length === 0
+  ){
+
+    container.innerHTML =
+      `
+        <div class="empty">
+          👥 No users found.
+        </div>
+      `;
+
+    return;
+  }
+
+  let html =
+    `
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>User</th>
+              <th>Telegram ID</th>
+              <th>Country</th>
+              <th>Tier</th>
+              <th>Balance</th>
+              <th>Earned</th>
+              <th>Tasks</th>
+              <th>Videos</th>
+              <th>Status</th>
+              <th>Actions</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+    `;
+
+  users.forEach(
+    (
+      user,
+      index
+    ) => {
+
+      const name =
+        [
+          user.first_name,
+          user.last_name
+        ]
+          .filter(Boolean)
+          .join(" ") ||
+        user.username ||
+        "XEARN User";
+
+      const username =
+        user.username
+          ? "@" +
+            user.username
+          : "No username";
+
+      const status =
+        user.is_blocked
+          ? `<span class="badge badge-red">BLOCKED</span>`
+          : `<span class="badge badge-green">ACTIVE</span>`;
+
+      const tier =
+        user.tier ||
+        "FREE";
+
+      html +=
+        `
+          <tr>
+
+            <td>
+
+              <div class="user-name">
+                ${escapeHtml(name)}
+              </div>
+
+              <div class="user-sub">
+                ${escapeHtml(username)}
+              </div>
+
+            </td>
+
+            <td>
+              ${escapeHtml(
+                String(
+                  user.telegram_id
+                )
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                user.country ||
+                "Not set"
+              )}
+            </td>
+
+            <td>
+
+              <span class="badge badge-blue">
+                ${escapeHtml(
+                  tier
+                )}
+              </span>
+
+            </td>
+
+            <td>
+              ${formatNumber(
+                user.balance_xcoin
+              )}
+            </td>
+
+            <td>
+              ${formatNumber(
+                user.total_earned_xcoin
+              )}
+            </td>
+
+            <td>
+              ${formatNumber(
+                user.tasks_completed_today
+              )}
+            </td>
+
+            <td>
+              ${formatNumber(
+                user.videos_watched_today
+              )}
+            </td>
+
+            <td>
+              ${status}
+            </td>
+
+            <td>
+
+              <div class="actions">
+
+                <button
+                  class="btn btn-dark btn-small"
+                  onclick="viewUser(${index})"
+                >
+                  View
+                </button>
+
+                <button
+                  class="btn ${
+                    user.is_blocked
+                      ? "btn-primary"
+                      : "btn-danger"
+                  } btn-small"
+                  onclick="toggleBlock(${index})"
+                >
+                  ${
+                    user.is_blocked
+                      ? "Unban"
+                      : "Ban"
+                  }
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+        `;
+
+    }
+  );
+
+  html +=
+    `
+          </tbody>
+
+        </table>
+
+      </div>
+    `;
+
+  container.innerHTML =
+    html;
+
+}
+
+
+/*
+==================================================
+VIEW USER
+==================================================
+*/
+
+async function viewUser(
+  index
+){
+
+  const user =
+    currentUsers[index];
+
+  if(!user){
+    return;
+  }
+
+  const modal =
+    document.getElementById(
+      "userModal"
+    );
+
+  const body =
+    document.getElementById(
+      "userModalBody"
+    );
+
+  modal.classList.add(
+    "show"
+  );
+
+  body.innerHTML =
+    `
+      <div class="loader">
+        Loading user details...
+      </div>
+    `;
+
+  try{
+
+    const result =
+      await adminRequest(
+        "user",
+        {
+          telegram_id:
+            user.telegram_id
+        }
+      );
+
+    renderUserDetails(
+      result.user
+    );
+
+  }catch(error){
+
+    body.innerHTML =
+      `
+        <div class="empty">
+          ❌ ${escapeHtml(
+            error.message
+          )}
+        </div>
+      `;
+
+  }
+
+}
+
+
+/*
+==================================================
+RENDER USER DETAILS
+==================================================
+*/
+
+function renderUserDetails(
+  user
+){
+
+  const body =
+    document.getElementById(
+      "userModalBody"
+    );
+
+  const name =
+    [
+      user.first_name,
+      user.last_name
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    user.username ||
+    "XEARN User";
+
+  body.innerHTML =
+    `
+
+      <div class="user-details">
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Name
+          </div>
+
+          <div class="detail-value">
+            ${escapeHtml(name)}
+          </div>
+
+        </div>
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Username
+          </div>
+
+          <div class="detail-value">
+            ${
+              user.username
+                ? "@" +
+                  escapeHtml(
+                    user.username
+                  )
+                : "Not set"
+            }
+          </div>
+
+        </div>
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Telegram ID
+          </div>
+
+          <div class="detail-value">
+            ${escapeHtml(
+              String(
+                user.telegram_id
+              )
+            )}
+          </div>
+
+        </div>
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Country
+          </div>
+
+          <div class="detail-value">
+            ${escapeHtml(
+              user.country ||
+              "Not set"
+            )}
+          </div>
+
+        </div>
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Tier
+          </div>
+
+          <div class="detail-value">
+            ${escapeHtml(
+              user.tier ||
+              "FREE"
+            )}
+          </div>
+
+        </div>
+
+        <div class="detail">
+
+          <div class="detail-label">
+            XCOIN Balance
+          </div>
+
+          <div class="detail-value">
+            ${formatNumber(
+              user.balance_xcoin
+            )}
+          </div>
+
+        </div>
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Total Earned
+          </div>
+
+          <div class="detail-value">
+            ${formatNumber(
+              user.total_earned_xcoin
+            )}
+          </div>
+
+        </div>
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Referral Earnings
+          </div>
+
+          <div class="detail-value">
+            ${formatNumber(
+              user.referral_earnings_xcoin
+            )}
+          </div>
+
+        </div>
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Tasks Today
+          </div>
+
+          <div class="detail-value">
+            ${formatNumber(
+              user.tasks_completed_today
+            )}
+          </div>
+
+        </div>
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Videos Today
+          </div>
+
+          <div class="detail-value">
+            ${formatNumber(
+              user.videos_watched_today
+            )}
+          </div>
+
+        </div>
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Withdrawals
+          </div>
+
+          <div class="detail-value">
+            ${
+              user.withdrawals_locked
+                ? "🔒 Locked"
+                : "🔓 Available"
+            }
+          </div>
+
+        </div>
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Earning
+          </div>
+
+          <div class="detail-value">
+            ${
+              user.earning_disabled
+                ? "🚫 Disabled"
+                : "🟢 Enabled"
+            }
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          class="btn ${
+            user.is_blocked
+              ? "btn-primary"
+              : "btn-danger"
+          }"
+          onclick="toggleBlockFromModal(
+            ${user.telegram_id},
+            ${user.is_blocked}
+          )"
+        >
+          ${
+            user.is_blocked
+              ? "🔓 Unban User"
+              : "🚫 Ban User"
+          }
+        </button>
+
+
+        <button
+          class="btn btn-warning"
+          onclick="toggleWithdrawals(
+            ${user.telegram_id},
+            ${user.withdrawals_locked}
+          )"
+        >
+          ${
+            user.withdrawals_locked
+              ? "🔓 Unlock Withdrawals"
+              : "🔒 Lock Withdrawals"
+          }
+        </button>
+
+
+        <button
+          class="btn btn-dark"
+          onclick="toggleEarning(
+            ${user.telegram_id},
+            ${user.earning_disabled}
+          )"
+        >
+          ${
+            user.earning_disabled
+              ? "🟢 Enable Earning"
+              : "🚫 Disable Earning"
+          }
+        </button>
+
+
+        <button
+          class="btn btn-light"
+          onclick="resetDaily(
+            ${user.telegram_id}
+          )"
+        >
+          🔄 Reset Daily Limits
+        </button>
+
+
+        <button
+          class="btn btn-light"
+          onclick="editBalance(
+            ${user.telegram_id},
+            ${Number(
+              user.balance_xcoin ||
+              0
+            )}
+          )"
+        >
+          💎 Edit Balance
+        </button>
+
+
+        <button
+          class="btn btn-light"
+          onclick="changeTier(
+            ${user.telegram_id},
+            '${escapeJs(
+              user.tier ||
+              "FREE"
+            )}'
+          )"
+        >
+          🏆 Change Tier
+        </button>
+
+      </div>
+    `;
+
+}
+
+
+/*
+==================================================
+BAN / UNBAN
+==================================================
+*/
+
+async function toggleBlock(
+  index
+){
+
+  const user =
+    currentUsers[index];
+
+  if(!user){
+    return;
+  }
+
+  const newStatus =
+    !user.is_blocked;
+
+  const confirmed =
+    confirm(
+      newStatus
+        ? "Ban this user?"
+        : "Unban this user?"
+    );
+
+  if(!confirmed){
+    return;
+  }
+
+  try{
+
+    await adminRequest(
+      "update_user",
+      {
+        telegram_id:
+          user.telegram_id,
+
+        changes:{
+          is_blocked:
+            newStatus
+        }
+      }
+    );
+
+    await loadUsers();
+
+  }catch(error){
+
+    alert(
+      error.message
+    );
+
+  }
+
+}
+
+
+async function toggleBlockFromModal(
+  telegramId,
+  currentStatus
+){
+
+  try{
+
+    await adminRequest(
+      "update_user",
+      {
+        telegram_id:
+          telegramId,
+
+        changes:{
+          is_blocked:
+            !currentStatus
+        }
+      }
+    );
+
+    closeUserModal();
+
+    await loadUsers();
+
+  }catch(error){
+
+    alert(
+      error.message
+    );
+
+  }
+
+}
+
+
+/*
+==================================================
+LOCK / UNLOCK WITHDRAWALS
+==================================================
+*/
+
+async function toggleWithdrawals(
+  telegramId,
+  currentStatus
+){
+
+  try{
+
+    await adminRequest(
+      "update_user",
+      {
+        telegram_id:
+          telegramId,
+
+        changes:{
+          withdrawals_locked:
+            !currentStatus
+        }
+      }
+    );
+
+    closeUserModal();
+
+    await loadUsers();
+
+  }catch(error){
+
+    alert(
+      error.message
+    );
+
+  }
+
+}
+
+
+/*
+==================================================
+ENABLE / DISABLE EARNING
+==================================================
+*/
+
+async function toggleEarning(
+  telegramId,
+  currentStatus
+){
+
+  try{
+
+    await adminRequest(
+      "update_user",
+      {
+        telegram_id:
+          telegramId,
+
+        changes:{
+          earning_disabled:
+            !currentStatus
+        }
+      }
+    );
+
+    closeUserModal();
+
+    await loadUsers();
+
+  }catch(error){
+
+    alert(
+      error.message
+    );
+
+  }
+
+}
+
+
+/*
+==================================================
+RESET DAILY
+==================================================
+*/
+
+async function resetDaily(
+  telegramId
+){
+
+  const confirmed =
+    confirm(
+      "Reset this user's daily task, video and ad limits?"
+    );
+
+  if(!confirmed){
+    return;
+  }
+
+  try{
+
+    await adminRequest(
+      "reset_daily",
+      {
+        telegram_id:
+          telegramId
+      }
+    );
+
+    alert(
+      "Daily limits reset successfully."
+    );
+
+    closeUserModal();
+
+    await loadUsers();
+
+  }catch(error){
+
+    alert(
+      error.message
+    );
+
+  }
+
+}
+
+
+/*
+==================================================
+EDIT BALANCE
+==================================================
+*/
+
+async function editBalance(
+  telegramId,
+  currentBalance
+){
+
+  const value =
+    prompt(
+      "Enter the new XCOIN balance:",
+      currentBalance
+    );
+
+  if(
+    value === null
+  ){
+    return;
+  }
+
+  const number =
+    Number(value);
+
+  if(
+    !Number.isFinite(number) ||
+    number < 0
+  ){
+
+    alert(
+      "Please enter a valid balance."
+    );
+
+    return;
+  }
+
+  try{
+
+    await adminRequest(
+      "update_user",
+      {
+        telegram_id:
+          telegramId,
+
+        changes:{
+          balance_xcoin:
+            number
+        }
+      }
+    );
+
+    alert(
+      "Balance updated successfully."
+    );
+
+    closeUserModal();
+
+    await loadUsers();
+
+  }catch(error){
+
+    alert(
+      error.message
+    );
+
+  }
+
+}
+
+
+/*
+==================================================
+CHANGE TIER
+==================================================
+*/
+
+async function changeTier(
+  telegramId,
+  currentTier
+){
+
+  const tier =
+    prompt(
+      "Enter tier: FREE, BRONZE, SILVER or GOLD",
+      currentTier
+    );
+
+  if(
+    tier === null
+  ){
+    return;
+  }
+
+  const normalized =
+    tier
+      .trim()
+      .toUpperCase();
+
+  const valid =
+    [
+      "FREE",
+      "BRONZE",
+      "SILVER",
+      "GOLD"
+    ];
+
+  if(
+    !valid.includes(
+      normalized
+    )
+  ){
+
+    alert(
+      "Invalid tier."
+    );
+
+    return;
+  }
+
+  try{
+
+    await adminRequest(
+      "update_user",
+      {
+        telegram_id:
+          telegramId,
+
+        changes:{
+          tier:
+            normalized
+        }
+      }
+    );
+
+    alert(
+      "Tier updated successfully."
+    );
+
+    closeUserModal();
+
+    await loadUsers();
+
+  }catch(error){
+
+    alert(
+      error.message
+    );
+
+  }
+
+}
+
+
+/*
+==================================================
+CLOSE MODAL
+==================================================
+*/
+
+function closeUserModal(){
+
+  document
+    .getElementById(
+      "userModal"
+    )
+    .classList.remove(
+      "show"
+    );
+
+}
+
+
+/*
+==================================================
+NAVIGATION
+==================================================
+*/
+
+function showSection(
+  sectionId,
+  button
+){
+
+  document
+    .querySelectorAll(
+      ".section"
+    )
+    .forEach(
+      section =>
+        section.classList.remove(
+          "active"
+        )
+    );
+
+  const section =
+    document.getElementById(
+      sectionId
+    );
+
+  if(section){
+    section.classList.add(
+      "active"
+    );
+  }
+
+  document
+    .querySelectorAll(
+      ".nav button"
+    )
+    .forEach(
+      btn =>
+        btn.classList.remove(
+          "active"
+        )
+    );
+
+  document
+    .querySelectorAll(
+      ".mobile-nav button"
+    )
+    .forEach(
+      btn =>
+        btn.classList.remove(
+          "active"
+        )
+    );
+
+  if(button){
+    button.classList.add(
+      "active"
+    );
+  }
+
+  const titleMap = {
+
+    dashboard:
+      "Dashboard",
+
+    users:
+      "Users",
+
+    upgrades:
+      "Upgrades",
+
+    withdrawals:
+      "Withdrawals",
+
+    tasks:
+      "Tasks",
+
+    mining:
+      "Mining",
+
+    videos:
+      "Videos & Ads",
+
+    referrals:
+      "Referrals",
+
+    analytics:
+      "Analytics",
+
+    settings:
+      "Settings"
+
+  };
+
+  document
+    .getElementById(
+      "topTitle"
+    )
+    .textContent =
+      titleMap[
+        sectionId
+      ] ||
+      "XEARN Admin";
+
+  if(
+    sectionId ===
+    "users"
+  ){
+
+    loadUsers();
+
+  }
+
+}
+
+
+/*
+==================================================
+FORMAT NUMBER
+==================================================
+*/
+
+function formatNumber(
+  value
+){
 
   const number =
     Number(value || 0);
 
   return number.toLocaleString(
-    "en-US",
+    undefined,
     {
       maximumFractionDigits:2
     }
@@ -1521,23 +2416,125 @@ function formatNumber(value){
 }
 
 
-function escapeHtml(value){
+/*
+==================================================
+ESCAPE HTML
+==================================================
+*/
 
-  return String(value)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
+function escapeHtml(
+  value
+){
+
+  return String(
+    value ?? ""
+  )
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+  .replace(
+    /</g,
+    "&lt;"
+  )
+  .replace(
+    />/g,
+    "&gt;"
+  )
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+  .replace(
+    /'/g,
+    "&#039;"
+  );
 
 }
 
 
-/* START */
+/*
+==================================================
+ESCAPE JAVASCRIPT
+==================================================
+*/
+
+function escapeJs(
+  value
+){
+
+  return String(
+    value ?? ""
+  )
+  .replace(
+    /\\/g,
+    "\\\\"
+  )
+  .replace(
+    /'/g,
+    "\\'"
+  );
+
+}
+
+
+/*
+==================================================
+START
+==================================================
+*/
+
+async function startAdmin(){
+
+  const status =
+    document.getElementById(
+      "connectionStatus"
+    );
+
+  try{
+
+    status.innerHTML =
+      `
+        <div class="status loading">
+          🔐 Verifying administrator...
+        </div>
+      `;
+
+    initializeTelegram();
+
+    await loadDashboard();
+
+    status.innerHTML =
+      `
+        <div class="status success">
+          ✓ Admin authenticated successfully
+        </div>
+      `;
+
+  }catch(error){
+
+    console.error(
+      "Admin error:",
+      error
+    );
+
+    status.innerHTML =
+      `
+        <div class="status error">
+          ❌ ${escapeHtml(
+            error.message
+          )}
+        </div>
+      `;
+
+  }
+
+}
+
 
 window.addEventListener(
   "load",
-  connectAdmin
+  startAdmin
 );
 
 </script>
