@@ -1926,11 +1926,444 @@ function injectWithdrawalStyles() {
 /* =========================================================
    CREATE WITHDRAWAL MODAL
    ========================================================= */
+
 function createWithdrawalModal() {
 
     if ($("xearnWithdrawalModal")) {
         return;
     }
+
+    /* =========================================
+       WITHDRAWAL STYLE
+    ========================================= */
+
+    const style = document.createElement("style");
+
+    style.id = "xearnWithdrawalStyle";
+
+    style.textContent = `
+
+        #xearnWithdrawalModal {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Arial,
+                sans-serif;
+        }
+
+        .xearn-withdraw-overlay {
+            position: absolute;
+            inset: 0;
+            overflow-y: auto;
+            padding: 18px 14px 35px;
+
+            background:
+                radial-gradient(
+                    circle at 50% -10%,
+                    rgba(65, 110, 255, .10),
+                    transparent 38%
+                ),
+                #111318;
+        }
+
+        .xearn-withdraw-modal {
+            width: 100%;
+            max-width: 520px;
+            min-height: 100%;
+            margin: auto;
+        }
+
+        /* HEADER */
+
+        .xearn-withdraw-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .xearn-withdraw-title {
+            color: #ffffff;
+            font-size: 27px;
+            font-weight: 900;
+            letter-spacing: -.5px;
+        }
+
+        .xearn-withdraw-subtitle {
+            margin-top: 4px;
+            color: #858995;
+            font-size: 11px;
+        }
+
+        .xearn-withdraw-close {
+            width: 42px;
+            height: 42px;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 50%;
+
+            background: #1d2028;
+            border: 1px solid #292d36;
+
+            color: #ffffff;
+            font-size: 27px;
+            line-height: 1;
+        }
+
+        /* BALANCE */
+
+        .xearn-withdraw-balance {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+
+            padding: 21px 20px;
+
+            border: 1px solid #292d36;
+            border-radius: 25px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #1b1e25,
+                    #171a20
+                );
+
+            box-shadow:
+                0 12px 30px rgba(0,0,0,.18);
+        }
+
+        .xearn-withdraw-balance > div {
+            min-width: 0;
+        }
+
+        .xearn-withdraw-balance span {
+            display: block;
+            color: #8e929d;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .xearn-withdraw-balance strong {
+            display: block;
+            margin-top: 8px;
+
+            color: #ffffff;
+            font-size: 25px;
+            font-weight: 900;
+            letter-spacing: -.4px;
+        }
+
+        /* SECTIONS */
+
+        .xearn-withdraw-field {
+            margin-top: 24px;
+        }
+
+        .xearn-withdraw-field label {
+            display: block;
+            margin: 0 0 10px 2px;
+
+            color: #9b9fa9;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        /* AMOUNT */
+
+        #xearnWithdrawAmount {
+            width: 100%;
+            height: 70px;
+
+            padding: 0 75px 0 20px;
+
+            border: 1px solid #2a2e37;
+            border-radius: 27px;
+
+            outline: none;
+
+            background: #20232b;
+
+            color: #ffffff;
+
+            font-size: 27px;
+            font-weight: 900;
+
+            -webkit-appearance: none;
+        }
+
+        #xearnWithdrawAmount::placeholder {
+            color: #777c87;
+        }
+
+        #xearnWithdrawAmount:focus {
+            border-color: #4387ff;
+            box-shadow:
+                0 0 0 2px rgba(67,135,255,.12);
+        }
+
+        /* NETWORK */
+
+        .xearn-withdraw-network-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .xearn-withdraw-network {
+            min-height: 76px;
+
+            padding: 11px;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            text-align: left;
+
+            border: 1px solid #292d36;
+            border-radius: 21px;
+
+            background: #191c22;
+
+            color: #ffffff;
+
+            transition:
+                border-color .18s ease,
+                background .18s ease,
+                transform .1s ease;
+        }
+
+        .xearn-withdraw-network:active {
+            transform: scale(.98);
+        }
+
+        .xearn-withdraw-network.selected {
+            border-color: #4387ff;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #1c2a47,
+                    #192131
+                );
+
+            box-shadow:
+                inset 0 0 0 1px rgba(67,135,255,.15);
+        }
+
+        .xearn-network-icon {
+            width: 43px;
+            height: 43px;
+
+            flex-shrink: 0;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 50%;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #29c28a,
+                    #159d72
+                );
+
+            color: white;
+
+            font-size: 17px;
+            font-weight: 950;
+        }
+
+        .xearn-network-icon.usdc {
+            background:
+                linear-gradient(
+                    145deg,
+                    #3189ef,
+                    #2168c5
+                );
+        }
+
+        .xearn-network-info {
+            min-width: 0;
+        }
+
+        .xearn-network-name {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .xearn-network-min {
+            margin-top: 4px;
+            color: #858a96;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .xearn-withdraw-network.selected
+        .xearn-network-min {
+            color: #aeb8ca;
+        }
+
+        /* WALLET */
+
+        #xearnWithdrawAddress {
+            width: 100%;
+            height: 64px;
+
+            padding: 0 18px;
+
+            border: 1px solid #2a2e37;
+            border-radius: 24px;
+
+            outline: none;
+
+            background: #20232b;
+
+            color: #ffffff;
+
+            font-size: 12px;
+        }
+
+        #xearnWithdrawAddress::placeholder {
+            color: #777c87;
+        }
+
+        #xearnWithdrawAddress:focus {
+            border-color: #4387ff;
+            box-shadow:
+                0 0 0 2px rgba(67,135,255,.12);
+        }
+
+        /* SUMMARY */
+
+        .xearn-withdraw-summary {
+            margin-top: 20px;
+
+            padding: 17px 18px;
+
+            border: 1px solid #292d36;
+            border-radius: 21px;
+
+            background: #191c22;
+        }
+
+        .xearn-fee-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            min-height: 34px;
+
+            color: #9297a2;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .xearn-fee-value {
+            color: #ffffff;
+            font-weight: 900;
+        }
+
+        .xearn-net-value {
+            color: #52d99a;
+            font-size: 14px;
+        }
+
+        /* SUBMIT */
+
+        .xearn-withdraw-submit {
+            width: 100%;
+            height: 64px;
+
+            margin-top: 16px;
+
+            border-radius: 23px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #4d91ff,
+                    #3174df
+                );
+
+            color: #ffffff;
+
+            font-size: 17px;
+            font-weight: 950;
+
+            box-shadow:
+                0 12px 28px rgba(48,113,222,.20);
+        }
+
+        .xearn-withdraw-submit:active {
+            transform: scale(.98);
+        }
+
+        .xearn-withdraw-submit:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        /* NOTE */
+
+        .xearn-withdraw-note {
+            margin: 14px 5px 0;
+
+            text-align: center;
+
+            color: #6f7480;
+
+            font-size: 9px;
+            line-height: 1.5;
+        }
+
+        /* SMALL PHONES */
+
+        @media (max-width: 370px) {
+
+            .xearn-withdraw-network-grid {
+                gap: 7px;
+            }
+
+            .xearn-withdraw-network {
+                padding: 8px;
+            }
+
+            .xearn-network-icon {
+                width: 37px;
+                height: 37px;
+                font-size: 14px;
+            }
+
+            .xearn-network-name {
+                font-size: 10px;
+            }
+
+            .xearn-withdraw-balance strong {
+                font-size: 21px;
+            }
+
+        }
+
+    `;
+
+    document.head.appendChild(style);
+
+
+    /* =========================================
+       MODAL
+    ========================================= */
 
     const modal =
         document.createElement("div");
@@ -1943,16 +2376,20 @@ function createWithdrawalModal() {
 
             <div class="xearn-withdraw-modal">
 
+                <!-- HEADER -->
+
                 <div class="xearn-withdraw-header">
 
                     <div>
+
                         <div class="xearn-withdraw-title">
                             Withdraw
                         </div>
 
                         <div class="xearn-withdraw-subtitle">
-                            Request a manual withdrawal
+                            Withdraw your available XEARN balance
                         </div>
+
                     </div>
 
                     <button
@@ -1966,42 +2403,77 @@ function createWithdrawalModal() {
                 </div>
 
 
+                <!-- BALANCE -->
+
                 <div class="xearn-withdraw-balance">
 
                     <div>
-                        <span>Available balance</span>
+
+                        <span>
+                            Available
+                        </span>
 
                         <strong id="withdrawBalanceXcoin">
                             0 XCOIN
                         </strong>
+
                     </div>
 
                     <div>
-                        <span>USDT value</span>
 
-                        <strong id="withdrawBalanceUsdt">
+                        <span>
+                            Frozen
+                        </span>
+
+                        <strong>
                             $0.00
                         </strong>
+
                     </div>
 
                 </div>
 
+
+                <!-- AMOUNT -->
 
                 <div class="xearn-withdraw-field">
 
                     <label>
-                        Withdrawal wallet address
+                        Withdrawal amount
                     </label>
 
-                    <input
-                        type="text"
-                        id="xearnWithdrawAddress"
-                        placeholder="Paste your wallet address"
-                        autocomplete="off"
-                    >
+                    <div style="position:relative;">
+
+                        <input
+                            type="number"
+                            id="xearnWithdrawAmount"
+                            placeholder="10.00"
+                            min="10"
+                            step="0.01"
+                            inputmode="decimal"
+                        >
+
+                        <span
+                            style="
+                                position:absolute;
+                                right:22px;
+                                top:50%;
+                                transform:translateY(-50%);
+                                color:#9296a0;
+                                font-size:16px;
+                                font-weight:900;
+                                pointer-events:none;
+                            "
+                        >
+                            USDT
+                        </span>
+
+                    </div>
 
                 </div>
 
+
+                <!-- NETWORK -->
 
                 <div class="xearn-withdraw-field">
 
@@ -2017,23 +2489,25 @@ function createWithdrawalModal() {
                 </div>
 
 
+                <!-- WALLET -->
+
                 <div class="xearn-withdraw-field">
 
                     <label>
-                        Amount (USDT)
+                        Wallet
                     </label>
 
                     <input
-                        type="number"
-                        id="xearnWithdrawAmount"
-                        placeholder="Minimum $10"
-                        min="10"
-                        step="0.01"
-                        inputmode="decimal"
+                        type="text"
+                        id="xearnWithdrawAddress"
+                        placeholder="Paste your wallet address"
+                        autocomplete="off"
                     >
 
                 </div>
 
+
+                <!-- SUMMARY -->
 
                 <div class="xearn-withdraw-summary">
 
@@ -2087,21 +2561,21 @@ function createWithdrawalModal() {
                 </div>
 
 
+                <!-- SUBMIT -->
+
                 <button
                     type="button"
                     id="xearnSubmitWithdrawal"
                     class="xearn-withdraw-submit"
                 >
-                    Continue
+                    Withdraw
                 </button>
 
 
                 <div class="xearn-withdraw-note">
-
                     Minimum withdrawal is $10.
-                    Your request will be reviewed manually
-                    by the XEARN admin.
-
+                    A 10% withdrawal fee applies.
+                    Your request will be reviewed manually by XEARN admin.
                 </div>
 
             </div>
@@ -2112,6 +2586,202 @@ function createWithdrawalModal() {
 
     document.body.appendChild(modal);
 
+
+    /* =========================================
+       NETWORK BUTTONS
+    ========================================= */
+
+    const networkGrid =
+        $("xearnWithdrawNetworkGrid");
+
+
+    WITHDRAWAL_NETWORKS.forEach(
+        option => {
+
+            const button =
+                document.createElement("button");
+
+            button.type =
+                "button";
+
+            button.className =
+                "xearn-withdraw-network";
+
+            button.dataset.asset =
+                option.asset;
+
+            button.dataset.network =
+                option.network;
+
+
+            /* TOKEN ICON */
+
+            const icon =
+                document.createElement("div");
+
+            icon.className =
+                "xearn-network-icon " +
+                (
+                    option.asset === "USDC"
+                        ? "usdc"
+                        : ""
+                );
+
+            icon.textContent =
+                option.asset === "USDC"
+                    ? "$"
+                    : "₮";
+
+
+            /* NETWORK INFO */
+
+            const info =
+                document.createElement("div");
+
+            info.className =
+                "xearn-network-info";
+
+            info.innerHTML = `
+
+                <div class="xearn-network-name">
+                    ${option.asset} ${option.network}
+                </div>
+
+                <div class="xearn-network-min">
+                    min. $10 ${option.asset}
+                </div>
+
+            `;
+
+
+            button.appendChild(icon);
+            button.appendChild(info);
+
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    document
+                        .querySelectorAll(
+                            "#xearnWithdrawNetworkGrid .xearn-withdraw-network"
+                        )
+                        .forEach(
+                            item => {
+                                item.classList.remove(
+                                    "selected"
+                                );
+                            }
+                        );
+
+                    button.classList.add(
+                        "selected"
+                    );
+
+                }
+            );
+
+
+            networkGrid.appendChild(
+                button
+            );
+
+        }
+    );
+
+
+    /* =========================================
+       CLOSE
+    ========================================= */
+
+    $("xearnWithdrawClose")
+        ?.addEventListener(
+            "click",
+            closeWithdrawalModal
+        );
+
+
+    modal
+        .querySelector(
+            ".xearn-withdraw-overlay"
+        )
+        ?.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target.classList.contains(
+                        "xearn-withdraw-overlay"
+                    )
+                ) {
+
+                    closeWithdrawalModal();
+
+                }
+
+            }
+        );
+
+
+    /* =========================================
+       AMOUNT CALCULATION
+    ========================================= */
+
+    $("xearnWithdrawAmount")
+        ?.addEventListener(
+            "input",
+            () => {
+
+                const amount =
+                    Number(
+                        $("xearnWithdrawAmount").value
+                    ) || 0;
+
+
+                const fee =
+                    amount *
+                    WITHDRAWAL_FEE_RATE;
+
+
+                const net =
+                    Math.max(
+                        0,
+                        amount - fee
+                    );
+
+
+                $("withdrawSummaryRequested")
+                    .textContent =
+                    "$" +
+                    amount.toFixed(2);
+
+
+                $("withdrawSummaryFee")
+                    .textContent =
+                    "$" +
+                    fee.toFixed(2);
+
+
+                $("withdrawSummaryNet")
+                    .textContent =
+                    "$" +
+                    net.toFixed(2);
+
+            }
+        );
+
+
+    /* =========================================
+       SUBMIT
+    ========================================= */
+
+    $("xearnSubmitWithdrawal")
+        ?.addEventListener(
+            "click",
+            submitWithdrawal
+        );
+
+}
 
     /* =========================================
        NETWORK BUTTONS
