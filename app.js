@@ -2217,7 +2217,6 @@ function createWithdrawalModal() {
       "click",
       submitWithdrawal
   );
-} 
 
 
 /* =========================================================
