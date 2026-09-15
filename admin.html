@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XEARN Admin Control Center</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+:root{
+  --bg:#07111f;
+  --panel:#0d1a2b;
+  --panel2:#111f33;
+  --border:rgba(255,255,255,.08);
+  --text:#f5f7fb;
+  --muted:#8ea0b8;
+  --primary:#35d07f;
+  --primary2:#20a864;
+  --danger:#ff5d6c;
+  --warning:#ffb84d;
+  --blue:#4da3ff;
+  --purple:#a875ff;
+}
+
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+
+button{
+  font:inherit;
+}
+
+.app{
+  display:flex;
+  min-height:100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+  width:250px;
+  background:#091522;
+  border-right:1px solid var(--border);
+  padding:22px 14px;
+  position:fixed;
+  left:0;
+  top:0;
+  bottom:0;
+  z-index:50;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:0 10px 25px;
+  border-bottom:1px solid var(--border);
+}
+
+.logo-icon{
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,var(--primary),var(--primary2));
+  color:#06120c;
+  font-weight:900;
+}
+
+.logo strong{
+  font-size:19px;
+}
+
+.logo small{
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+  margin-top:2px;
+}
+
+.nav{
+  margin-top:20px;
+}
+
+.nav-title{
+  color:#61738b;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  margin:16px 10px 8px;
+}
+
+.nav button{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#9db0c8;
+  padding:12px 13px;
+  margin-bottom:4px;
+  border-radius:10px;
+  text-align:left;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:11px;
+}
+
+.nav button:hover,
+.nav button.active{
+  background:rgba(53,208,127,.11);
+  color:#fff;
+}
+
+.nav button.active{
+  border-left:3px solid var(--primary);
+}
+
+/* MAIN */
+
+.main{
+  margin-left:250px;
+  width:calc(100% - 250px);
+  min-height:100vh;
+}
+
+.topbar{
+  height:72px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  background:rgba(7,17,31,.92);
+  position:sticky;
+  top:0;
+  z-index:40;
+  backdrop-filter:blur(12px);
+}
+
+.page-title h1{
+  font-size:20px;
+}
+
+.page-title p{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:4px;
+}
+
+.admin-profile{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.admin-avatar{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#35d07f,#4da3ff);
+  display:grid;
+  place-items:center;
+  font-weight:800;
+  color:#06120c;
+}
+
+.admin-name{
+  font-size:13px;
+}
+
+.admin-role{
+  color:var(--primary);
+  font-size:10px;
+  margin-top:3px;
+}
+
+.content{
+  padding:25px;
+}
+
+/* SECTIONS */
+
+.section{
+  display:none;
+}
+
+.section.active{
+  display:block;
+}
+
+/* STATS */
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
+  margin-bottom:22px;
+}
+
+.stat{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:15px;
+  padding:18px;
+}
+
+.stat-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.stat-icon{
+  width:38px;
+  height:38px;
+  border-radius:11px;
+  display:grid;
+  place-items:center;
+  background:rgba(53,208,127,.1);
+}
+
+.stat-label{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:15px;
+}
+
+.stat-value{
+  font-size:24px;
+  font-weight:800;
+  margin-top:5px;
+}
+
+/* CARDS */
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:15px;
+  padding:20px;
+}
+
+.card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-bottom:18px;
+}
+
+.card-header h2{
+  font-size:16px;
+}
+
+.card-header p{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:4px;
+}
+
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+
+/* TABLE */
+
+.table-wrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:700px;
+}
+
+th,
+td{
+  padding:13px 10px;
+  text-align:left;
+  border-bottom:1px solid var(--border);
+  font-size:12px;
+}
+
+th{
+  color:#7f91a9;
+  font-weight:600;
+}
+
+td{
+  color:#dce5ef;
+}
+
+.badge{
+  display:inline-flex;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:10px;
+  font-weight:700;
+}
+
+.badge.green{
+  color:#55e79a;
+  background:rgba(53,208,127,.1);
+}
+
+.badge.red{
+  color:#ff7180;
+  background:rgba(255,93,108,.1);
+}
+
+.badge.yellow{
+  color:#ffc66c;
+  background:rgba(255,184,77,.1);
+}
+
+.badge.blue{
+  color:#69b3ff;
+  background:rgba(77,163,255,.1);
+}
+
+/* BUTTONS */
+
+.btn{
+  border:0;
+  border-radius:9px;
+  padding:9px 13px;
+  cursor:pointer;
+  color:#fff;
+  background:#17263a;
+}
+
+.btn:hover{
+  opacity:.85;
+}
+
+.btn-primary{
+  background:var(--primary);
+  color:#06120c;
+  font-weight:700;
+}
+
+.btn-danger{
+  background:rgba(255,93,108,.13);
+  color:#ff7180;
+}
+
+.btn-small{
+  padding:7px 10px;
+  font-size:11px;
+}
+
+/* SEARCH */
+
+.search{
+  width:100%;
+  max-width:330px;
+  padding:11px 13px;
+  border-radius:9px;
+  border:1px solid var(--border);
+  outline:none;
+  background:#091522;
+  color:#fff;
+}
+
+/* EMPTY */
+
+.empty{
+  text-align:center;
+  padding:45px 20px;
+  color:var(--muted);
+}
+
+.empty-icon{
+  font-size:35px;
+  margin-bottom:10px;
+}
+
+/* MOBILE */
+
+.mobile-header{
+  display:none;
+}
+
+.bottom-nav{
+  display:none;
+}
+
+@media(max-width:900px){
+
+  .sidebar{
+    display:none;
+  }
+
+  .main{
+    margin-left:0;
+    width:100%;
+    padding-bottom:75px;
+  }
+
+  .topbar{
+    height:65px;
+    padding:0 16px;
+  }
+
+  .content{
+    padding:16px;
+  }
+
+  .mobile-header{
+    display:block;
+  }
+
+  .stats{
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+
+  .stat{
+    padding:14px;
+  }
+
+  .stat-value{
+    font-size:20px;
+  }
+
+  .grid-2{
+    grid-template-columns:1fr;
+  }
+
+  .bottom-nav{
+    display:flex;
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:67px;
+    background:#091522;
+    border-top:1px solid var(--border);
+    z-index:100;
+    justify-content:space-around;
+  }
+
+  .bottom-nav button{
+    border:0;
+    background:transparent;
+    color:#71849b;
+    font-size:10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    min-width:60px;
+  }
+
+  .bottom-nav button.active{
+    color:var(--primary);
+  }
+
+  .bottom-nav span{
+    font-size:19px;
+  }
+
+  .admin-name,
+  .admin-role{
+    display:none;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- DESKTOP SIDEBAR -->
+
+<aside class="sidebar">
+
+  <div class="logo">
+    <div class="logo-icon">X</div>
+    <div>
+      <strong>XEARN</strong>
+      <small>CONTROL CENTER</small>
+    </div>
+  </div>
+
+  <div class="nav">
+
+    <div class="nav-title">Main</div>
+
+    <button class="active" onclick="showSection('dashboard',this)">
+      🏠 Dashboard
+    </button>
+
+    <button onclick="showSection('users',this)">
+      👥 Users
+    </button>
+
+    <button onclick="showSection('upgrades',this)">
+      💳 Upgrades
+    </button>
+
+    <button onclick="showSection('withdrawals',this)">
+      💸 Withdrawals
+    </button>
+
+    <div class="nav-title">Management</div>
+
+    <button onclick="showSection('tasks',this)">
+      🎯 Tasks
+    </button>
+
+    <button onclick="showSection('mining',this)">
+      ⛏️ Mining
+    </button>
+
+    <button onclick="showSection('videos',this)">
+      🎬 Videos & Ads
+    </button>
+
+    <button onclick="showSection('referrals',this)">
+      👥 Referrals
+    </button>
+
+    <div class="nav-title">System</div>
+
+    <button onclick="showSection('analytics',this)">
+      📊 Analytics
+    </button>
+
+    <button onclick="showSection('settings',this)">
+      ⚙️ Settings
+    </button>
+
+  </div>
+
+</aside>
+
+
+<!-- MAIN -->
+
+<main class="main">
+
+<header class="topbar">
+
+  <div class="page-title">
+    <h1 id="pageTitle">Dashboard</h1>
+    <p id="pageSubtitle">XEARN platform overview</p>
+  </div>
+
+  <div class="admin-profile">
+    <div class="admin-avatar">A</div>
+
+    <div>
+      <div class="admin-name">Administrator</div>
+      <div class="admin-role">SUPER ADMIN</div>
+    </div>
+  </div>
+
+</header>
+
+
+<div class="content">
+
+
+<!-- DASHBOARD -->
+
+<section id="dashboard" class="section active">
+
+  <div class="stats">
+
+    <div class="stat">
+      <div class="stat-top">
+        <span>👥</span>
+        <div class="stat-icon">👤</div>
+      </div>
+      <div class="stat-label">Total Users</div>
+      <div class="stat-value" id="totalUsers">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-top">
+        <span>🟢</span>
+        <div class="stat-icon">⚡</div>
+      </div>
+      <div class="stat-label">Active Users</div>
+      <div class="stat-value" id="activeUsers">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-top">
+        <span>💰</span>
+        <div class="stat-icon">💎</div>
+      </div>
+      <div class="stat-label">Total XCOIN</div>
+      <div class="stat-value" id="totalXcoin">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-top">
+        <span>💸</span>
+        <div class="stat-icon">📤</div>
+      </div>
+      <div class="stat-label">Pending Withdrawals</div>
+      <div class="stat-value" id="pendingWithdrawals">—</div>
+    </div>
+
+  </div>
+
+
+  <div class="grid-2">
+
+    <div class="card">
+
+      <div class="card-header">
+        <div>
+          <h2>Platform Activity</h2>
+          <p>Latest XEARN activity</p>
+        </div>
+      </div>
+
+      <div class="empty">
+        <div class="empty-icon">📊</div>
+        <p>Analytics will appear here.</p>
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <div class="card-header">
+        <div>
+          <h2>System Status</h2>
+          <p>Current platform controls</p>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:12px;">
+
+        <div style="display:flex;justify-content:space-between;">
+          <span>Platform</span>
+          <span class="badge green">ONLINE</span>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;">
+          <span>Mining</span>
+          <span class="badge green">ACTIVE</span>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;">
+          <span>Tasks</span>
+          <span class="badge green">ACTIVE</span>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;">
+          <span>Withdrawals</span>
+          <span class="badge blue">AVAILABLE</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- USERS -->
+
+<section id="users" class="section">
+
+  <div class="card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Users Management</h2>
+        <p>Manage XEARN accounts and earning access</p>
+      </div>
+
+      <input
+        class="search"
+        type="search"
+        placeholder="Search username or Telegram ID..."
+      >
+
+    </div>
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Telegram ID</th>
+            <th>Country</th>
+            <th>Tier</th>
+            <th>Balance</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="usersTable">
+
+          <tr>
+            <td colspan="7">
+
+              <div class="empty">
+
+                <div class="empty-icon">👥</div>
+
+                <p>
+                  User management will connect to Supabase here.
+                </p>
+
+              </div>
+
+            </td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- UPGRADES -->
+
+<section id="upgrades" class="section">
+
+  <div class="card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Upgrade Requests</h2>
+        <p>Review manual tier upgrade payments</p>
+      </div>
+
+      <button class="btn btn-primary">
+        Refresh
+      </button>
+
+    </div>
+
+    <div class="empty">
+
+      <div class="empty-icon">💳</div>
+
+      <p>Upgrade requests will appear here.</p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- WITHDRAWALS -->
+
+<section id="withdrawals" class="section">
+
+  <div class="card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Withdrawals</h2>
+        <p>Review and manage withdrawal requests</p>
+      </div>
+
+    </div>
+
+    <div class="empty">
+
+      <div class="empty-icon">💸</div>
+
+      <p>Withdrawal management will appear here.</p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- TASKS -->
+
+<section id="tasks" class="section">
+
+  <div class="card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Tasks</h2>
+        <p>Create and manage earning tasks</p>
+      </div>
+
+      <button class="btn btn-primary">
+        + Add Task
+      </button>
+
+    </div>
+
+    <div class="empty">
+
+      <div class="empty-icon">🎯</div>
+
+      <p>Task management will appear here.</p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- MINING -->
+
+<section id="mining" class="section">
+
+  <div class="card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Mining Control</h2>
+        <p>Manage mining rewards and limits</p>
+      </div>
+
+    </div>
+
+    <div class="grid-2">
+
+      <div class="card">
+
+        <p style="color:var(--muted);font-size:12px;">
+          Mining status
+        </p>
+
+        <h2 style="margin-top:8px;">
+          <span class="badge green">ACTIVE</span>
+        </h2>
+
+      </div>
+
+      <div class="card">
+
+        <p style="color:var(--muted);font-size:12px;">
+          Current system
+        </p>
+
+        <h2 style="margin-top:8px;">
+          XCOIN Mining
+        </h2>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- VIDEOS -->
+
+<section id="videos" class="section">
+
+  <div class="card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Videos & Ads</h2>
+        <p>Control video rewards and daily limits</p>
+      </div>
+
+    </div>
+
+    <div class="empty">
+
+      <div class="empty-icon">🎬</div>
+
+      <p>Video and ad settings will appear here.</p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- REFERRALS -->
+
+<section id="referrals" class="section">
+
+  <div class="card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Referrals</h2>
+        <p>Monitor referral activity and rewards</p>
+      </div>
+
+    </div>
+
+    <div class="empty">
+
+      <div class="empty-icon">👥</div>
+
+      <p>Referral management will appear here.</p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ANALYTICS -->
+
+<section id="analytics" class="section">
+
+  <div class="card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Analytics</h2>
+        <p>XEARN platform performance</p>
+      </div>
+
+    </div>
+
+    <div class="empty">
+
+      <div class="empty-icon">📊</div>
+
+      <p>Analytics will be connected here.</p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- SETTINGS -->
+
+<section id="settings" class="section">
+
+  <div class="card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Platform Settings</h2>
+        <p>Control global XEARN settings</p>
+      </div>
+
+    </div>
+
+    <div style="display:grid;gap:14px;">
+
+      <div class="card">
+        <strong>XCOIN Conversion</strong>
+        <p style="color:var(--muted);font-size:12px;margin-top:5px;">
+          Configure XCOIN to USDT conversion.
+        </p>
+      </div>
+
+      <div class="card">
+        <strong>Global Earning</strong>
+        <p style="color:var(--muted);font-size:12px;margin-top:5px;">
+          Enable or disable platform earning.
+        </p>
+      </div>
+
+      <div class="card">
+        <strong>Maintenance Mode</strong>
+        <p style="color:var(--muted);font-size:12px;margin-top:5px;">
+          Temporarily disable platform activity.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+</div>
+
+</main>
+
+
+<!-- MOBILE BOTTOM NAV -->
+
+<nav class="bottom-nav">
+
+  <button class="active" onclick="showSection('dashboard',this)">
+    <span>🏠</span>
+    Home
+  </button>
+
+  <button onclick="showSection('users',this)">
+    <span>👥</span>
+    Users
+  </button>
+
+  <button onclick="showSection('upgrades',this)">
+    <span>💳</span>
+    Upgrades
+  </button>
+
+  <button onclick="showSection('withdrawals',this)">
+    <span>💸</span>
+    Withdrawals
+  </button>
+
+  <button onclick="showSection('settings',this)">
+    <span>⚙️</span>
+    More
+  </button>
+
+</nav>
+
+
+<script>
+
+const pageInfo = {
+
+  dashboard:{
+    title:"Dashboard",
+    subtitle:"XEARN platform overview"
+  },
+
+  users:{
+    title:"Users",
+    subtitle:"Manage XEARN users"
+  },
+
+  upgrades:{
+    title:"Upgrades",
+    subtitle:"Review tier upgrade requests"
+  },
+
+  withdrawals:{
+    title:"Withdrawals",
+    subtitle:"Manage withdrawal requests"
+  },
+
+  tasks:{
+    title:"Tasks",
+    subtitle:"Manage earning tasks"
+  },
+
+  mining:{
+    title:"Mining",
+    subtitle:"Control mining rewards"
+  },
+
+  videos:{
+    title:"Videos & Ads",
+    subtitle:"Manage video rewards"
+  },
+
+  referrals:{
+    title:"Referrals",
+    subtitle:"Manage referral activity"
+  },
+
+  analytics:{
+    title:"Analytics",
+    subtitle:"Platform performance"
+  },
+
+  settings:{
+    title:"Settings",
+    subtitle:"XEARN platform controls"
+  }
+
+};
+
+
+function showSection(id,button){
+
+  document.querySelectorAll(".section")
+    .forEach(section=>{
+      section.classList.remove("active");
+    });
+
+  const selected=document.getElementById(id);
+
+  if(selected){
+    selected.classList.add("active");
+  }
+
+  document.querySelectorAll(".nav button,.bottom-nav button")
+    .forEach(btn=>{
+      btn.classList.remove("active");
+    });
+
+  document.querySelectorAll(
+    `.nav button[onclick*="'${id}'"], .bottom-nav button[onclick*="'${id}'"]`
+  ).forEach(btn=>{
+    btn.classList.add("active");
+  });
+
+  if(pageInfo[id]){
+
+    document.getElementById("pageTitle").textContent=
+      pageInfo[id].title;
+
+    document.getElementById("pageSubtitle").textContent=
+      pageInfo[id].subtitle;
+
+  }
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+</script>
+
+</body>
+</html>
