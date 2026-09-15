@@ -2211,27 +2211,11 @@ function createWithdrawalModal() {
         );
 
 
-    $("xearnWithdrawAmount")
-        ?.addEventListener(
-            "input",
-            updateWithdrawalPreview
-        );
-
-
-    document.addEventListener("click", function (event) {
-
-    const button =
-        event.target.closest("#xearnSubmitWithdrawal");
-
-    if (!button) {
-        return;
-    }
-
-    console.log("WITHDRAW BUTTON CLICKED");
-
-    submitWithdrawal();
-
-});
+    $("xearnSubmitWithdrawal")
+  ?.addEventListener(
+      "click",
+      submitWithdrawal
+  );
 
 
 /* =========================================================
