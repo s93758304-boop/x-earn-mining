@@ -1,5 +1,6 @@
 /* =========================================================
-   XEARN APP.JS — COMPLETE CORRECTED VERSION
+   XEARN APP.JS — COMPLETE VERSION
+   WITHDRAW + HISTORY INTEGRATED
    ========================================================= */
 
 const SUPABASE_URL = "https://ynrqdbdgjzmucqcfsyvi.supabase.co";
@@ -18,6 +19,48 @@ let miningRunning = false;
 let selectedUpgradeTier = null;
 let selectedPaymentAsset = "USDT";
 let selectedPaymentNetwork = "TRC20";
+
+/* =========================================================
+   WITHDRAWAL SETTINGS
+   ========================================================= */
+
+const MIN_WITHDRAW_USDT = 10;
+const WITHDRAWAL_FEE_RATE = 0.10;
+
+const WITHDRAWAL_NETWORKS = [
+    {
+        asset: "USDT",
+        network: "BEP20"
+    },
+    {
+        asset: "USDC",
+        network: "BEP20"
+    },
+    {
+        asset: "USDT",
+        network: "ERC20"
+    },
+    {
+        asset: "USDC",
+        network: "ERC20"
+    },
+    {
+        asset: "USDT",
+        network: "TON"
+    },
+    {
+        asset: "USDT",
+        network: "SOL"
+    },
+    {
+        asset: "USDT",
+        network: "TRC20"
+    }
+];
+
+/* =========================================================
+   EXISTING SETTINGS
+   ========================================================= */
 
 const VIDEO_LIMITS = {
     FREE: 5,
@@ -54,6 +97,7 @@ const PAYMENT_METHODS = {
         TON: "UQB4IcjcNbzsQ-MRchgdspVZ4tPuFFM6CVRtfU709kelf2D",
         SOL: "CEPxJr7nhrne1Bnu1n2hXnZjYwawthy8xMEZxTc4Dztd"
     },
+
     USDC: {
         BEP20: "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995",
         ERC20: "0x5e0DA0068dcb929adfe27dEdB5FA8b5A86586995"
@@ -71,6 +115,7 @@ function $(id) {
 
 function setText(id, value) {
     const element = $(id);
+
     if (element) {
         element.textContent = value;
     }
@@ -96,7 +141,10 @@ function showToast(title, message) {
     console.log(title + ":", message);
 
     const toast = $("toast");
-    if (!toast) return;
+
+    if (!toast) {
+        return;
+    }
 
     const titleElement = $("toastTitle");
     const messageElement = $("toastMessage");
@@ -180,6 +228,7 @@ function initializeTelegram() {
    ========================================================= */
 
 async function callFunction(functionName, body) {
+
     const response = await fetch(
         SUPABASE_URL +
         "/functions/v1/" +
@@ -220,22 +269,38 @@ async function callFunction(functionName, body) {
    ========================================================= */
 
 async function authenticateUser() {
+
     if (!telegramUser) {
         createFallbackUser();
         return;
     }
 
     try {
-        const result = await callFunction(
-            "telegram-auth",
-            {
-                telegram_id: telegramUser.id,
-                username: telegramUser.username || null,
-                first_name: telegramUser.first_name || null,
-                last_name: telegramUser.last_name || null,
-                photo_url: telegramUser.photo_url || null
-            }
-        );
+
+        const result =
+            await callFunction(
+                "telegram-auth",
+                {
+                    telegram_id:
+                        telegramUser.id,
+
+                    username:
+                        telegramUser.username ||
+                        null,
+
+                    first_name:
+                        telegramUser.first_name ||
+                        null,
+
+                    last_name:
+                        telegramUser.last_name ||
+                        null,
+
+                    photo_url:
+                        telegramUser.photo_url ||
+                        null
+                }
+            );
 
         currentUser =
             result?.user ||
@@ -251,6 +316,7 @@ async function authenticateUser() {
         updateInterface();
 
     } catch (error) {
+
         console.error(
             "Authentication error:",
             error
@@ -262,35 +328,48 @@ async function authenticateUser() {
 
 
 function createFallbackUser() {
+
     currentUser = {
+
         telegram_id:
-            telegramUser?.id || null,
+            telegramUser?.id ||
+            null,
 
         username:
-            telegramUser?.username || null,
+            telegramUser?.username ||
+            null,
 
         first_name:
             telegramUser?.first_name ||
             "XEARN User",
 
         last_name:
-            telegramUser?.last_name || "",
+            telegramUser?.last_name ||
+            "",
 
-        tier: "FREE",
+        tier:
+            "FREE",
 
-        balance_xcoin: 0,
+        balance_xcoin:
+            0,
 
-        total_earned_xcoin: 0,
+        total_earned_xcoin:
+            0,
 
-        referral_earnings_xcoin: 0,
+        referral_earnings_xcoin:
+            0,
 
-        videos_watched_today: 0,
+        videos_watched_today:
+            0,
 
-        tasks_completed_today: 0,
+        tasks_completed_today:
+            0,
 
-        referral_count: 0,
+        referral_count:
+            0,
 
-        streak_days: 0
+        streak_days:
+            0
     };
 
     updateInterface();
@@ -298,21 +377,37 @@ function createFallbackUser() {
 
 
 async function refreshUser() {
+
     if (!telegramUser) {
         return;
     }
 
     try {
-        const result = await callFunction(
-            "telegram-auth",
-            {
-                telegram_id: telegramUser.id,
-                username: telegramUser.username || null,
-                first_name: telegramUser.first_name || null,
-                last_name: telegramUser.last_name || null,
-                photo_url: telegramUser.photo_url || null
-            }
-        );
+
+        const result =
+            await callFunction(
+                "telegram-auth",
+                {
+                    telegram_id:
+                        telegramUser.id,
+
+                    username:
+                        telegramUser.username ||
+                        null,
+
+                    first_name:
+                        telegramUser.first_name ||
+                        null,
+
+                    last_name:
+                        telegramUser.last_name ||
+                        null,
+
+                    photo_url:
+                        telegramUser.photo_url ||
+                        null
+                }
+            );
 
         const refreshedUser =
             result?.user ||
@@ -320,6 +415,7 @@ async function refreshUser() {
             null;
 
         if (refreshedUser) {
+
             currentUser =
                 refreshedUser;
 
@@ -327,6 +423,7 @@ async function refreshUser() {
         }
 
     } catch (error) {
+
         console.error(
             "Refresh user error:",
             error
@@ -340,12 +437,23 @@ async function refreshUser() {
    ========================================================= */
 
 function showScreen(screenName) {
+
     const screenMap = {
-        home: "homeScreen",
-        earn: "earnScreen",
-        upgrade: "upgradeScreen",
-        refer: "referScreen",
-        account: "accountScreen"
+
+        home:
+            "homeScreen",
+
+        earn:
+            "earnScreen",
+
+        upgrade:
+            "upgradeScreen",
+
+        refer:
+            "referScreen",
+
+        account:
+            "accountScreen"
     };
 
     const targetId =
@@ -355,33 +463,46 @@ function showScreen(screenName) {
     document
         .querySelectorAll(".screen")
         .forEach(screen => {
-            screen.classList.remove("active");
+            screen.classList.remove(
+                "active"
+            );
         });
 
-    const target = $(targetId);
+    const target =
+        $(targetId);
 
     if (!target) {
+
         console.error(
             "Screen not found:",
             targetId
         );
+
         return;
     }
 
-    target.classList.add("active");
+    target.classList.add(
+        "active"
+    );
 
     document
         .querySelectorAll(
             ".bottom-nav .nav-item"
         )
         .forEach(item => {
-            item.classList.remove("active");
+
+            item.classList.remove(
+                "active"
+            );
 
             if (
                 item.dataset.target ===
                 screenName
             ) {
-                item.classList.add("active");
+
+                item.classList.add(
+                    "active"
+                );
             }
         });
 }
@@ -392,6 +513,7 @@ function showScreen(screenName) {
    ========================================================= */
 
 function getTier() {
+
     return String(
         currentUser?.tier ||
         currentUser?.plan ||
@@ -399,7 +521,9 @@ function getTier() {
     ).toUpperCase();
 }
 
+
 function getVideoCount() {
+
     return Number(
         currentUser?.videos_watched_today ??
         currentUser?.videos_completed ??
@@ -408,7 +532,9 @@ function getVideoCount() {
     );
 }
 
+
 function getTaskCount() {
+
     return Number(
         currentUser?.tasks_completed_today ??
         currentUser?.tasks_completed ??
@@ -423,20 +549,24 @@ function getTaskCount() {
    ========================================================= */
 
 function updateInterface() {
+
     if (!currentUser) {
         return;
     }
 
-    const tier = getTier();
+    const tier =
+        getTier();
 
     const balance =
         Number(
-            currentUser.balance_xcoin || 0
+            currentUser.balance_xcoin ||
+            0
         );
 
     const totalEarned =
         Number(
-            currentUser.total_earned_xcoin || 0
+            currentUser.total_earned_xcoin ||
+            0
         );
 
     const videos =
@@ -446,10 +576,12 @@ function updateInterface() {
         getTaskCount();
 
     const videoLimit =
-        VIDEO_LIMITS[tier] || 20;
+        VIDEO_LIMITS[tier] ||
+        20;
 
     const taskLimit =
-        TASK_LIMITS[tier] || 10;
+        TASK_LIMITS[tier] ||
+        10;
 
     const referrals =
         Number(
@@ -493,7 +625,9 @@ function updateInterface() {
 
     setText(
         "totalEarned",
-        formatNumber(totalEarned)
+        formatNumber(
+            totalEarned
+        )
     );
 
 
@@ -507,12 +641,16 @@ function updateInterface() {
 
     setText(
         "tasksCount",
-        formatNumber(safeTasks)
+        formatNumber(
+            safeTasks
+        )
     );
 
     setText(
         "tasksCompleted",
-        formatNumber(safeTasks)
+        formatNumber(
+            safeTasks
+        )
     );
 
     setText(
@@ -534,21 +672,19 @@ function updateInterface() {
         taskLimit
     );
 
-
     const taskProgress =
         $("taskProgress");
 
     if (taskProgress) {
+
         taskProgress.style.width =
-            (
-                Math.min(
-                    100,
-                    (
-                        safeTasks /
-                        taskLimit
-                    ) *
-                    100
-                )
+            Math.min(
+                100,
+                (
+                    safeTasks /
+                    taskLimit
+                ) *
+                100
             ) +
             "%";
     }
@@ -586,21 +722,19 @@ function updateInterface() {
         videoLimit
     );
 
-
     const videoProgress =
         $("videoProgress");
 
     if (videoProgress) {
+
         videoProgress.style.width =
-            (
-                Math.min(
-                    100,
-                    (
-                        safeVideos /
-                        videoLimit
-                    ) *
-                    100
-                )
+            Math.min(
+                100,
+                (
+                    safeVideos /
+                    videoLimit
+                ) *
+                100
             ) +
             "%";
     }
@@ -610,7 +744,9 @@ function updateInterface() {
 
     setText(
         "streakCount",
-        formatNumber(streak)
+        formatNumber(
+            streak
+        )
     );
 
 
@@ -618,12 +754,16 @@ function updateInterface() {
 
     setText(
         "referralsCount",
-        formatNumber(referrals)
+        formatNumber(
+            referrals
+        )
     );
 
     setText(
         "referralTotal",
-        formatNumber(referrals)
+        formatNumber(
+            referrals
+        )
     );
 
     setText(
@@ -653,10 +793,11 @@ function updateInterface() {
     );
 
 
-    /* MINING REWARD */
+    /* MINING */
 
     const miningReward =
-        MINING_REWARDS[tier] || 50;
+        MINING_REWARDS[tier] ||
+        50;
 
     setText(
         "miningReward",
@@ -675,6 +816,7 @@ function updateInterface() {
         referralLink &&
         telegramUser?.id
     ) {
+
         referralLink.textContent =
             "https://t.me/XEarnmining_bot?start=ref_" +
             telegramUser.id;
@@ -710,9 +852,12 @@ function updateInterface() {
     /* AVATAR */
 
     const avatar =
-        document.querySelector(".avatar");
+        document.querySelector(
+            ".avatar"
+        );
 
     if (avatar) {
+
         avatar.textContent =
             (
                 currentUser.first_name ||
@@ -732,6 +877,7 @@ function updateInterface() {
    ========================================================= */
 
 function updateMiningDisplay() {
+
     if (!currentUser) {
         return;
     }
@@ -746,6 +892,7 @@ function updateMiningDisplay() {
         $("mineCountdown");
 
     if (!lastMine) {
+
         if (progressBar) {
             progressBar.style.width =
                 "100%";
@@ -760,9 +907,12 @@ function updateMiningDisplay() {
     }
 
     const lastTime =
-        new Date(lastMine).getTime();
+        new Date(
+            lastMine
+        ).getTime();
 
     if (!Number.isFinite(lastTime)) {
+
         if (countdown) {
             countdown.textContent =
                 "Ready";
@@ -782,6 +932,7 @@ function updateMiningDisplay() {
         lastTime;
 
     if (elapsed >= cycle) {
+
         if (progressBar) {
             progressBar.style.width =
                 "100%";
@@ -843,6 +994,7 @@ function updateMiningDisplay() {
         );
 
     if (countdown) {
+
         countdown.textContent =
             String(hours)
                 .padStart(2, "0") +
@@ -857,27 +1009,31 @@ function updateMiningDisplay() {
 
 
 setInterval(() => {
+
     if (currentUser) {
         updateMiningDisplay();
     }
+
 }, 1000);
 
 
 /* =========================================================
    WATCH VIDEO
-   MONETAG REWARDED INTERSTITIAL
    ========================================================= */
 
 async function watchVideo() {
+
     if (videoRunning) {
         return;
     }
 
     if (!telegramUser?.id) {
+
         showToast(
             "Telegram Required",
             "Open XEARN inside Telegram."
         );
+
         return;
     }
 
@@ -885,10 +1041,12 @@ async function watchVideo() {
         typeof window.show_11747212 !==
         "function"
     ) {
+
         showToast(
             "Video Unavailable",
             "Please try again shortly."
         );
+
         return;
     }
 
@@ -906,14 +1064,17 @@ async function watchVideo() {
         videosBefore >=
         videoLimit
     ) {
+
         showToast(
             "Daily Limit",
             "You have reached today's video limit."
         );
+
         return;
     }
 
-    videoRunning = true;
+    videoRunning =
+        true;
 
     const button =
         $("watchVideoButton");
@@ -924,6 +1085,7 @@ async function watchVideo() {
     }
 
     try {
+
         const ymid =
             telegramUser.id +
             "_video_" +
@@ -940,13 +1102,15 @@ async function watchVideo() {
             "Waiting for reward verification..."
         );
 
-        let verified = false;
+        let verified =
+            false;
 
         for (
             let attempt = 0;
             attempt < 10;
             attempt++
         ) {
+
             await new Promise(
                 resolve =>
                     setTimeout(
@@ -960,34 +1124,27 @@ async function watchVideo() {
             const videosAfter =
                 getVideoCount();
 
-            console.log(
-                "Video verification:",
-                {
-                    attempt:
-                        attempt + 1,
-                    before:
-                        videosBefore,
-                    after:
-                        videosAfter
-                }
-            );
-
             if (
                 videosAfter >
                 videosBefore
             ) {
-                verified = true;
+
+                verified =
+                    true;
 
                 break;
             }
         }
 
         if (verified) {
+
             showToast(
                 "Video Reward",
                 "Your video reward has been credited."
             );
+
         } else {
+
             showToast(
                 "Reward Pending",
                 "Your reward is still being verified."
@@ -995,6 +1152,7 @@ async function watchVideo() {
         }
 
     } catch (error) {
+
         console.error(
             "Video error:",
             error
@@ -1006,6 +1164,7 @@ async function watchVideo() {
         );
 
     } finally {
+
         videoRunning =
             false;
 
@@ -1020,20 +1179,22 @@ async function watchVideo() {
 
 
 /* =========================================================
-   START TASK
-   MONETAG REWARDED POPUP
+   TASK
    ========================================================= */
 
 async function startTask() {
+
     if (taskRunning) {
         return;
     }
 
     if (!telegramUser?.id) {
+
         showToast(
             "Telegram Required",
             "Please open XEARN from Telegram."
         );
+
         return;
     }
 
@@ -1041,10 +1202,12 @@ async function startTask() {
         typeof window.show_11747212 !==
         "function"
     ) {
+
         showToast(
             "Task Unavailable",
             "The task service is temporarily unavailable."
         );
+
         return;
     }
 
@@ -1062,13 +1225,14 @@ async function startTask() {
         tasksBefore >=
         taskLimit
     ) {
+
         showToast(
             "Daily Limit",
             "You have reached today's task limit."
         );
+
         return;
     }
-
 
     const confirmed =
         window.confirm(
@@ -1083,10 +1247,11 @@ async function startTask() {
         return;
     }
 
-
-    taskRunning = true;
+    taskRunning =
+        true;
 
     try {
+
         const ymid =
             telegramUser.id +
             "_task_" +
@@ -1097,25 +1262,16 @@ async function startTask() {
             "Complete the task exactly as instructed."
         );
 
-
-        const adResult =
-            await window.show_11747212({
-                type: "pop",
-                ymid: ymid,
-                requestVar: "task"
-            });
-
-        console.log(
-            "Monetag task result:",
-            adResult
-        );
-
+        await window.show_11747212({
+            type: "pop",
+            ymid: ymid,
+            requestVar: "task"
+        });
 
         showToast(
             "Task Submitted",
             "Waiting for completion verification..."
         );
-
 
         let verified =
             false;
@@ -1125,6 +1281,7 @@ async function startTask() {
             attempt < 10;
             attempt++
         ) {
+
             await new Promise(
                 resolve =>
                     setTimeout(
@@ -1138,22 +1295,11 @@ async function startTask() {
             const tasksAfter =
                 getTaskCount();
 
-            console.log(
-                "Task verification:",
-                {
-                    attempt:
-                        attempt + 1,
-                    before:
-                        tasksBefore,
-                    after:
-                        tasksAfter
-                }
-            );
-
             if (
                 tasksAfter >
                 tasksBefore
             ) {
+
                 verified =
                     true;
 
@@ -1161,16 +1307,15 @@ async function startTask() {
             }
         }
 
-
         if (verified) {
+
             showToast(
                 "Task Verified",
                 "Your task reward has been credited."
             );
 
-            await refreshUser();
-
         } else {
+
             showToast(
                 "Task Pending",
                 "Complete the task fully. Your reward will be added only after successful verification."
@@ -1178,6 +1323,7 @@ async function startTask() {
         }
 
     } catch (error) {
+
         console.error(
             "Task error:",
             error
@@ -1189,6 +1335,7 @@ async function startTask() {
         );
 
     } finally {
+
         taskRunning =
             false;
 
@@ -1202,6 +1349,7 @@ async function startTask() {
    ========================================================= */
 
 async function claimDailyCheckin() {
+
     if (checkinRunning) {
         return;
     }
@@ -1210,10 +1358,12 @@ async function claimDailyCheckin() {
         typeof window.show_11747212 !==
         "function"
     ) {
+
         showToast(
             "Check-in Unavailable",
             "Please try again shortly."
         );
+
         return;
     }
 
@@ -1221,7 +1371,9 @@ async function claimDailyCheckin() {
         true;
 
     try {
+
         await window.show_11747212({
+
             type: "inApp",
 
             inAppSettings: {
@@ -1239,6 +1391,7 @@ async function claimDailyCheckin() {
         );
 
     } catch (error) {
+
         console.error(
             "Check-in error:",
             error
@@ -1250,6 +1403,7 @@ async function claimDailyCheckin() {
         );
 
     } finally {
+
         setTimeout(
             () => {
                 checkinRunning =
@@ -1266,15 +1420,18 @@ async function claimDailyCheckin() {
    ========================================================= */
 
 async function mineXcoin() {
+
     if (miningRunning) {
         return;
     }
 
     if (!telegramUser?.id) {
+
         showToast(
             "Telegram Required",
             "Open XEARN inside Telegram."
         );
+
         return;
     }
 
@@ -1290,6 +1447,7 @@ async function mineXcoin() {
     }
 
     try {
+
         const result =
             await callFunction(
                 "mine-xcoin",
@@ -1307,6 +1465,7 @@ async function mineXcoin() {
             );
 
         if (reward <= 0) {
+
             throw new Error(
                 result?.message ||
                 "Mining reward was not confirmed."
@@ -1318,11 +1477,14 @@ async function mineXcoin() {
         showToast(
             "Mining Complete",
             "+" +
-            formatNumber(reward) +
+            formatNumber(
+                reward
+            ) +
             " XCOIN"
         );
 
     } catch (error) {
+
         console.error(
             "Mining error:",
             error
@@ -1335,6 +1497,7 @@ async function mineXcoin() {
         );
 
     } finally {
+
         miningRunning =
             false;
 
@@ -1351,11 +1514,14 @@ async function mineXcoin() {
    ========================================================= */
 
 async function copyReferral() {
+
     if (!telegramUser?.id) {
+
         showToast(
             "Referral",
             "Telegram account not available."
         );
+
         return;
     }
 
@@ -1364,6 +1530,7 @@ async function copyReferral() {
         telegramUser.id;
 
     try {
+
         await navigator.clipboard.writeText(
             link
         );
@@ -1374,6 +1541,7 @@ async function copyReferral() {
         );
 
     } catch (error) {
+
         console.error(
             "Clipboard error:",
             error
@@ -1388,16 +1556,1617 @@ async function copyReferral() {
 
 
 /* =========================================================
-   CREATE UPGRADE MODAL
+   WITHDRAWAL HELPERS
+   ========================================================= */
+
+function getBalanceXcoin() {
+
+    return Number(
+        currentUser?.balance_xcoin ||
+        0
+    );
+}
+
+
+function getBalanceUsdt() {
+
+    return (
+        getBalanceXcoin() /
+        XCOIN_PER_USDT
+    );
+}
+
+
+function calculateWithdrawal(usdtAmount) {
+
+    const amount =
+        Number(
+            usdtAmount
+        );
+
+    const fee =
+        amount *
+        WITHDRAWAL_FEE_RATE;
+
+    const net =
+        amount -
+        fee;
+
+    const xcoinAmount =
+        amount *
+        XCOIN_PER_USDT;
+
+    const feeXcoin =
+        fee *
+        XCOIN_PER_USDT;
+
+    const netXcoin =
+        net *
+        XCOIN_PER_USDT;
+
+    return {
+        usdtAmount: amount,
+        feeUsdt: fee,
+        netUsdt: net,
+        amountXcoin: xcoinAmount,
+        feeXcoin: feeXcoin,
+        netXcoin: netXcoin
+    };
+}
+
+
+/* =========================================================
+   WITHDRAWAL STYLES
+   ========================================================= */
+
+function injectWithdrawalStyles() {
+
+    if ($("xearnWithdrawalStyles")) {
+        return;
+    }
+
+    const style =
+        document.createElement(
+            "style"
+        );
+
+    style.id =
+        "xearnWithdrawalStyles";
+
+    style.textContent = `
+
+        #xearnWithdrawalModal,
+        #xearnHistoryModal {
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+            display: none;
+        }
+
+        .xearn-withdraw-overlay,
+        .xearn-history-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,.84);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .xearn-withdraw-box,
+        .xearn-history-box {
+            width: 100%;
+            max-width: 500px;
+            max-height: 92vh;
+            overflow-y: auto;
+            background: #07130e;
+            border: 1px solid rgba(98,239,156,.18);
+            border-radius: 22px;
+            color: #fff;
+            box-shadow: 0 25px 80px rgba(0,0,0,.7);
+        }
+
+        .xearn-withdraw-header,
+        .xearn-history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,.07);
+        }
+
+        .xearn-withdraw-title,
+        .xearn-history-title {
+            font-size: 22px;
+            font-weight: 900;
+        }
+
+        .xearn-withdraw-subtitle,
+        .xearn-history-subtitle {
+            margin-top: 5px;
+            color: #91a99d;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .xearn-withdraw-close,
+        .xearn-history-close {
+            width: 36px;
+            height: 36px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,.08);
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .xearn-withdraw-body {
+            padding: 18px 20px 22px;
+        }
+
+        .xearn-balance-box {
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(98,239,156,.07);
+            border: 1px solid rgba(98,239,156,.12);
+            margin-bottom: 18px;
+        }
+
+        .xearn-balance-label {
+            color: #91a99d;
+            font-size: 12px;
+        }
+
+        .xearn-balance-main {
+            margin-top: 5px;
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .xearn-balance-usdt {
+            margin-top: 4px;
+            color: #62ef9c;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .xearn-field {
+            margin-bottom: 16px;
+        }
+
+        .xearn-field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #b8c9c0;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .xearn-field input,
+        .xearn-field select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 13px;
+            border-radius: 11px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: #050b08;
+            color: #fff;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .xearn-field input:focus,
+        .xearn-field select:focus {
+            border-color: #62ef9c;
+        }
+
+        .xearn-network-grid-withdraw {
+            display: grid;
+            grid-template-columns: repeat(2,1fr);
+            gap: 8px;
+        }
+
+        .xearn-withdraw-network {
+            padding: 11px 7px;
+            border-radius: 11px;
+            border: 1px solid rgba(255,255,255,.09);
+            background: #0d2118;
+            color: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .xearn-withdraw-network.selected {
+            border-color: #62ef9c;
+            background: #123522;
+            color: #62ef9c;
+        }
+
+        .xearn-fee-box {
+            margin: 5px 0 17px;
+            padding: 14px;
+            border-radius: 13px;
+            background: #0a1c13;
+            border: 1px solid rgba(255,255,255,.07);
+        }
+
+        .xearn-fee-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 9px;
+            font-size: 12px;
+            color: #9caea5;
+        }
+
+        .xearn-fee-row:last-child {
+            margin-bottom: 0;
+            padding-top: 9px;
+            border-top: 1px solid rgba(255,255,255,.07);
+            color: #fff;
+            font-weight: 900;
+        }
+
+        .xearn-fee-value {
+            text-align: right;
+            color: #fff;
+        }
+
+        .xearn-net-value {
+            color: #62ef9c;
+        }
+
+        .xearn-withdraw-submit {
+            width: 100%;
+            padding: 14px;
+            border: 0;
+            border-radius: 12px;
+            background: #62ef9c;
+            color: #06120b;
+            font-size: 14px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .xearn-withdraw-submit:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .xearn-withdraw-note {
+            margin-top: 12px;
+            color: #788c82;
+            font-size: 11px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .xearn-history-body {
+            padding: 15px 20px 22px;
+        }
+
+        .xearn-history-loading,
+        .xearn-history-empty {
+            padding: 35px 15px;
+            text-align: center;
+            color: #91a99d;
+            font-size: 13px;
+        }
+
+        .xearn-history-item {
+            padding: 14px;
+            margin-bottom: 9px;
+            border-radius: 14px;
+            background: #0a1c13;
+            border: 1px solid rgba(255,255,255,.07);
+        }
+
+        .xearn-history-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .xearn-history-name {
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .xearn-history-amount {
+            font-size: 13px;
+            font-weight: 900;
+            color: #62ef9c;
+        }
+
+        .xearn-history-desc {
+            margin-top: 5px;
+            color: #91a99d;
+            font-size: 11px;
+            line-height: 1.45;
+        }
+
+        .xearn-history-status {
+            display: inline-block;
+            margin-top: 9px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            background: rgba(255,255,255,.07);
+            color: #c7d5ce;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .xearn-history-date {
+            margin-top: 7px;
+            color: #687b72;
+            font-size: 10px;
+        }
+
+        @media(max-width:360px) {
+
+            .xearn-network-grid-withdraw {
+                grid-template-columns: 1fr;
+            }
+        }
+    `;
+
+    document.head.appendChild(
+        style
+    );
+}
+
+
+/* =========================================================
+   CREATE WITHDRAWAL MODAL
+   ========================================================= */
+
+function createWithdrawalModal() {
+
+    if ($("xearnWithdrawalModal")) {
+        return;
+    }
+
+    injectWithdrawalStyles();
+
+    const modal =
+        document.createElement(
+            "div"
+        );
+
+    modal.id =
+        "xearnWithdrawalModal";
+
+    modal.innerHTML = `
+
+        <div class="xearn-withdraw-overlay">
+
+            <div class="xearn-withdraw-box">
+
+                <div class="xearn-withdraw-header">
+
+                    <div>
+                        <div class="xearn-withdraw-title">
+                            Withdraw
+                        </div>
+
+                        <div class="xearn-withdraw-subtitle">
+                            Enter your own wallet address and withdrawal details.
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="xearnWithdrawClose"
+                        class="xearn-withdraw-close"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+                <div class="xearn-withdraw-body">
+
+                    <div class="xearn-balance-box">
+
+                        <div class="xearn-balance-label">
+                            Available balance
+                        </div>
+
+                        <div
+                            class="xearn-balance-main"
+                            id="xearnWithdrawBalance"
+                        >
+                            0 XCOIN
+                        </div>
+
+                        <div
+                            class="xearn-balance-usdt"
+                            id="xearnWithdrawBalanceUsdt"
+                        >
+                            ≈ $0.0000 USDT
+                        </div>
+
+                    </div>
+
+
+                    <div class="xearn-field">
+
+                        <label>
+                            Withdrawal Network
+                        </label>
+
+                        <div
+                            id="xearnWithdrawNetworkGrid"
+                            class="xearn-network-grid-withdraw"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="xearn-field">
+
+                        <label for="xearnWithdrawAddress">
+                            Your Wallet Address
+                        </label>
+
+                        <input
+                            id="xearnWithdrawAddress"
+                            type="text"
+                            placeholder="Paste your own wallet address"
+                            autocomplete="off"
+                            spellcheck="false"
+                        />
+
+                    </div>
+
+
+                    <div class="xearn-field">
+
+                        <label for="xearnWithdrawAmount">
+                            Withdrawal Amount (USDT)
+                        </label>
+
+                        <input
+                            id="xearnWithdrawAmount"
+                            type="number"
+                            min="10"
+                            step="0.01"
+                            placeholder="Minimum $10"
+                            inputmode="decimal"
+                        />
+
+                    </div>
+
+
+                    <div
+                        id="xearnWithdrawSummary"
+                        class="xearn-fee-box"
+                    >
+
+                        <div class="xearn-fee-row">
+
+                            <span>
+                                Requested
+                            </span>
+
+                            <span
+                                id="withdrawSummaryRequested"
+                                class="xearn-fee-value"
+                            >
+                                $0.00
+                            </span>
+
+                        </div>
+
+
+                        <div class="xearn-fee-row">
+
+                            <span>
+                                Fee (10%)
+                            </span>
+
+                            <span
+                                id="withdrawSummaryFee"
+                                class="xearn-fee-value"
+                            >
+                                $0.00
+                            </span>
+
+                        </div>
+
+
+                        <div class="xearn-fee-row">
+
+                            <span>
+                                You receive
+                            </span>
+
+                            <span
+                                id="withdrawSummaryNet"
+                                class="xearn-fee-value xearn-net-value"
+                            >
+                                $0.00
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        id="xearnSubmitWithdrawal"
+                        class="xearn-withdraw-submit"
+                    >
+                        Continue
+                    </button>
+
+
+                    <div class="xearn-withdraw-note">
+                        Minimum withdrawal is $10. Your request will be reviewed manually by the XEARN admin.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(
+        modal
+    );
+
+
+    /* NETWORK BUTTONS */
+
+    const networkGrid =
+        $("xearnWithdrawNetworkGrid");
+
+    WITHDRAWAL_NETWORKS.forEach(
+        option => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.type =
+                "button";
+
+            button.className =
+                "xearn-withdraw-network";
+
+            button.dataset.asset =
+                option.asset;
+
+            button.dataset.network =
+                option.network;
+
+            button.textContent =
+                option.asset +
+                " " +
+                option.network;
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    document
+                        .querySelectorAll(
+                            ".xearn-withdraw-network"
+                        )
+                        .forEach(
+                            item => {
+                                item.classList.remove(
+                                    "selected"
+                                );
+                            }
+                        );
+
+                    button.classList.add(
+                        "selected"
+                    );
+                }
+            );
+
+            networkGrid.appendChild(
+                button
+            );
+        }
+    );
+
+
+    $("xearnWithdrawClose")
+        ?.addEventListener(
+            "click",
+            closeWithdrawalModal
+        );
+
+
+    modal
+        .querySelector(
+            ".xearn-withdraw-overlay"
+        )
+        ?.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target.classList.contains(
+                        "xearn-withdraw-overlay"
+                    )
+                ) {
+
+                    closeWithdrawalModal();
+                }
+            }
+        );
+
+
+    $("xearnWithdrawAmount")
+        ?.addEventListener(
+            "input",
+            updateWithdrawalPreview
+        );
+
+
+    $("xearnSubmitWithdrawal")
+        ?.addEventListener(
+            "click",
+            submitWithdrawal
+        );
+}
+
+
+/* =========================================================
+   OPEN WITHDRAWAL
+   ========================================================= */
+
+function openWithdrawalModal() {
+
+    createWithdrawalModal();
+
+    const modal =
+        $("xearnWithdrawalModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display =
+        "block";
+
+    updateWithdrawalBalance();
+
+    const amount =
+        $("xearnWithdrawAmount");
+
+    const address =
+        $("xearnWithdrawAddress");
+
+    if (amount) {
+        amount.value = "";
+    }
+
+    if (address) {
+        address.value = "";
+    }
+
+    document
+        .querySelectorAll(
+            ".xearn-withdraw-network"
+        )
+        .forEach(
+            item => {
+                item.classList.remove(
+                    "selected"
+                );
+            }
+        );
+
+    updateWithdrawalPreview();
+}
+
+
+/* =========================================================
+   CLOSE WITHDRAWAL
+   ========================================================= */
+
+function closeWithdrawalModal() {
+
+    const modal =
+        $("xearnWithdrawalModal");
+
+    if (modal) {
+        modal.style.display =
+            "none";
+    }
+}
+
+
+/* =========================================================
+   WITHDRAWAL BALANCE
+   ========================================================= */
+
+function updateWithdrawalBalance() {
+
+    const balance =
+        getBalanceXcoin();
+
+    const usdt =
+        getBalanceUsdt();
+
+    setText(
+        "xearnWithdrawBalance",
+        formatNumber(balance) +
+        " XCOIN"
+    );
+
+    setText(
+        "xearnWithdrawBalanceUsdt",
+        "≈ $" +
+        usdt.toFixed(4) +
+        " USDT"
+    );
+}
+
+
+/* =========================================================
+   WITHDRAWAL PREVIEW
+   ========================================================= */
+
+function updateWithdrawalPreview() {
+
+    const amountInput =
+        $("xearnWithdrawAmount");
+
+    const amount =
+        Number(
+            amountInput?.value ||
+            0
+        );
+
+    const calculation =
+        calculateWithdrawal(
+            amount
+        );
+
+    setText(
+        "withdrawSummaryRequested",
+        "$" +
+        calculation.usdtAmount.toFixed(2)
+    );
+
+    setText(
+        "withdrawSummaryFee",
+        "$" +
+        calculation.feeUsdt.toFixed(2)
+    );
+
+    setText(
+        "withdrawSummaryNet",
+        "$" +
+        calculation.netUsdt.toFixed(2)
+    );
+}
+
+
+/* =========================================================
+   SUBMIT WITHDRAWAL
+   ========================================================= */
+
+async function submitWithdrawal() {
+
+    if (
+        !telegramUser?.id
+    ) {
+
+        showToast(
+            "Telegram Required",
+            "Please open XEARN inside Telegram."
+        );
+
+        return;
+    }
+
+
+    const selectedNetwork =
+        document.querySelector(
+            ".xearn-withdraw-network.selected"
+        );
+
+
+    if (!selectedNetwork) {
+
+        showToast(
+            "Network Required",
+            "Please select a withdrawal network."
+        );
+
+        return;
+    }
+
+
+    const addressInput =
+        $("xearnWithdrawAddress");
+
+    const amountInput =
+        $("xearnWithdrawAmount");
+
+
+    const address =
+        addressInput?.value.trim() ||
+        "";
+
+    const amount =
+        Number(
+            amountInput?.value ||
+            0
+        );
+
+
+    if (!address) {
+
+        showToast(
+            "Wallet Required",
+            "Please enter your own withdrawal wallet address."
+        );
+
+        return;
+    }
+
+
+    if (address.length < 10) {
+
+        showToast(
+            "Invalid Address",
+            "Please enter a valid wallet address."
+        );
+
+        return;
+    }
+
+
+    if (
+        !Number.isFinite(amount) ||
+        amount < MIN_WITHDRAW_USDT
+    ) {
+
+        showToast(
+            "Minimum Withdrawal",
+            "The minimum withdrawal is $10."
+        );
+
+        return;
+    }
+
+
+    const availableUsdt =
+        getBalanceUsdt();
+
+
+    if (
+        amount >
+        availableUsdt
+    ) {
+
+        showToast(
+            "Insufficient Balance",
+            "You do not have enough balance for this withdrawal."
+        );
+
+        return;
+    }
+
+
+    const calculation =
+        calculateWithdrawal(
+            amount
+        );
+
+
+    const asset =
+        selectedNetwork.dataset.asset;
+
+    const network =
+        selectedNetwork.dataset.network;
+
+
+    const confirmed =
+        window.confirm(
+            "CONFIRM WITHDRAWAL\n\n" +
+            "Asset: " +
+            asset +
+            "\n" +
+            "Network: " +
+            network +
+            "\n\n" +
+            "Requested: $" +
+            calculation.usdtAmount.toFixed(2) +
+            "\n" +
+            "Fee (10%): $" +
+            calculation.feeUsdt.toFixed(2) +
+            "\n" +
+            "You receive: $" +
+            calculation.netUsdt.toFixed(2) +
+            "\n\n" +
+            "Make sure the wallet address belongs to you and matches the selected network.\n\n" +
+            "Submit this withdrawal request?"
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    const button =
+        $("xearnSubmitWithdrawal");
+
+
+    if (button) {
+
+        button.disabled =
+            true;
+
+        button.textContent =
+            "Submitting...";
+    }
+
+
+    try {
+
+        const result =
+            await callFunction(
+                "create-withdrawal",
+                {
+
+                    telegram_id:
+                        Number(
+                            telegramUser.id
+                        ),
+
+                    amount_usdt:
+                        calculation.usdtAmount,
+
+                    amount_xcoin:
+                        calculation.amountXcoin,
+
+                    fee_usdt:
+                        calculation.feeUsdt,
+
+                    fee_xcoin:
+                        calculation.feeXcoin,
+
+                    net_usdt:
+                        calculation.netUsdt,
+
+                    net_xcoin:
+                        calculation.netXcoin,
+
+                    asset:
+                        asset,
+
+                    network:
+                        network,
+
+                    address:
+                        address
+                }
+            );
+
+
+        console.log(
+            "Withdrawal response:",
+            result
+        );
+
+
+        if (
+            result &&
+            result.success === true
+        ) {
+
+            showToast(
+                "Withdrawal Submitted",
+                "Your withdrawal request is now pending admin review."
+            );
+
+
+            closeWithdrawalModal();
+
+
+            await refreshUser();
+
+
+            setTimeout(
+                () => {
+                    openHistoryModal();
+                },
+                700
+            );
+
+
+            return;
+        }
+
+
+        throw new Error(
+            result?.message ||
+            result?.error ||
+            "Withdrawal could not be submitted."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Withdrawal error:",
+            error
+        );
+
+        showToast(
+            "Withdrawal Failed",
+            error?.message ||
+            "Unable to submit withdrawal."
+        );
+
+
+    } finally {
+
+        if (button) {
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "Continue";
+        }
+    }
+}
+
+
+/* =========================================================
+   HISTORY MODAL
+   ========================================================= */
+
+function createHistoryModal() {
+
+    if ($("xearnHistoryModal")) {
+        return;
+    }
+
+    injectWithdrawalStyles();
+
+    const modal =
+        document.createElement(
+            "div"
+        );
+
+    modal.id =
+        "xearnHistoryModal";
+
+    modal.innerHTML = `
+
+        <div class="xearn-history-overlay">
+
+            <div class="xearn-history-box">
+
+                <div class="xearn-history-header">
+
+                    <div>
+                        <div class="xearn-history-title">
+                            Transaction History
+                        </div>
+
+                        <div class="xearn-history-subtitle">
+                            Your recent earning and withdrawal activity.
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="xearnHistoryClose"
+                        class="xearn-history-close"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="xearnHistoryBody"
+                    class="xearn-history-body"
+                >
+                    <div class="xearn-history-loading">
+                        Loading history...
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(
+        modal
+    );
+
+
+    $("xearnHistoryClose")
+        ?.addEventListener(
+            "click",
+            closeHistoryModal
+        );
+
+
+    modal
+        .querySelector(
+            ".xearn-history-overlay"
+        )
+        ?.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target.classList.contains(
+                        "xearn-history-overlay"
+                    )
+                ) {
+
+                    closeHistoryModal();
+                }
+            }
+        );
+}
+
+
+/* =========================================================
+   OPEN HISTORY
+   ========================================================= */
+
+async function openHistoryModal() {
+
+    createHistoryModal();
+
+    const modal =
+        $("xearnHistoryModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display =
+        "block";
+
+    const body =
+        $("xearnHistoryBody");
+
+    if (body) {
+
+        body.innerHTML =
+            `
+            <div class="xearn-history-loading">
+                Loading history...
+            </div>
+            `;
+    }
+
+    await loadHistory();
+}
+
+
+/* =========================================================
+   CLOSE HISTORY
+   ========================================================= */
+
+function closeHistoryModal() {
+
+    const modal =
+        $("xearnHistoryModal");
+
+    if (modal) {
+
+        modal.style.display =
+            "none";
+    }
+}
+
+
+/* =========================================================
+   LOAD HISTORY
+   ========================================================= */
+
+async function loadHistory() {
+
+    if (!telegramUser?.id) {
+
+        renderHistoryMessage(
+            "Open XEARN inside Telegram to view your history."
+        );
+
+        return;
+    }
+
+    try {
+
+        const result =
+            await callFunction(
+                "get-history",
+                {
+                    telegram_id:
+                        Number(
+                            telegramUser.id
+                        )
+                }
+            );
+
+
+        console.log(
+            "History response:",
+            result
+        );
+
+
+        const transactions =
+            Array.isArray(
+                result?.transactions
+            )
+                ? result.transactions
+                : [];
+
+
+        const withdrawals =
+            Array.isArray(
+                result?.withdrawals
+            )
+                ? result.withdrawals
+                : [];
+
+
+        renderHistory(
+            transactions,
+            withdrawals
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "History error:",
+            error
+        );
+
+        renderHistoryMessage(
+            error?.message ||
+            "Unable to load transaction history."
+        );
+    }
+}
+
+
+/* =========================================================
+   RENDER HISTORY
+   ========================================================= */
+
+function renderHistory(
+    transactions,
+    withdrawals
+) {
+
+    const body =
+        $("xearnHistoryBody");
+
+    if (!body) {
+        return;
+    }
+
+
+    const items = [];
+
+
+    transactions.forEach(
+        transaction => {
+
+            items.push({
+                kind:
+                    "transaction",
+
+                title:
+                    transaction.type ||
+                    "Earning",
+
+                description:
+                    transaction.description ||
+                    "Account transaction",
+
+                amount:
+                    Number(
+                        transaction.amount_xcoin ||
+                        0
+                    ),
+
+                status:
+                    "Completed",
+
+                date:
+                    transaction.created_at
+            });
+        }
+    );
+
+
+    withdrawals.forEach(
+        withdrawal => {
+
+            items.push({
+                kind:
+                    "withdrawal",
+
+                title:
+                    "Withdrawal",
+
+                description:
+                    (
+                        withdrawal.network ||
+                        ""
+                    ) +
+                    " • " +
+                    (
+                        withdrawal.address ||
+                        ""
+                    ),
+
+                amount:
+                    Number(
+                        withdrawal.usdt_amount ||
+                        0
+                    ),
+
+                status:
+                    withdrawal.status ||
+                    "Pending",
+
+                date:
+                    withdrawal.created_at
+            });
+        }
+    );
+
+
+    items.sort(
+        (a, b) => {
+
+            return (
+                new Date(
+                    b.date ||
+                    0
+                ).getTime()
+            ) -
+            (
+                new Date(
+                    a.date ||
+                    0
+                ).getTime()
+            );
+        }
+    );
+
+
+    if (!items.length) {
+
+        body.innerHTML =
+            `
+            <div class="xearn-history-empty">
+                No transactions yet.
+            </div>
+            `;
+
+        return;
+    }
+
+
+    body.innerHTML =
+        "";
+
+
+    items.forEach(
+        item => {
+
+            const element =
+                document.createElement(
+                    "div"
+                );
+
+            element.className =
+                "xearn-history-item";
+
+
+            const formattedDate =
+                item.date
+                    ? new Date(
+                        item.date
+                    ).toLocaleString(
+                        "en-US",
+                        {
+                            dateStyle:
+                                "medium",
+                            timeStyle:
+                                "short"
+                        }
+                    )
+                    : "";
+
+
+            if (
+                item.kind ===
+                "withdrawal"
+            ) {
+
+                element.innerHTML =
+                    `
+                    <div class="xearn-history-top">
+
+                        <div class="xearn-history-name">
+                            Withdrawal
+                        </div>
+
+                        <div class="xearn-history-amount">
+                            -$${Number(
+                                item.amount || 0
+                            ).toFixed(2)}
+                        </div>
+
+                    </div>
+
+                    <div class="xearn-history-desc">
+                        ${escapeHtml(
+                            item.description
+                        )}
+                    </div>
+
+                    <div class="xearn-history-status">
+                        ${escapeHtml(
+                            String(
+                                item.status
+                            )
+                        )}
+                    </div>
+
+                    <div class="xearn-history-date">
+                        ${escapeHtml(
+                            formattedDate
+                        )}
+                    </div>
+                    `;
+
+            } else {
+
+                element.innerHTML =
+                    `
+                    <div class="xearn-history-top">
+
+                        <div class="xearn-history-name">
+                            ${escapeHtml(
+                                item.title
+                            )}
+                        </div>
+
+                        <div class="xearn-history-amount">
+                            +${formatNumber(
+                                item.amount
+                            )} XCOIN
+                        </div>
+
+                    </div>
+
+                    <div class="xearn-history-desc">
+                        ${escapeHtml(
+                            item.description
+                        )}
+                    </div>
+
+                    <div class="xearn-history-status">
+                        Completed
+                    </div>
+
+                    <div class="xearn-history-date">
+                        ${escapeHtml(
+                            formattedDate
+                        )}
+                    </div>
+                    `;
+            }
+
+
+            body.appendChild(
+                element
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function escapeHtml(value) {
+
+    return String(
+        value ??
+        ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+
+/* =========================================================
+   HISTORY MESSAGE
+   ========================================================= */
+
+function renderHistoryMessage(
+    message
+) {
+
+    const body =
+        $("xearnHistoryBody");
+
+    if (!body) {
+        return;
+    }
+
+    body.innerHTML =
+        `
+        <div class="xearn-history-empty">
+            ${escapeHtml(message)}
+        </div>
+        `;
+}
+
+
+/* =========================================================
+   UPGRADE MODAL
    ========================================================= */
 
 function createUpgradeModal() {
+
     if ($("xearnUpgradeModal")) {
         return;
     }
 
     const modal =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     modal.id =
         "xearnUpgradeModal";
@@ -1406,6 +3175,7 @@ function createUpgradeModal() {
         "none";
 
     modal.innerHTML = `
+
         <div class="xearn-upgrade-overlay">
 
             <div class="xearn-upgrade-box">
@@ -1643,11 +3413,13 @@ function createUpgradeModal() {
         ?.addEventListener(
             "click",
             event => {
+
                 if (
                     event.target.classList.contains(
                         "xearn-upgrade-overlay"
                     )
                 ) {
+
                     closeUpgradeModal();
                 }
             }
@@ -1662,12 +3434,12 @@ function createUpgradeModal() {
             button.addEventListener(
                 "click",
                 () => {
+
                     selectUpgradeTier(
                         button.dataset.upgradeTier
                     );
                 }
             );
-
         });
 
     modal
@@ -1679,12 +3451,12 @@ function createUpgradeModal() {
             button.addEventListener(
                 "click",
                 () => {
+
                     selectPaymentAsset(
                         button.dataset.paymentAsset
                     );
                 }
             );
-
         });
 
     $("xearnCopyWallet")
@@ -1706,12 +3478,15 @@ function createUpgradeModal() {
    ========================================================= */
 
 function injectUpgradeStyles() {
+
     if ($("xearnUpgradeStyles")) {
         return;
     }
 
     const style =
-        document.createElement("style");
+        document.createElement(
+            "style"
+        );
 
     style.id =
         "xearnUpgradeStyles";
@@ -1828,10 +3603,6 @@ function injectUpgradeStyles() {
             border-color: #62ef9c;
             background: #123522;
             box-shadow: 0 0 0 1px rgba(98,239,156,.15);
-        }
-
-        .xearn-upgrade-payment-area {
-            border-top: 1px solid rgba(255,255,255,.06);
         }
 
         .xearn-upgrade-selected {
@@ -1962,6 +3733,7 @@ function injectUpgradeStyles() {
         }
 
         @media(max-width:360px) {
+
             .xearn-tier-grid {
                 grid-template-columns: 1fr;
             }
@@ -1979,10 +3751,11 @@ function injectUpgradeStyles() {
 
 
 /* =========================================================
-   OPEN UPGRADE MODAL
+   OPEN UPGRADE
    ========================================================= */
 
 function openUpgradeModal() {
+
     createUpgradeModal();
 
     const modal =
@@ -2016,21 +3789,25 @@ function openUpgradeModal() {
         .querySelectorAll(
             ".xearn-tier-option"
         )
-        .forEach(button => {
-            button.classList.remove(
-                "selected"
-            );
-        });
+        .forEach(
+            button => {
+                button.classList.remove(
+                    "selected"
+                );
+            }
+        );
 
     document
         .querySelectorAll(
             ".xearn-payment-option"
         )
-        .forEach(button => {
-            button.classList.remove(
-                "selected"
-            );
-        });
+        .forEach(
+            button => {
+                button.classList.remove(
+                    "selected"
+                );
+            }
+        );
 
     const networkArea =
         $("xearnNetworkArea");
@@ -2058,10 +3835,11 @@ function openUpgradeModal() {
 
 
 /* =========================================================
-   CLOSE UPGRADE MODAL
+   CLOSE UPGRADE
    ========================================================= */
 
 function closeUpgradeModal() {
+
     const modal =
         $("xearnUpgradeModal");
 
@@ -2077,6 +3855,7 @@ function closeUpgradeModal() {
    ========================================================= */
 
 function selectUpgradeTier(tier) {
+
     if (!UPGRADE_TIERS[tier]) {
         return;
     }
@@ -2088,13 +3867,16 @@ function selectUpgradeTier(tier) {
         .querySelectorAll(
             ".xearn-tier-option"
         )
-        .forEach(button => {
-            button.classList.toggle(
-                "selected",
-                button.dataset.upgradeTier ===
-                tier
-            );
-        });
+        .forEach(
+            button => {
+
+                button.classList.toggle(
+                    "selected",
+                    button.dataset.upgradeTier ===
+                    tier
+                );
+            }
+        );
 
     setText(
         "xearnSelectedTier",
@@ -2107,6 +3889,7 @@ function selectUpgradeTier(tier) {
         $("xearnUpgradePaymentArea");
 
     if (paymentArea) {
+
         paymentArea.style.display =
             "block";
     }
@@ -2122,15 +3905,18 @@ function selectUpgradeTier(tier) {
    ========================================================= */
 
 function selectPaymentAsset(asset) {
+
     if (!PAYMENT_METHODS[asset]) {
         return;
     }
 
     if (!selectedUpgradeTier) {
+
         showToast(
             "Upgrade",
             "Select a tier first."
         );
+
         return;
     }
 
@@ -2144,13 +3930,16 @@ function selectPaymentAsset(asset) {
         .querySelectorAll(
             ".xearn-payment-option"
         )
-        .forEach(button => {
-            button.classList.toggle(
-                "selected",
-                button.dataset.paymentAsset ===
-                asset
-            );
-        });
+        .forEach(
+            button => {
+
+                button.classList.toggle(
+                    "selected",
+                    button.dataset.paymentAsset ===
+                    asset
+                );
+            }
+        );
 
     renderPaymentNetworks(
         asset
@@ -2162,7 +3951,10 @@ function selectPaymentAsset(asset) {
    RENDER PAYMENT NETWORKS
    ========================================================= */
 
-function renderPaymentNetworks(asset) {
+function renderPaymentNetworks(
+    asset
+) {
+
     const networkGrid =
         $("xearnNetworkGrid");
 
@@ -2207,6 +3999,7 @@ function renderPaymentNetworks(asset) {
             button.addEventListener(
                 "click",
                 () => {
+
                     selectPaymentNetwork(
                         network
                     );
@@ -2220,11 +4013,13 @@ function renderPaymentNetworks(asset) {
     );
 
     if (networkArea) {
+
         networkArea.style.display =
             "block";
     }
 
     if (walletArea) {
+
         walletArea.style.display =
             "none";
     }
@@ -2235,7 +4030,10 @@ function renderPaymentNetworks(asset) {
    SELECT PAYMENT NETWORK
    ========================================================= */
 
-function selectPaymentNetwork(network) {
+function selectPaymentNetwork(
+    network
+) {
+
     if (!selectedPaymentAsset) {
         return;
     }
@@ -2243,13 +4041,17 @@ function selectPaymentNetwork(network) {
     const wallet =
         PAYMENT_METHODS[
             selectedPaymentAsset
-        ]?.[network];
+        ]?.[
+            network
+        ];
 
     if (!wallet) {
+
         showToast(
             "Network Error",
             "This payment network is not available."
         );
+
         return;
     }
 
@@ -2260,13 +4062,16 @@ function selectPaymentNetwork(network) {
         .querySelectorAll(
             ".xearn-network-option"
         )
-        .forEach(button => {
-            button.classList.toggle(
-                "selected",
-                button.dataset.network ===
-                network
-            );
-        });
+        .forEach(
+            button => {
+
+                button.classList.toggle(
+                    "selected",
+                    button.dataset.network ===
+                    network
+                );
+            }
+        );
 
     setText(
         "xearnWalletNetwork",
@@ -2284,6 +4089,7 @@ function selectPaymentNetwork(network) {
         $("xearnWalletArea");
 
     if (walletArea) {
+
         walletArea.style.display =
             "block";
     }
@@ -2295,14 +4101,17 @@ function selectPaymentNetwork(network) {
    ========================================================= */
 
 async function copyUpgradeWallet() {
+
     if (
         !selectedPaymentAsset ||
         !selectedPaymentNetwork
     ) {
+
         showToast(
             "Payment",
             "Select a payment network first."
         );
+
         return;
     }
 
@@ -2318,6 +4127,7 @@ async function copyUpgradeWallet() {
     }
 
     try {
+
         await navigator.clipboard.writeText(
             wallet
         );
@@ -2328,6 +4138,7 @@ async function copyUpgradeWallet() {
         );
 
     } catch {
+
         showToast(
             "Wallet Address",
             wallet
@@ -2341,18 +4152,17 @@ async function copyUpgradeWallet() {
    ========================================================= */
 
 async function submitUpgradeOrder() {
-    console.log(
-        "XEARN upgrade submit clicked"
-    );
 
     if (
         !telegramUser ||
         !telegramUser.id
     ) {
+
         showToast(
             "Error",
             "Telegram account not detected."
         );
+
         return;
     }
 
@@ -2360,10 +4170,12 @@ async function submitUpgradeOrder() {
         $("xearnTxid");
 
     if (!txidInput) {
+
         showToast(
             "Error",
             "TXID field not found."
         );
+
         return;
     }
 
@@ -2371,42 +4183,52 @@ async function submitUpgradeOrder() {
         txidInput.value.trim();
 
     if (!txid) {
+
         showToast(
             "TXID Required",
             "Please enter your transaction ID."
         );
+
         return;
     }
 
     if (txid.length < 8) {
+
         showToast(
             "Invalid TXID",
             "Please enter a valid transaction ID."
         );
+
         return;
     }
 
     if (!selectedUpgradeTier) {
+
         showToast(
             "Select Tier",
             "Please select an upgrade tier."
         );
+
         return;
     }
 
     if (!selectedPaymentAsset) {
+
         showToast(
             "Select Payment",
             "Please select USDT or USDC."
         );
+
         return;
     }
 
     if (!selectedPaymentNetwork) {
+
         showToast(
             "Select Network",
             "Please select a payment network."
         );
+
         return;
     }
 
@@ -2414,6 +4236,7 @@ async function submitUpgradeOrder() {
         $("xearnSubmitUpgrade");
 
     if (button) {
+
         button.disabled =
             true;
 
@@ -2422,7 +4245,9 @@ async function submitUpgradeOrder() {
     }
 
     try {
+
         const payload = {
+
             telegram_id:
                 Number(
                     telegramUser.id
@@ -2453,15 +4278,11 @@ async function submitUpgradeOrder() {
                 payload
             );
 
-        console.log(
-            "XEARN upgrade response:",
-            result
-        );
-
         if (
             result &&
             result.success === true
         ) {
+
             showToast(
                 "Payment Submitted",
                 "Your payment is pending admin verification."
@@ -2487,6 +4308,7 @@ async function submitUpgradeOrder() {
         );
 
     } catch (error) {
+
         console.error(
             "XEARN upgrade error:",
             error
@@ -2499,7 +4321,9 @@ async function submitUpgradeOrder() {
         );
 
     } finally {
+
         if (button) {
+
             button.disabled =
                 false;
 
@@ -2515,6 +4339,7 @@ async function submitUpgradeOrder() {
    ========================================================= */
 
 function openUpgradeScreen() {
+
     showScreen(
         "upgrade"
     );
@@ -2540,33 +4365,37 @@ function setupButtons() {
         .querySelectorAll(
             ".bottom-nav .nav-item"
         )
-        .forEach(button => {
+        .forEach(
+            button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+                button.addEventListener(
+                    "click",
+                    () => {
 
-                    const target =
-                        button.dataset.target;
+                        const target =
+                            button.dataset.target;
 
-                    if (!target) {
-                        return;
+                        if (!target) {
+                            return;
+                        }
+
+                        if (
+                            target ===
+                            "upgrade"
+                        ) {
+
+                            openUpgradeScreen();
+
+                        } else {
+
+                            showScreen(
+                                target
+                            );
+                        }
                     }
-
-                    if (
-                        target ===
-                        "upgrade"
-                    ) {
-                        openUpgradeScreen();
-                    } else {
-                        showScreen(
-                            target
-                        );
-                    }
-                }
-            );
-
-        });
+                );
+            }
+        );
 
 
     /* EARN */
@@ -2575,6 +4404,7 @@ function setupButtons() {
         ?.addEventListener(
             "click",
             () => {
+
                 showScreen(
                     "earn"
                 );
@@ -2650,23 +4480,13 @@ function setupButtons() {
     $("withdrawButton")
         ?.addEventListener(
             "click",
-            () => {
-                showToast(
-                    "Withdraw",
-                    "Withdrawal section is being connected."
-                );
-            }
+            openWithdrawalModal
         );
 
     $("withdrawAccountButton")
         ?.addEventListener(
             "click",
-            () => {
-                showToast(
-                    "Withdraw",
-                    "Withdrawal section is being connected."
-                );
-            }
+            openWithdrawalModal
         );
 
 
@@ -2675,12 +4495,7 @@ function setupButtons() {
     $("historyButton")
         ?.addEventListener(
             "click",
-            () => {
-                showToast(
-                    "History",
-                    "Transaction history is being connected."
-                );
-            }
+            openHistoryModal
         );
 
 
@@ -2713,6 +4528,10 @@ async function startXEARN() {
 
     createUpgradeModal();
 
+    createWithdrawalModal();
+
+    createHistoryModal();
+
     showScreen(
         "home"
     );
@@ -2725,7 +4544,9 @@ async function startXEARN() {
         setupButtons();
 
         if (!ready) {
+
             createFallbackUser();
+
             return;
         }
 
@@ -2741,6 +4562,7 @@ async function startXEARN() {
         createFallbackUser();
 
     } finally {
+
         hideLoading();
     }
 }
@@ -2757,6 +4579,7 @@ setInterval(
             telegramUser &&
             currentUser
         ) {
+
             refreshUser();
         }
 
@@ -2782,5 +4605,4 @@ if (
 } else {
 
     startXEARN();
-
 }
