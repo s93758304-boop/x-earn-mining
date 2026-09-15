@@ -2209,6 +2209,7 @@ function createWithdrawalModal() {
                 }
             }
         );
+}
 
 
     $("xearnSubmitWithdrawal")
