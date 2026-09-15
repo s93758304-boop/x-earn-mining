@@ -1926,28 +1926,22 @@ function injectWithdrawalStyles() {
 /* =========================================================
    CREATE WITHDRAWAL MODAL
    ========================================================= */
-
 function createWithdrawalModal() {
 
     if ($("xearnWithdrawalModal")) {
         return;
     }
 
-    injectWithdrawalStyles();
-
     const modal =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     modal.id =
         "xearnWithdrawalModal";
 
     modal.innerHTML = `
-
         <div class="xearn-withdraw-overlay">
 
-            <div class="xearn-withdraw-box">
+            <div class="xearn-withdraw-modal">
 
                 <div class="xearn-withdraw-header">
 
@@ -1957,7 +1951,7 @@ function createWithdrawalModal() {
                         </div>
 
                         <div class="xearn-withdraw-subtitle">
-                            Enter your own wallet address and withdrawal details.
+                            Request a manual withdrawal
                         </div>
                     </div>
 
@@ -1971,147 +1965,142 @@ function createWithdrawalModal() {
 
                 </div>
 
-                <div class="xearn-withdraw-body">
 
-                    <div class="xearn-balance-box">
+                <div class="xearn-withdraw-balance">
 
-                        <div class="xearn-balance-label">
-                            Available balance
-                        </div>
+                    <div>
+                        <span>Available balance</span>
 
-                        <div
-                            class="xearn-balance-main"
-                            id="xearnWithdrawBalance"
-                        >
+                        <strong id="withdrawBalanceXcoin">
                             0 XCOIN
-                        </div>
-
-                        <div
-                            class="xearn-balance-usdt"
-                            id="xearnWithdrawBalanceUsdt"
-                        >
-                            ≈ $0.0000 USDT
-                        </div>
-
+                        </strong>
                     </div>
 
+                    <div>
+                        <span>USDT value</span>
 
-                    <div class="xearn-field">
-
-                        <label>
-                            Withdrawal Network
-                        </label>
-
-                        <div
-                            id="xearnWithdrawNetworkGrid"
-                            class="xearn-network-grid-withdraw"
-                        ></div>
-
+                        <strong id="withdrawBalanceUsdt">
+                            $0.00
+                        </strong>
                     </div>
 
-
-                    <div class="xearn-field">
-
-                        <label for="xearnWithdrawAddress">
-                            Your Wallet Address
-                        </label>
-
-                        <input
-                            id="xearnWithdrawAddress"
-                            type="text"
-                            placeholder="Paste your own wallet address"
-                            autocomplete="off"
-                            spellcheck="false"
-                        />
-
-                    </div>
+                </div>
 
 
-                    <div class="xearn-field">
+                <div class="xearn-withdraw-field">
 
-                        <label for="xearnWithdrawAmount">
-                            Withdrawal Amount (USDT)
-                        </label>
+                    <label>
+                        Withdrawal wallet address
+                    </label>
 
-                        <input
-                            id="xearnWithdrawAmount"
-                            type="number"
-                            min="10"
-                            step="0.01"
-                            placeholder="Minimum $10"
-                            inputmode="decimal"
-                        />
+                    <input
+                        type="text"
+                        id="xearnWithdrawAddress"
+                        placeholder="Paste your wallet address"
+                        autocomplete="off"
+                    >
 
-                    </div>
+                </div>
 
+
+                <div class="xearn-withdraw-field">
+
+                    <label>
+                        Select network
+                    </label>
 
                     <div
-                        id="xearnWithdrawSummary"
-                        class="xearn-fee-box"
+                        id="xearnWithdrawNetworkGrid"
+                        class="xearn-withdraw-network-grid"
+                    ></div>
+
+                </div>
+
+
+                <div class="xearn-withdraw-field">
+
+                    <label>
+                        Amount (USDT)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="xearnWithdrawAmount"
+                        placeholder="Minimum $10"
+                        min="10"
+                        step="0.01"
+                        inputmode="decimal"
                     >
 
-                        <div class="xearn-fee-row">
-
-                            <span>
-                                Requested
-                            </span>
-
-                            <span
-                                id="withdrawSummaryRequested"
-                                class="xearn-fee-value"
-                            >
-                                $0.00
-                            </span>
-
-                        </div>
+                </div>
 
 
-                        <div class="xearn-fee-row">
+                <div class="xearn-withdraw-summary">
 
-                            <span>
-                                Fee (10%)
-                            </span>
+                    <div class="xearn-fee-row">
 
-                            <span
-                                id="withdrawSummaryFee"
-                                class="xearn-fee-value"
-                            >
-                                $0.00
-                            </span>
+                        <span>
+                            Requested
+                        </span>
 
-                        </div>
-
-
-                        <div class="xearn-fee-row">
-
-                            <span>
-                                You receive
-                            </span>
-
-                            <span
-                                id="withdrawSummaryNet"
-                                class="xearn-fee-value xearn-net-value"
-                            >
-                                $0.00
-                            </span>
-
-                        </div>
+                        <span
+                            id="withdrawSummaryRequested"
+                            class="xearn-fee-value"
+                        >
+                            $0.00
+                        </span>
 
                     </div>
 
 
-                    <button
-                        type="button"
-                        id="xearnSubmitWithdrawal"
-                        class="xearn-withdraw-submit"
-                    >
-                        Continue
-                    </button>
+                    <div class="xearn-fee-row">
 
+                        <span>
+                            Fee (10%)
+                        </span>
 
-                    <div class="xearn-withdraw-note">
-                        Minimum withdrawal is $10. Your request will be reviewed manually by the XEARN admin.
+                        <span
+                            id="withdrawSummaryFee"
+                            class="xearn-fee-value"
+                        >
+                            $0.00
+                        </span>
+
                     </div>
+
+
+                    <div class="xearn-fee-row">
+
+                        <span>
+                            You receive
+                        </span>
+
+                        <span
+                            id="withdrawSummaryNet"
+                            class="xearn-fee-value xearn-net-value"
+                        >
+                            $0.00
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="xearnSubmitWithdrawal"
+                    class="xearn-withdraw-submit"
+                >
+                    Continue
+                </button>
+
+
+                <div class="xearn-withdraw-note">
+
+                    Minimum withdrawal is $10.
+                    Your request will be reviewed manually
+                    by the XEARN admin.
 
                 </div>
 
@@ -2120,23 +2109,23 @@ function createWithdrawalModal() {
         </div>
     `;
 
-    document.body.appendChild(
-        modal
-    );
+
+    document.body.appendChild(modal);
 
 
-    /* NETWORK BUTTONS */
+    /* =========================================
+       NETWORK BUTTONS
+    ========================================= */
 
     const networkGrid =
         $("xearnWithdrawNetworkGrid");
+
 
     WITHDRAWAL_NETWORKS.forEach(
         option => {
 
             const button =
-                document.createElement(
-                    "button"
-                );
+                document.createElement("button");
 
             button.type =
                 "button";
@@ -2155,6 +2144,7 @@ function createWithdrawalModal() {
                 " " +
                 option.network;
 
+
             button.addEventListener(
                 "click",
                 () => {
@@ -2165,24 +2155,34 @@ function createWithdrawalModal() {
                         )
                         .forEach(
                             item => {
+
                                 item.classList.remove(
                                     "selected"
                                 );
+
                             }
                         );
+
 
                     button.classList.add(
                         "selected"
                     );
+
                 }
             );
+
 
             networkGrid.appendChild(
                 button
             );
+
         }
     );
 
+
+    /* =========================================
+       CLOSE BUTTON
+    ========================================= */
 
     $("xearnWithdrawClose")
         ?.addEventListener(
@@ -2190,6 +2190,10 @@ function createWithdrawalModal() {
             closeWithdrawalModal
         );
 
+
+    /* =========================================
+       CLOSE WHEN OUTSIDE IS CLICKED
+    ========================================= */
 
     modal
         .querySelector(
@@ -2206,19 +2210,91 @@ function createWithdrawalModal() {
                 ) {
 
                     closeWithdrawalModal();
+
                 }
+
             }
         );
-}
 
+
+    /* =========================================
+       AMOUNT CALCULATION
+    ========================================= */
+
+    $("xearnWithdrawAmount")
+        ?.addEventListener(
+            "input",
+            () => {
+
+                const amount =
+                    Number(
+                        $("xearnWithdrawAmount").value
+                    ) || 0;
+
+
+                const fee =
+                    amount *
+                    WITHDRAWAL_FEE_RATE;
+
+
+                const net =
+                    amount -
+                    fee;
+
+
+                if (
+                    $("withdrawSummaryRequested")
+                ) {
+
+                    $("withdrawSummaryRequested")
+                        .textContent =
+                        "$" +
+                        amount.toFixed(2);
+
+                }
+
+
+                if (
+                    $("withdrawSummaryFee")
+                ) {
+
+                    $("withdrawSummaryFee")
+                        .textContent =
+                        "$" +
+                        fee.toFixed(2);
+
+                }
+
+
+                if (
+                    $("withdrawSummaryNet")
+                ) {
+
+                    $("withdrawSummaryNet")
+                        .textContent =
+                        "$" +
+                        Math.max(
+                            0,
+                            net
+                        ).toFixed(2);
+
+                }
+
+            }
+        );
+
+
+    /* =========================================
+       CONTINUE / SUBMIT
+    ========================================= */
 
     $("xearnSubmitWithdrawal")
-  ?.addEventListener(
-      "click",
-      submitWithdrawal
-  );
+        ?.addEventListener(
+            "click",
+            submitWithdrawal
+        );
 
-
+}
 /* =========================================================
    OPEN WITHDRAWAL
    ========================================================= */
