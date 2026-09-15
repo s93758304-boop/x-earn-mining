@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>XEARN Admin Control Center</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -26,7 +27,6 @@
   --danger:#ff5d6c;
   --warning:#ffb84d;
   --blue:#4da3ff;
-  --purple:#a875ff;
 }
 
 body{
@@ -187,6 +187,34 @@ button{
 
 .content{
   padding:25px;
+}
+
+/* LOADING / ERROR */
+
+#connectionStatus{
+  margin-bottom:18px;
+}
+
+.status{
+  padding:12px 15px;
+  border-radius:10px;
+  font-size:12px;
+  border:1px solid var(--border);
+}
+
+.status.loading{
+  background:rgba(77,163,255,.08);
+  color:#7bbcff;
+}
+
+.status.success{
+  background:rgba(53,208,127,.08);
+  color:#55e79a;
+}
+
+.status.error{
+  background:rgba(255,93,108,.08);
+  color:#ff7180;
 }
 
 /* SECTIONS */
@@ -353,29 +381,6 @@ td{
   font-weight:700;
 }
 
-.btn-danger{
-  background:rgba(255,93,108,.13);
-  color:#ff7180;
-}
-
-.btn-small{
-  padding:7px 10px;
-  font-size:11px;
-}
-
-/* SEARCH */
-
-.search{
-  width:100%;
-  max-width:330px;
-  padding:11px 13px;
-  border-radius:9px;
-  border:1px solid var(--border);
-  outline:none;
-  background:#091522;
-  color:#fff;
-}
-
 /* EMPTY */
 
 .empty{
@@ -390,10 +395,6 @@ td{
 }
 
 /* MOBILE */
-
-.mobile-header{
-  display:none;
-}
 
 .bottom-nav{
   display:none;
@@ -418,10 +419,6 @@ td{
 
   .content{
     padding:16px;
-  }
-
-  .mobile-header{
-    display:block;
   }
 
   .stats{
@@ -487,16 +484,17 @@ td{
 
 <div class="app">
 
-<!-- DESKTOP SIDEBAR -->
-
 <aside class="sidebar">
 
   <div class="logo">
+
     <div class="logo-icon">X</div>
+
     <div>
       <strong>XEARN</strong>
       <small>CONTROL CENTER</small>
     </div>
+
   </div>
 
   <div class="nav">
@@ -552,30 +550,54 @@ td{
 </aside>
 
 
-<!-- MAIN -->
-
 <main class="main">
 
 <header class="topbar">
 
   <div class="page-title">
-    <h1 id="pageTitle">Dashboard</h1>
-    <p id="pageSubtitle">XEARN platform overview</p>
+
+    <h1 id="pageTitle">
+      Dashboard
+    </h1>
+
+    <p id="pageSubtitle">
+      XEARN platform overview
+    </p>
+
   </div>
 
   <div class="admin-profile">
-    <div class="admin-avatar">A</div>
+
+    <div class="admin-avatar" id="adminAvatar">
+      A
+    </div>
 
     <div>
-      <div class="admin-name">Administrator</div>
-      <div class="admin-role">SUPER ADMIN</div>
+
+      <div class="admin-name" id="adminName">
+        Administrator
+      </div>
+
+      <div class="admin-role">
+        SUPER ADMIN
+      </div>
+
     </div>
+
   </div>
 
 </header>
 
 
 <div class="content">
+
+<div id="connectionStatus">
+
+  <div class="status loading">
+    🔄 Connecting to XEARN admin system...
+  </div>
+
+</div>
 
 
 <!-- DASHBOARD -->
@@ -585,39 +607,94 @@ td{
   <div class="stats">
 
     <div class="stat">
+
       <div class="stat-top">
+
         <span>👥</span>
-        <div class="stat-icon">👤</div>
+
+        <div class="stat-icon">
+          👤
+        </div>
+
       </div>
-      <div class="stat-label">Total Users</div>
-      <div class="stat-value" id="totalUsers">—</div>
+
+      <div class="stat-label">
+        Total Users
+      </div>
+
+      <div class="stat-value" id="totalUsers">
+        —
+      </div>
+
     </div>
 
+
     <div class="stat">
+
       <div class="stat-top">
+
         <span>🟢</span>
-        <div class="stat-icon">⚡</div>
+
+        <div class="stat-icon">
+          ⚡
+        </div>
+
       </div>
-      <div class="stat-label">Active Users</div>
-      <div class="stat-value" id="activeUsers">—</div>
+
+      <div class="stat-label">
+        Active Users
+      </div>
+
+      <div class="stat-value" id="activeUsers">
+        —
+      </div>
+
     </div>
 
+
     <div class="stat">
+
       <div class="stat-top">
+
         <span>💰</span>
-        <div class="stat-icon">💎</div>
+
+        <div class="stat-icon">
+          💎
+        </div>
+
       </div>
-      <div class="stat-label">Total XCOIN</div>
-      <div class="stat-value" id="totalXcoin">—</div>
+
+      <div class="stat-label">
+        Total XCOIN
+      </div>
+
+      <div class="stat-value" id="totalXcoin">
+        —
+      </div>
+
     </div>
 
+
     <div class="stat">
+
       <div class="stat-top">
+
         <span>💸</span>
-        <div class="stat-icon">📤</div>
+
+        <div class="stat-icon">
+          📤
+        </div>
+
       </div>
-      <div class="stat-label">Pending Withdrawals</div>
-      <div class="stat-value" id="pendingWithdrawals">—</div>
+
+      <div class="stat-label">
+        Pending Withdrawals
+      </div>
+
+      <div class="stat-value" id="pendingWithdrawals">
+        —
+      </div>
+
     </div>
 
   </div>
@@ -628,15 +705,31 @@ td{
     <div class="card">
 
       <div class="card-header">
+
         <div>
-          <h2>Platform Activity</h2>
-          <p>Latest XEARN activity</p>
+
+          <h2>
+            Platform Activity
+          </h2>
+
+          <p>
+            Latest XEARN activity
+          </p>
+
         </div>
+
       </div>
 
       <div class="empty">
-        <div class="empty-icon">📊</div>
-        <p>Analytics will appear here.</p>
+
+        <div class="empty-icon">
+          📊
+        </div>
+
+        <p>
+          Activity analytics will be connected next.
+        </p>
+
       </div>
 
     </div>
@@ -645,10 +738,19 @@ td{
     <div class="card">
 
       <div class="card-header">
+
         <div>
-          <h2>System Status</h2>
-          <p>Current platform controls</p>
+
+          <h2>
+            System Status
+          </h2>
+
+          <p>
+            Current platform controls
+          </p>
+
         </div>
+
       </div>
 
       <div style="display:grid;gap:12px;">
@@ -691,55 +793,28 @@ td{
     <div class="card-header">
 
       <div>
-        <h2>Users Management</h2>
-        <p>Manage XEARN accounts and earning access</p>
-      </div>
 
-      <input
-        class="search"
-        type="search"
-        placeholder="Search username or Telegram ID..."
-      >
+        <h2>
+          Users Management
+        </h2>
+
+        <p>
+          Manage XEARN accounts and earning access
+        </p>
+
+      </div>
 
     </div>
 
-    <div class="table-wrap">
+    <div class="empty">
 
-      <table>
+      <div class="empty-icon">
+        👥
+      </div>
 
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Telegram ID</th>
-            <th>Country</th>
-            <th>Tier</th>
-            <th>Balance</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-
-        <tbody id="usersTable">
-
-          <tr>
-            <td colspan="7">
-
-              <div class="empty">
-
-                <div class="empty-icon">👥</div>
-
-                <p>
-                  User management will connect to Supabase here.
-                </p>
-
-              </div>
-
-            </td>
-          </tr>
-
-        </tbody>
-
-      </table>
+      <p>
+        User management will be connected next.
+      </p>
 
     </div>
 
@@ -757,21 +832,28 @@ td{
     <div class="card-header">
 
       <div>
-        <h2>Upgrade Requests</h2>
-        <p>Review manual tier upgrade payments</p>
-      </div>
 
-      <button class="btn btn-primary">
-        Refresh
-      </button>
+        <h2>
+          Upgrade Requests
+        </h2>
+
+        <p>
+          Review manual tier upgrade payments
+        </p>
+
+      </div>
 
     </div>
 
     <div class="empty">
 
-      <div class="empty-icon">💳</div>
+      <div class="empty-icon">
+        💳
+      </div>
 
-      <p>Upgrade requests will appear here.</p>
+      <p>
+        Upgrade management will be connected next.
+      </p>
 
     </div>
 
@@ -789,17 +871,28 @@ td{
     <div class="card-header">
 
       <div>
-        <h2>Withdrawals</h2>
-        <p>Review and manage withdrawal requests</p>
+
+        <h2>
+          Withdrawals
+        </h2>
+
+        <p>
+          Review and manage withdrawal requests
+        </p>
+
       </div>
 
     </div>
 
     <div class="empty">
 
-      <div class="empty-icon">💸</div>
+      <div class="empty-icon">
+        💸
+      </div>
 
-      <p>Withdrawal management will appear here.</p>
+      <p>
+        Withdrawal management will be connected next.
+      </p>
 
     </div>
 
@@ -817,21 +910,28 @@ td{
     <div class="card-header">
 
       <div>
-        <h2>Tasks</h2>
-        <p>Create and manage earning tasks</p>
-      </div>
 
-      <button class="btn btn-primary">
-        + Add Task
-      </button>
+        <h2>
+          Tasks
+        </h2>
+
+        <p>
+          Create and manage earning tasks
+        </p>
+
+      </div>
 
     </div>
 
     <div class="empty">
 
-      <div class="empty-icon">🎯</div>
+      <div class="empty-icon">
+        🎯
+      </div>
 
-      <p>Task management will appear here.</p>
+      <p>
+        Task management will be connected next.
+      </p>
 
     </div>
 
@@ -849,37 +949,28 @@ td{
     <div class="card-header">
 
       <div>
-        <h2>Mining Control</h2>
-        <p>Manage mining rewards and limits</p>
+
+        <h2>
+          Mining Control
+        </h2>
+
+        <p>
+          Manage mining rewards and limits
+        </p>
+
       </div>
 
     </div>
 
-    <div class="grid-2">
+    <div class="empty">
 
-      <div class="card">
-
-        <p style="color:var(--muted);font-size:12px;">
-          Mining status
-        </p>
-
-        <h2 style="margin-top:8px;">
-          <span class="badge green">ACTIVE</span>
-        </h2>
-
+      <div class="empty-icon">
+        ⛏️
       </div>
 
-      <div class="card">
-
-        <p style="color:var(--muted);font-size:12px;">
-          Current system
-        </p>
-
-        <h2 style="margin-top:8px;">
-          XCOIN Mining
-        </h2>
-
-      </div>
+      <p>
+        Mining controls will be connected next.
+      </p>
 
     </div>
 
@@ -897,17 +988,28 @@ td{
     <div class="card-header">
 
       <div>
-        <h2>Videos & Ads</h2>
-        <p>Control video rewards and daily limits</p>
+
+        <h2>
+          Videos & Ads
+        </h2>
+
+        <p>
+          Control video rewards and daily limits
+        </p>
+
       </div>
 
     </div>
 
     <div class="empty">
 
-      <div class="empty-icon">🎬</div>
+      <div class="empty-icon">
+        🎬
+      </div>
 
-      <p>Video and ad settings will appear here.</p>
+      <p>
+        Video controls will be connected next.
+      </p>
 
     </div>
 
@@ -925,17 +1027,28 @@ td{
     <div class="card-header">
 
       <div>
-        <h2>Referrals</h2>
-        <p>Monitor referral activity and rewards</p>
+
+        <h2>
+          Referrals
+        </h2>
+
+        <p>
+          Monitor referral activity and rewards
+        </p>
+
       </div>
 
     </div>
 
     <div class="empty">
 
-      <div class="empty-icon">👥</div>
+      <div class="empty-icon">
+        👥
+      </div>
 
-      <p>Referral management will appear here.</p>
+      <p>
+        Referral controls will be connected next.
+      </p>
 
     </div>
 
@@ -953,17 +1066,28 @@ td{
     <div class="card-header">
 
       <div>
-        <h2>Analytics</h2>
-        <p>XEARN platform performance</p>
+
+        <h2>
+          Analytics
+        </h2>
+
+        <p>
+          XEARN platform performance
+        </p>
+
       </div>
 
     </div>
 
     <div class="empty">
 
-      <div class="empty-icon">📊</div>
+      <div class="empty-icon">
+        📊
+      </div>
 
-      <p>Analytics will be connected here.</p>
+      <p>
+        Analytics will be connected next.
+      </p>
 
     </div>
 
@@ -981,8 +1105,15 @@ td{
     <div class="card-header">
 
       <div>
-        <h2>Platform Settings</h2>
-        <p>Control global XEARN settings</p>
+
+        <h2>
+          Platform Settings
+        </h2>
+
+        <p>
+          Control global XEARN settings
+        </p>
+
       </div>
 
     </div>
@@ -990,24 +1121,41 @@ td{
     <div style="display:grid;gap:14px;">
 
       <div class="card">
-        <strong>XCOIN Conversion</strong>
+
+        <strong>
+          XCOIN Conversion
+        </strong>
+
         <p style="color:var(--muted);font-size:12px;margin-top:5px;">
           Configure XCOIN to USDT conversion.
         </p>
+
       </div>
 
+
       <div class="card">
-        <strong>Global Earning</strong>
+
+        <strong>
+          Global Earning
+        </strong>
+
         <p style="color:var(--muted);font-size:12px;margin-top:5px;">
           Enable or disable platform earning.
         </p>
+
       </div>
 
+
       <div class="card">
-        <strong>Maintenance Mode</strong>
+
+        <strong>
+          Maintenance Mode
+        </strong>
+
         <p style="color:var(--muted);font-size:12px;margin-top:5px;">
           Temporarily disable platform activity.
         </p>
+
       </div>
 
     </div>
@@ -1022,31 +1170,36 @@ td{
 </main>
 
 
-<!-- MOBILE BOTTOM NAV -->
+<!-- MOBILE NAV -->
 
 <nav class="bottom-nav">
 
-  <button class="active" onclick="showSection('dashboard',this)">
+  <button class="active"
+    onclick="showSection('dashboard',this)">
     <span>🏠</span>
     Home
   </button>
 
-  <button onclick="showSection('users',this)">
+  <button
+    onclick="showSection('users',this)">
     <span>👥</span>
     Users
   </button>
 
-  <button onclick="showSection('upgrades',this)">
+  <button
+    onclick="showSection('upgrades',this)">
     <span>💳</span>
     Upgrades
   </button>
 
-  <button onclick="showSection('withdrawals',this)">
+  <button
+    onclick="showSection('withdrawals',this)">
     <span>💸</span>
     Withdrawals
   </button>
 
-  <button onclick="showSection('settings',this)">
+  <button
+    onclick="showSection('settings',this)">
     <span>⚙️</span>
     More
   </button>
@@ -1055,6 +1208,10 @@ td{
 
 
 <script>
+
+const ADMIN_API =
+"https://ynrqdbdgjzmucqcfsyvi.supabase.co/functions/v1/admin-api";
+
 
 const pageInfo = {
 
@@ -1118,29 +1275,36 @@ function showSection(id,button){
       section.classList.remove("active");
     });
 
-  const selected=document.getElementById(id);
+  const selected =
+    document.getElementById(id);
 
   if(selected){
     selected.classList.add("active");
   }
 
-  document.querySelectorAll(".nav button,.bottom-nav button")
-    .forEach(btn=>{
-      btn.classList.remove("active");
-    });
+  document.querySelectorAll(
+    ".nav button,.bottom-nav button"
+  ).forEach(btn=>{
+    btn.classList.remove("active");
+  });
 
   document.querySelectorAll(
-    `.nav button[onclick*="'${id}'"], .bottom-nav button[onclick*="'${id}'"]`
+    `.nav button[onclick*="'${id}'"],
+     .bottom-nav button[onclick*="'${id}'"]`
   ).forEach(btn=>{
     btn.classList.add("active");
   });
 
   if(pageInfo[id]){
 
-    document.getElementById("pageTitle").textContent=
+    document.getElementById(
+      "pageTitle"
+    ).textContent =
       pageInfo[id].title;
 
-    document.getElementById("pageSubtitle").textContent=
+    document.getElementById(
+      "pageSubtitle"
+    ).textContent =
       pageInfo[id].subtitle;
 
   }
@@ -1151,6 +1315,230 @@ function showSection(id,button){
   });
 
 }
+
+
+/* ================================
+   TELEGRAM ADMIN CONNECTION
+================================ */
+
+async function connectAdmin(){
+
+  const status =
+    document.getElementById(
+      "connectionStatus"
+    );
+
+  try{
+
+    if(!window.Telegram ||
+       !window.Telegram.WebApp){
+
+      throw new Error(
+        "This admin panel must be opened inside Telegram."
+      );
+
+    }
+
+
+    const tg =
+      window.Telegram.WebApp;
+
+    tg.ready();
+
+    tg.expand();
+
+
+    const initData =
+      tg.initData;
+
+
+    if(!initData){
+
+      throw new Error(
+        "Telegram session data is missing. Open the admin panel from Telegram."
+      );
+
+    }
+
+
+    status.innerHTML =
+      `<div class="status loading">
+        🔐 Verifying administrator...
+      </div>`;
+
+
+    const response =
+      await fetch(
+        ADMIN_API,
+        {
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:JSON.stringify({
+
+            initData:initData,
+
+            action:"dashboard"
+
+          })
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if(!response.ok ||
+       !result.success){
+
+      throw new Error(
+        result.error ||
+        "Admin access denied."
+      );
+
+    }
+
+
+    /* ADMIN PROFILE */
+
+    const admin =
+      result.admin || {};
+
+
+    const fullName =
+      [
+        admin.first_name,
+        admin.last_name
+      ]
+      .filter(Boolean)
+      .join(" ")
+      ||
+      admin.username
+      ||
+      "Administrator";
+
+
+    document.getElementById(
+      "adminName"
+    ).textContent =
+      fullName;
+
+
+    document.getElementById(
+      "adminAvatar"
+    ).textContent =
+      (
+        admin.first_name ||
+        admin.username ||
+        "A"
+      )
+      .charAt(0)
+      .toUpperCase();
+
+
+    /* DASHBOARD DATA */
+
+    const dashboard =
+      result.dashboard || {};
+
+
+    document.getElementById(
+      "totalUsers"
+    ).textContent =
+      formatNumber(
+        dashboard.total_users
+      );
+
+
+    document.getElementById(
+      "activeUsers"
+    ).textContent =
+      formatNumber(
+        dashboard.active_users
+      );
+
+
+    document.getElementById(
+      "totalXcoin"
+    ).textContent =
+      formatNumber(
+        dashboard.total_xcoin
+      );
+
+
+    document.getElementById(
+      "pendingWithdrawals"
+    ).textContent =
+      formatNumber(
+        dashboard.pending_withdrawals
+      );
+
+
+    status.innerHTML =
+      `<div class="status success">
+        ✓ Admin authenticated successfully
+      </div>`;
+
+
+  }catch(error){
+
+    console.error(
+      "Admin connection error:",
+      error
+    );
+
+
+    status.innerHTML =
+      `<div class="status error">
+        ❌ ${escapeHtml(
+          error.message ||
+          "Unable to connect to admin system."
+        )}
+      </div>`;
+
+  }
+
+}
+
+
+function formatNumber(value){
+
+  const number =
+    Number(value || 0);
+
+  return number.toLocaleString(
+    "en-US",
+    {
+      maximumFractionDigits:2
+    }
+  );
+
+}
+
+
+function escapeHtml(value){
+
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+/* START */
+
+window.addEventListener(
+  "load",
+  connectAdmin
+);
 
 </script>
 
