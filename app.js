@@ -1208,7 +1208,7 @@ async function openTaskList() {
             throw new Error("Supabase client is not available.");
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await window.xearnSupabase
             .from("tasks")
             .select("*")
             .eq("enabled", true)
