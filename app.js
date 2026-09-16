@@ -366,7 +366,7 @@ function createFallbackUser() {
             5,
 
         referral_count:
-            0,
+            N/A,
 
         streak_days:
             1
