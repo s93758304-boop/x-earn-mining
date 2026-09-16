@@ -1349,57 +1349,7 @@ async function openTaskList() {
         `;
     }
 }
-/* =========================================================
-   CHOOSE TASK
-========================================================= */
 
-async function chooseTask(taskId) {
-
-    try {
-
-        const { data, error } = await window.xearnSupabase
-            .from("tasks")
-            .select("*")
-            .eq("id", taskId)
-            .eq("enabled", true)
-            .maybeSingle();
-
-        if (error) {
-            throw error;
-        }
-
-        if (!data) {
-            showToast(
-                "Task Unavailable",
-                "This task is no longer available."
-            );
-            return;
-        }
-
-        closeTaskList();
-
-        if (data.url) {
-            window.open(data.url, "_blank");
-        }
-
-        showToast(
-            "Task Started",
-            `Complete "${data.title}" to earn ${Number(data.reward_xcoin || 0)} XCOIN.`
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Task start error:",
-            error
-        );
-
-        showToast(
-            "Task Error",
-            "Unable to start this task."
-        );
-    }
-}
 /* =========================================================
    TASK
    ========================================================= */
