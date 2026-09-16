@@ -1281,12 +1281,13 @@ async function openTaskList() {
                     </div>
 
                     <button
-                        type="button"
-                        class="task-start-btn"
-                        data-task-id="${task.id}"
-                    >
-                        START
-                    </button>
+    type="button"
+    class="task-start-btn"
+    data-task-id="${task.id}"
+    data-task-url="${task.url || ""}"
+>
+    START
+</button>
 
                 </div>
             `;
