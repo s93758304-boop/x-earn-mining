@@ -1176,158 +1176,183 @@ async function watchVideo() {
         await refreshUser();
     }
 }
+/* =========================================================
+   OPEN TASK
+========================================================= */
 
-   
 async function openTaskList() {
+
     const modal = $("taskModal");
     const list = $("taskList");
 
-    if (!modal || !list) return;
+    if (!modal || !list) {
+        console.error("Task modal elements not found.");
+        return;
+    }
 
     modal.classList.add("show");
 
     list.innerHTML = `
-        <div style="text-align:center;padding:25px;">
+        <div style="
+            text-align:center;
+            padding:30px;
+            color:#9caea5;
+        ">
             Loading available tasks...
         </div>
     `;
 
     try {
-        const { data, error } = await supabase
-            .from("tasks")
-            .select(`
-                id,
-                title,
-                description,
-                task_type,
-                url,
-                reward_xcoin,
-                enabled,
-                requires_proof
-            `)
-            .eq("enabled", true)
-            .order("created_at", { ascending: false });
 
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-            list.innerHTML = `
-                <div style="text-align:center;padding:30px;">
-                    <div style="font-size:40px;margin-bottom:10px;">📋</div>
-                    <div style="font-weight:700;">No tasks available</div>
-                    <div style="opacity:.7;margin-top:6px;">
-                        Please check back later.
-                    </div>
-                </div>
-            `;
-            return;
+        if (typeof supabase === "undefined") {
+            throw new Error("Supabase client is not available.");
         }
-
-        list.innerHTML = data.map(task => `
-            <div class="task-row">
-
-                <div class="task-row-info">
-
-                    <div class="task-row-title">
-                        ${escapeHtml(task.title || "Available Task")}
-                    </div>
-
-                    <div class="task-row-desc">
-                        ${escapeHtml(
-                            task.description || "Complete this task to earn XCOIN."
-                        )}
-                    </div>
-
-                    <div class="task-row-reward">
-                        +${Number(task.reward_xcoin || 0)} XCOIN
-                    </div>
-
-                </div>
-
-                <button
-                    class="task-start-btn"
-                    onclick="chooseTask('${task.id}')"
-                >
-                    START
-                </button>
-
-            </div>
-        `).join("");
-
-    } catch (error) {
-
-        console.error("Task list error:", error);
-
-        list.innerHTML = `
-            <div style="text-align:center;padding:30px;">
-                <div style="font-size:40px;">⚠️</div>
-                <div style="font-weight:700;margin-top:10px;">
-                    Unable to load tasks
-                </div>
-                <div style="opacity:.7;margin-top:6px;">
-                    Please try again later.
-                </div>
-            </div>
-        `;
-    }
-}
-
-
-function closeTaskList() {
-    $("taskModal")?.classList.remove("show");
-}
-
-
-async function chooseTask(taskId) {
-
-    try {
 
         const { data, error } = await supabase
             .from("tasks")
             .select("*")
-            .eq("id", taskId)
             .eq("enabled", true)
-            .maybeSingle();
+            .order("created_at", {
+                ascending: false
+            });
 
-        if (error) throw error;
+        if (error) {
+            throw error;
+        }
 
-        if (!data) {
-            showToast("Task Unavailable", "This task is no longer available.");
+        console.log("Available tasks:", data);
+
+        if (!data || data.length === 0) {
+
+            list.innerHTML = `
+                <div style="
+                    text-align:center;
+                    padding:35px 20px;
+                ">
+                    <div style="font-size:42px;">
+                        📋
+                    </div>
+
+                    <div style="
+                        margin-top:10px;
+                        font-size:16px;
+                        font-weight:800;
+                    ">
+                        No tasks available
+                    </div>
+
+                    <div style="
+                        margin-top:7px;
+                        color:#91a99d;
+                        font-size:12px;
+                    ">
+                        Please check back later.
+                    </div>
+                </div>
+            `;
+
             return;
         }
 
-        closeTaskList();
+        list.innerHTML = data.map(task => {
 
-        if (data.url) {
-            window.open(data.url, "_blank");
-        }
+            const reward =
+                Number(task.reward_xcoin || 0);
 
-        showToast(
-            "Task Started",
-            `Complete "${data.title}" to earn ${Number(data.reward_xcoin || 0)} XCOIN.`
-        );
+            return `
+                <div class="task-row">
+
+                    <div class="task-row-info">
+
+                        <div class="task-row-title">
+                            ${escapeHtml(
+                                task.title ||
+                                "Available Task"
+                            )}
+                        </div>
+
+                        <div class="task-row-desc">
+                            ${escapeHtml(
+                                task.description ||
+                                "Complete this task to earn XCOIN."
+                            )}
+                        </div>
+
+                        <div class="task-row-reward">
+                            +${reward} XCOIN
+                        </div>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="task-start-btn"
+                        data-task-id="${task.id}"
+                    >
+                        START
+                    </button>
+
+                </div>
+            `;
+
+        }).join("");
+
+        list
+            .querySelectorAll(".task-start-btn")
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        chooseTask(
+                            button.dataset.taskId
+                        );
+
+                    }
+                );
+
+            });
 
     } catch (error) {
 
-        console.error("Task start error:", error);
-
-        showToast(
-            "Task Error",
-            "Unable to start this task."
+        console.error(
+            "Task list error:",
+            error
         );
+
+        list.innerHTML = `
+            <div style="
+                text-align:center;
+                padding:30px 20px;
+            ">
+
+                <div style="font-size:40px;">
+                    ⚠️
+                </div>
+
+                <div style="
+                    margin-top:10px;
+                    font-weight:800;
+                ">
+                    Unable to load tasks
+                </div>
+
+                <div style="
+                    margin-top:7px;
+                    color:#91a99d;
+                    font-size:12px;
+                ">
+                    ${escapeHtml(
+                        error.message ||
+                        "Please try again later."
+                    )}
+                </div>
+
+            </div>
+        `;
     }
 }
-
-
-function escapeHtml(value) {
-    return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
 /* =========================================================
    TASK
    ========================================================= */
