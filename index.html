@@ -2962,6 +2962,194 @@
   </div>
 
 </div>
+  <!-- =========================================
+     TASK LIST
+========================================= -->
+
+<div id="taskModal" class="task-modal">
+
+  <div class="task-modal-box">
+
+    <div class="task-modal-header">
+
+      <div>
+        <div class="task-modal-title">
+          Available Tasks
+        </div>
+
+        <div class="task-modal-subtitle">
+          Complete tasks to earn XCOIN
+        </div>
+      </div>
+
+      <button
+        id="closeTaskModal"
+        class="task-close-btn">
+        ×
+      </button>
+
+    </div>
+
+    <div id="taskList">
+
+      <div class="task-loading">
+        Loading tasks...
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<style>
+
+/* =========================================
+   TASK LIST MODAL
+========================================= */
+
+.task-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+
+  display: none;
+
+  padding: 20px;
+
+  background: rgba(0,0,0,.82);
+
+  overflow-y: auto;
+}
+
+.task-modal.show {
+  display: block;
+}
+
+.task-modal-box {
+  width: 100%;
+  max-width: 500px;
+
+  margin: 45px auto 100px;
+
+  padding: 18px;
+
+  border: 1px solid #17492a;
+  border-radius: 22px;
+
+  background: #07100b;
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.5);
+}
+
+.task-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+.task-modal-title {
+  color: #f7fff9;
+  font-size: 20px;
+  font-weight: 950;
+}
+
+.task-modal-subtitle {
+  margin-top: 5px;
+  color: #91a39a;
+  font-size: 10px;
+}
+
+.task-close-btn {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #102219;
+  color: #fff;
+
+  font-size: 22px;
+}
+
+.task-loading {
+  padding: 35px 10px;
+
+  text-align: center;
+
+  color: #91a39a;
+  font-size: 11px;
+}
+
+
+/* TASK ROW */
+
+.task-row {
+  margin-top: 12px;
+
+  padding: 15px;
+
+  border: 1px solid #123a23;
+  border-radius: 16px;
+
+  background: #050c08;
+}
+
+.task-row-info {
+  min-width: 0;
+}
+
+.task-row-title {
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.task-row-desc {
+  margin-top: 6px;
+
+  color: #718178;
+
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.task-row-reward {
+  margin-top: 10px;
+
+  color: #51ff91;
+
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.task-start-btn {
+  width: 100%;
+  height: 45px;
+
+  margin-top: 12px;
+
+  border-radius: 12px;
+
+  background: #51ff91;
+  color: #031008;
+
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.task-start-btn:active {
+  transform: scale(.98);
+}
+
+</style>
 
 
   <!-- =========================================
