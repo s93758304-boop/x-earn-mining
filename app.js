@@ -1204,7 +1204,7 @@ async function openTaskList() {
 
     try {
 
-    const { data, error } = await window.xearnSupabase
+    const { data, error } = await supabase
             .from("tasks")
             .select("*")
             .eq("enabled", true)
