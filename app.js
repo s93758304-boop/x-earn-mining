@@ -2717,182 +2717,197 @@ function updateWithdrawalPreview() {
 /* =========================================================
    SUBMIT WITHDRAWAL
 ========================================================= */
-
 async function submitWithdrawal() {
 
-    if (!telegramUser?.id) {
-
-        showToast(
-            "Telegram Required",
-            "Please open XEARN inside Telegram."
-        );
-
-        return;
-    }
-
-
-    const selectedNetwork =
-        document.querySelector(
-            "#xearnWithdrawNetworkGrid .xearn-withdraw-network.selected"
-        );
-
-
-    if (!selectedNetwork) {
-
-        showToast(
-            "Network Required",
-            "Please select a withdrawal network."
-        );
-
-        return;
-    }
-
-
-    const addressInput =
-        $("xearnWithdrawAddress");
-
-    const amountInput =
-        $("xearnWithdrawAmount");
-
-
-    const address =
-        addressInput?.value.trim() || "";
-
-
-    const amount =
-        Number(
-            amountInput?.value || 0
-        );
-
-
-    if (!address) {
-
-        showToast(
-            "Wallet Required",
-            "Please enter your own withdrawal wallet address."
-        );
-
-        return;
-    }
-
-
-    if (address.length < 10) {
-
-        showToast(
-            "Invalid Address",
-            "Please enter a valid wallet address."
-        );
-
-        return;
-    }
-
-
-    if (
-        !Number.isFinite(amount) ||
-        amount < MIN_WITHDRAW_USDT
-    ) {
-
-        showToast(
-            "Minimum Withdrawal",
-            "The minimum withdrawal is $10."
-        );
-
-        return;
-    }
-
-
-    const availableUsdt =
-        getBalanceUsdt();
-
-
-    if (amount > availableUsdt) {
-
-        showToast(
-            "Insufficient Balance",
-            "You do not have enough balance for this withdrawal."
-        );
-
-        return;
-    }
-
-
-    const fee =
-        amount *
-        WITHDRAWAL_FEE_RATE;
-
-
-    const net =
-        amount -
-        fee;
-
-
-    const asset =
-        selectedNetwork.dataset.asset;
-
-
-    const network =
-        selectedNetwork.dataset.network;
-
-
-    const withdrawalNetwork =
-        asset +
-        "-" +
-        network;
-
-
-    const confirmed =
-        window.confirm(
-
-            "CONFIRM WITHDRAWAL\n\n" +
-
-            "Asset: " +
-            asset +
-
-            "\nNetwork: " +
-            network +
-
-            "\n\nRequested: $" +
-            amount.toFixed(2) +
-
-            "\nFee (10%): $" +
-            fee.toFixed(2) +
-
-            "\nYou receive: $" +
-            net.toFixed(2) +
-
-            "\n\nMake sure your wallet address matches the selected network." +
-
-            "\n\nSubmit this withdrawal request?"
-
-        );
-
-
-    if (!confirmed) {
-        return;
-    }
-
-
-    const button =
-        $("xearnSubmitWithdrawal");
-
-
-    if (button) {
-
-        button.disabled = true;
-
-        button.textContent =
-            "Submitting...";
-
-    }
-
-
     try {
+
+        /* =========================================
+           GET VALUES
+        ========================================= */
+
+        const amountInput =
+            $("xearnWithdrawAmount");
+
+        const addressInput =
+            $("xearnWithdrawAddress");
+
+        const amount =
+            Number(
+                amountInput?.value
+            ) || 0;
+
+        const address =
+            addressInput?.value
+                ?.trim() || "";
+
+
+        /* =========================================
+           SELECTED NETWORK
+        ========================================= */
+
+        const selectedNetwork =
+            document.querySelector(
+                "#xearnWithdrawNetworkGrid .xearn-withdraw-network.selected"
+            );
+
+
+        /* =========================================
+           BASIC VALIDATION
+        ========================================= */
+
+        if (amount <= 0) {
+
+            showToast(
+                "Withdrawal",
+                "Please enter a withdrawal amount."
+            );
+
+            return;
+        }
+
+
+        if (amount < MIN_WITHDRAW_USDT) {
+
+            showToast(
+                "Minimum withdrawal",
+                "Minimum withdrawal is $10 USDT."
+            );
+
+            return;
+        }
+
+
+        if (!selectedNetwork) {
+
+            showToast(
+                "Select network",
+                "Please select your withdrawal network."
+            );
+
+            return;
+        }
+
+
+        if (!address) {
+
+            showToast(
+                "Wallet required",
+                "Please enter your withdrawal wallet address."
+            );
+
+            return;
+        }
+
+
+        /* =========================================
+           CURRENT BALANCE
+        ========================================= */
+
+        const currentBalance =
+            Number(
+                currentUser?.balance_xcoin
+            ) || 0;
+
+
+        const requiredXcoin =
+            amount *
+            XCOIN_PER_USDT;
+
+
+        if (
+            currentBalance <
+            requiredXcoin
+        ) {
+
+            showToast(
+                "Insufficient balance",
+                "You do not have enough XCOIN for this withdrawal."
+            );
+
+            return;
+        }
+
+
+        /* =========================================
+           CALCULATE FEE
+        ========================================= */
+
+        const fee =
+            amount *
+            WITHDRAWAL_FEE_RATE;
+
+        const net =
+            amount -
+            fee;
+
+
+        /* =========================================
+           NETWORK VALUE
+        ========================================= */
+
+        const withdrawalNetwork =
+            selectedNetwork.dataset.asset +
+            "-" +
+            selectedNetwork.dataset.network;
+
+
+        /* =========================================
+           CONFIRMATION
+        ========================================= */
+
+        const confirmed =
+            window.confirm(
+                "Confirm withdrawal\\n\\n" +
+
+                "Requested: $" +
+                amount.toFixed(2) +
+                "\\n" +
+
+                "Fee (10%): $" +
+                fee.toFixed(2) +
+                "\\n" +
+
+                "You receive: $" +
+                net.toFixed(2) +
+                "\\n\\n" +
+
+                "Network: " +
+                withdrawalNetwork +
+                "\\n\\n" +
+
+                "Submit this withdrawal request?"
+            );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        /* =========================================
+           DISABLE BUTTON
+        ========================================= */
+
+        const submitButton =
+            $("xearnSubmitWithdrawal");
+
+        if (submitButton) {
+
+            submitButton.disabled = true;
+
+            submitButton.textContent =
+                "Submitting...";
+        }
+
+
+        /* =========================================
+           SEND TO SUPABASE
+        ========================================= */
 
         const result =
             await callFunction(
                 "create-withdrawal",
                 {
-
                     telegram_id:
                         Number(
                             telegramUser.id
@@ -2909,52 +2924,106 @@ async function submitWithdrawal() {
 
                     address:
                         address
+                }
+            );
+
+
+        /* =========================================
+           CHECK RESPONSE
+        ========================================= */
+
+        if (
+            !result ||
+            !result.success
+        ) {
+
+            throw new Error(
+                result?.error ||
+                "Withdrawal could not be submitted."
+            );
+        }
+
+
+        /* =========================================
+           SUCCESS
+        ========================================= */
+
+        showToast(
+            "Withdrawal submitted",
+            "Your withdrawal request has been submitted successfully. You should receive your payout within 24–48 hours after approval."
+        );
+
+
+        /* =========================================
+           REFRESH USER BALANCE
+        ========================================= */
+
+        await refreshUser();
+
+
+        /* =========================================
+           CLEAR FORM
+        ========================================= */
+
+        if (amountInput) {
+            amountInput.value = "";
+        }
+
+        if (addressInput) {
+            addressInput.value = "";
+        }
+
+
+        document
+            .querySelectorAll(
+                "#xearnWithdrawNetworkGrid .xearn-withdraw-network"
+            )
+            .forEach(
+                button => {
+
+                    button.classList.remove(
+                        "selected"
+                    );
 
                 }
             );
 
 
-        console.log(
-            "Withdrawal response:",
-            result
-        );
+        /* RESET SUMMARY */
 
+        if ($("withdrawSummaryRequested")) {
 
-        if (
-            result &&
-            result.success === true
-        ) {
+            $("withdrawSummaryRequested")
+                .textContent =
+                "$0.00";
+        }
 
-            showToast(
-                "Withdrawal Submitted",
-                "Your withdrawal is now pending admin review."
-            );
+        if ($("withdrawSummaryFee")) {
 
+            $("withdrawSummaryFee")
+                .textContent =
+                "$0.00";
+        }
 
-            closeWithdrawalModal();
+        if ($("withdrawSummaryNet")) {
 
-
-            await refreshUser();
-
-
-            setTimeout(
-                () => {
-
-                    openHistoryModal();
-
-                },
-                1200
-            );
-
-
-            return;
+            $("withdrawSummaryNet")
+                .textContent =
+                "$0.00";
         }
 
 
-        throw new Error(
-            result?.message ||
-            result?.error ||
-            "Withdrawal could not be submitted."
+        /* =========================================
+           CLOSE MODAL AFTER SUCCESS
+        ========================================= */
+
+        setTimeout(
+            () => {
+
+                closeWithdrawalModal();
+
+            },
+            1800
         );
 
 
@@ -2967,21 +3036,23 @@ async function submitWithdrawal() {
 
 
         showToast(
-            "Withdrawal Failed",
+            "Withdrawal failed",
             error?.message ||
-            "Unable to submit withdrawal."
+            "Unable to submit your withdrawal. Please try again."
         );
 
 
     } finally {
 
-        if (button) {
+        const submitButton =
+            $("xearnSubmitWithdrawal");
 
-            button.disabled = false;
+        if (submitButton) {
 
-            button.textContent =
+            submitButton.disabled = false;
+
+            submitButton.textContent =
                 "Withdraw";
-
         }
 
     }
