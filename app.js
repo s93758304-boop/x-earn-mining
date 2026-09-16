@@ -4852,19 +4852,10 @@ function setupButtons() {
 
 
     /* TASK */
+   $("taskItem")?.addEventListener("click", openTaskList);
+$("earnTaskItem")?.addEventListener("click", openTaskList);
 
-    $("taskItem")
-        ?.addEventListener(
-            "click",
-            startTask
-        );
-
-    $("earnTaskItem")
-        ?.addEventListener(
-            "click",
-            startTask
-        );
-
+$("closeTaskModal")?.addEventListener("click", closeTaskList);
 
     /* CHECK-IN */
 
