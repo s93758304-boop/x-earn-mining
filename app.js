@@ -1349,6 +1349,71 @@ async function openTaskList() {
         `;
     }
 }
+/* =========================================================
+   CHOOSE TASK
+========================================================= */
+
+function chooseTask(taskId) {
+
+    const task = document.querySelector(
+        `.task-start-btn[data-task-id="${taskId}"]`
+    );
+
+    if (!task) {
+        showToast(
+            "Task Error",
+            "Unable to find this task."
+        );
+        return;
+    }
+
+    const row = task.closest(".task-row");
+
+    if (!row) {
+        showToast(
+            "Task Error",
+            "Unable to open this task."
+        );
+        return;
+    }
+
+    const title =
+        row.querySelector(".task-row-title")?.textContent.trim() ||
+        "Task";
+
+    const reward =
+        row.querySelector(".task-row-reward")?.textContent.trim() ||
+        "";
+
+    const description =
+        row.querySelector(".task-row-desc")?.textContent.trim() ||
+        "";
+
+    const confirmed = window.confirm(
+        title +
+        "\n\n" +
+        description +
+        "\n\n" +
+        reward +
+        "\n\n" +
+        "Do you want to start this task?"
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    const taskUrl = task.dataset.taskUrl;
+
+    if (taskUrl) {
+        window.open(taskUrl, "_blank");
+    } else {
+        showToast(
+            "Task Error",
+            "This task does not have a URL."
+        );
+    }
+}
 
 /* =========================================================
    TASK
