@@ -363,7 +363,7 @@ function createFallbackUser() {
             0,
 
         tasks_completed_today:
-            0,
+            5,
 
         referral_count:
             0,
