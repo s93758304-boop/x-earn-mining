@@ -369,7 +369,7 @@ function createFallbackUser() {
             0,
 
         streak_days:
-            0
+            1
     };
 
     updateInterface();
