@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<!-- Telegram Web App SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <title>XEARN Admin</title>
@@ -44,8 +43,6 @@ button{
  display:flex;
  min-height:100vh;
 }
-
-/* SIDEBAR */
 
 .sidebar{
  width:245px;
@@ -127,8 +124,6 @@ button{
  font-size:10px;
 }
 
-/* MAIN */
-
 .main{
  margin-left:245px;
  width:calc(100% - 245px);
@@ -171,8 +166,6 @@ button{
  margin-right:7px;
 }
 
-/* PAGES */
-
 .page{
  display:none;
 }
@@ -180,8 +173,6 @@ button{
 .page.active{
  display:block;
 }
-
-/* CARDS */
 
 .cards{
  display:grid;
@@ -208,8 +199,6 @@ button{
  margin-top:8px;
 }
 
-/* SECTIONS */
-
 .section-title{
  display:flex;
  justify-content:space-between;
@@ -223,8 +212,6 @@ button{
  grid-template-columns:1fr 1fr;
  gap:15px;
 }
-
-/* BUTTONS */
 
 .btn{
  border:1px solid var(--line);
@@ -250,10 +237,18 @@ button{
  background:#0d281f;
 }
 
+.btn.green:hover{
+ background:#123b2d;
+}
+
 .btn.red{
  color:#ff7180;
  border-color:#612b35;
  background:#291217;
+}
+
+.btn.red:hover{
+ background:#421a22;
 }
 
 .btn.yellow{
@@ -261,8 +256,6 @@ button{
  border-color:#655223;
  background:#29220f;
 }
-
-/* TABLE */
 
 .table{
  overflow:auto;
@@ -297,15 +290,6 @@ td{
  display:flex;
  gap:6px;
  flex-wrap:wrap;
-}
-
-/* FORM */
-
-.toolbar{
- display:flex;
- gap:8px;
- flex-wrap:wrap;
- margin-bottom:13px;
 }
 
 .input,
@@ -352,8 +336,6 @@ td{
  grid-column:1/-1;
 }
 
-/* BADGES */
-
 .badge{
  display:inline-block;
  padding:4px 8px;
@@ -382,8 +364,6 @@ td{
  color:#f5cc5d;
 }
 
-/* STATS */
-
 .stat{
  display:flex;
  justify-content:space-between;
@@ -395,8 +375,6 @@ td{
 .stat:last-child{
  border-bottom:0;
 }
-
-/* SETTINGS */
 
 .settings{
  display:grid;
@@ -421,8 +399,6 @@ td{
  height:18px;
  accent-color:var(--blue);
 }
-
-/* MODAL */
 
 .modal{
  display:none;
@@ -471,8 +447,6 @@ td{
  padding:16px;
 }
 
-/* MOBILE */
-
 .mobile-nav{
  display:none;
 }
@@ -481,6 +455,32 @@ td{
  text-align:center;
  color:var(--muted);
  padding:30px;
+}
+
+/* WITHDRAWAL ACTION BUTTONS */
+
+.withdraw-action{
+ display:flex;
+ gap:6px;
+ align-items:center;
+ flex-wrap:wrap;
+ min-width:130px;
+}
+
+.withdraw-action .btn{
+ font-weight:700;
+}
+
+.paid-btn{
+ color:#19d58a !important;
+ border-color:#185d47 !important;
+ background:#0d281f !important;
+}
+
+.cancel-btn{
+ color:#ff7180 !important;
+ border-color:#612b35 !important;
+ background:#291217 !important;
 }
 
 @media(max-width:1050px){
@@ -625,6 +625,9 @@ Secure administrator session
 
 </header>
 
+
+<!-- DASHBOARD -->
+
 <section class="page active" id="page-dashboard">
 
 <div class="cards">
@@ -732,6 +735,9 @@ Settings
 
 </section>
 
+
+<!-- USERS -->
+
 <section class="page" id="page-users">
 
 <div class="card">
@@ -781,6 +787,9 @@ Refresh
 
 </section>
 
+
+<!-- UPGRADES -->
+
 <section class="page" id="page-upgrades">
 
 <div class="card">
@@ -827,6 +836,9 @@ Refresh
 </div>
 
 </section>
+
+
+<!-- WITHDRAWALS -->
 
 <section class="page" id="page-withdrawals">
 
@@ -876,6 +888,9 @@ Refresh
 
 </section>
 
+
+<!-- TASKS -->
+
 <section class="page" id="page-tasks">
 
 <div class="grid2">
@@ -895,74 +910,131 @@ Create Task
 
 <div class="field">
 <label>Task type</label>
+
 <select class="select" id="taskType">
+
 <option value="general">General</option>
 <option value="visit">Visit</option>
 <option value="community">Community</option>
 <option value="social">Social</option>
 <option value="survey">Survey</option>
 <option value="offer">Offer</option>
+
 </select>
+
 </div>
 
 <div class="field full">
+
 <label>Description</label>
-<textarea class="textarea" id="taskDescription"></textarea>
+
+<textarea
+class="textarea"
+id="taskDescription">
+</textarea>
+
 </div>
 
 <div class="field full">
+
 <label>Task URL</label>
-<input class="input" style="width:100%" id="taskUrl">
+
+<input
+class="input"
+style="width:100%"
+id="taskUrl">
+
 </div>
 
 <div class="field">
+
 <label>Reward XCOIN</label>
-<input class="input" type="number" id="taskReward" value="0">
+
+<input
+class="input"
+type="number"
+id="taskReward"
+value="0">
+
 </div>
 
 <div class="field">
+
 <label>Daily limit</label>
-<input class="input" type="number" id="taskDaily" value="0">
+
+<input
+class="input"
+type="number"
+id="taskDaily"
+value="0">
+
 </div>
 
 <div class="field">
+
 <label>Total limit</label>
-<input class="input" type="number" id="taskTotal" value="0">
+
+<input
+class="input"
+type="number"
+id="taskTotal"
+value="0">
+
 </div>
 
 <div class="field">
+
 <label>Enabled</label>
+
 <select class="select" id="taskEnabled">
+
 <option value="true">Yes</option>
 <option value="false">No</option>
+
 </select>
+
 </div>
 
 <div class="field">
+
 <label>Requires proof</label>
+
 <select class="select" id="taskProof">
+
 <option value="false">No</option>
 <option value="true">Yes</option>
+
 </select>
+
 </div>
 
 <div class="field">
+
 <label>Auto approve</label>
+
 <select class="select" id="taskAuto">
+
 <option value="false">No</option>
 <option value="true">Yes</option>
+
 </select>
+
 </div>
 
 </div>
 
 <br>
 
-<button class="btn primary" onclick="createTask()">
+<button
+class="btn primary"
+onclick="createTask()">
+
 Create Task
+
 </button>
 
 </div>
+
 
 <div class="card">
 
@@ -972,15 +1044,24 @@ Task Submissions
 
 <div class="toolbar">
 
-<select class="select" id="submissionStatus" onchange="loadSubmissions()">
+<select
+class="select"
+id="submissionStatus"
+onchange="loadSubmissions()">
+
 <option value="">All</option>
 <option value="pending">Pending</option>
 <option value="approved">Approved</option>
 <option value="rejected">Rejected</option>
+
 </select>
 
-<button class="btn" onclick="loadSubmissions()">
+<button
+class="btn"
+onclick="loadSubmissions()">
+
 Refresh
+
 </button>
 
 </div>
@@ -1004,6 +1085,7 @@ Tasks
 <table>
 
 <thead>
+
 <tr>
 <th>Title</th>
 <th>Type</th>
@@ -1015,6 +1097,7 @@ Tasks
 <th>Status</th>
 <th>Action</th>
 </tr>
+
 </thead>
 
 <tbody id="tasksBody"></tbody>
@@ -1027,13 +1110,25 @@ Tasks
 
 </section>
 
+
+<!-- MINING -->
+
 <section class="page" id="page-mining">
 
 <div class="card">
 
 <h3 class="section-title">
+
 Mining Settings
-<button class="btn" onclick="loadMining()">Refresh</button>
+
+<button
+class="btn"
+onclick="loadMining()">
+
+Refresh
+
+</button>
+
 </h3>
 
 <div id="miningSettings"></div>
@@ -1042,13 +1137,25 @@ Mining Settings
 
 </section>
 
+
+<!-- ADS -->
+
 <section class="page" id="page-ads">
 
 <div class="card">
 
 <h3 class="section-title">
+
 Videos & Ads
-<button class="btn" onclick="loadAds()">Refresh</button>
+
+<button
+class="btn"
+onclick="loadAds()">
+
+Refresh
+
+</button>
+
 </h3>
 
 <div id="adSettings"></div>
@@ -1056,6 +1163,9 @@ Videos & Ads
 </div>
 
 </section>
+
+
+<!-- REFERRALS -->
 
 <section class="page" id="page-referrals">
 
@@ -1082,6 +1192,7 @@ Recent Referrals
 <table>
 
 <thead>
+
 <tr>
 <th>Referrer</th>
 <th>Referred</th>
@@ -1089,6 +1200,7 @@ Recent Referrals
 <th>Rewarded</th>
 <th>Date</th>
 </tr>
+
 </thead>
 
 <tbody id="referralsBody"></tbody>
@@ -1102,6 +1214,9 @@ Recent Referrals
 </div>
 
 </section>
+
+
+<!-- SETTINGS -->
 
 <section class="page" id="page-settings">
 
@@ -1145,30 +1260,59 @@ Global Controls
 
 </div>
 
+
 <div class="mobile-nav">
 
-<button data-page="dashboard">⌂<br>Home</button>
-<button data-page="users">◉<br>Users</button>
-<button data-page="tasks">✓<br>Tasks</button>
-<button data-page="withdrawals">↗<br>Pay</button>
-<button data-page="settings">⚙<br>Settings</button>
+<button data-page="dashboard">
+⌂<br>Home
+</button>
+
+<button data-page="users">
+◉<br>Users
+</button>
+
+<button data-page="tasks">
+✓<br>Tasks
+</button>
+
+<button data-page="withdrawals">
+↗<br>Pay
+</button>
+
+<button data-page="settings">
+⚙<br>Settings
+</button>
 
 </div>
+
 
 <div class="modal" id="modal">
 
 <div class="modal-box">
 
 <div class="modal-head">
-<h2 id="modalTitle">Details</h2>
-<button class="close" onclick="closeModal()">×</button>
+
+<h2 id="modalTitle">
+Details
+</h2>
+
+<button
+class="close"
+onclick="closeModal()">
+×
+</button>
+
 </div>
 
-<div class="modal-body" id="modalBody"></div>
-
+<div
+class="modal-body"
+id="modalBody">
 </div>
 
 </div>
+
+</div>
+
 
 <script>
 
@@ -1180,7 +1324,9 @@ let initData = "";
 
 /* HELPERS */
 
-const $ = id => document.getElementById(id);
+const $ = id =>
+ document.getElementById(id);
+
 
 function escapeHTML(value){
 
@@ -1193,40 +1339,69 @@ function escapeHTML(value){
 
 }
 
+
 function number(value){
 
- return Number(value || 0).toLocaleString();
+ return Number(value || 0)
+ .toLocaleString();
 
 }
+
 
 function date(value){
 
  if(!value) return "—";
 
- return new Date(value).toLocaleString();
+ return new Date(value)
+ .toLocaleString();
 
 }
+
 
 function badge(value){
 
- let v = String(value || "").toLowerCase();
+ let v =
+  String(value || "")
+  .toLowerCase()
+  .trim();
 
  let cls = "blue";
 
- if(["approved","paid","active","enabled"].includes(v))
- cls = "green-b";
+ if([
+  "approved",
+  "paid",
+  "active",
+  "enabled"
+ ].includes(v)){
 
- if(["rejected","cancelled","blocked"].includes(v))
- cls = "red-b";
+  cls = "green-b";
 
- if(v === "pending")
- cls = "yellow-b";
+ }
 
- return `<span class="badge ${cls}">
+ if([
+  "rejected",
+  "cancelled",
+  "blocked"
+ ].includes(v)){
+
+  cls = "red-b";
+
+ }
+
+ if(v === "pending"){
+
+  cls = "yellow-b";
+
+ }
+
+ return `
+ <span class="badge ${cls}">
  ${escapeHTML(value || "—")}
- </span>`;
+ </span>
+ `;
 
 }
+
 
 function toast(message){
 
@@ -1234,15 +1409,19 @@ function toast(message){
 
 }
 
+
 function showModal(title,html){
 
- $("modalTitle").textContent = title;
+ $("modalTitle").textContent =
+  title;
 
- $("modalBody").innerHTML = html;
+ $("modalBody").innerHTML =
+  html;
 
  $("modal").classList.add("show");
 
 }
+
 
 function closeModal(){
 
@@ -1262,9 +1441,11 @@ function getTelegramInitData(){
    window.Telegram.WebApp
   ){
 
-   const tg = window.Telegram.WebApp;
+   const tg =
+    window.Telegram.WebApp;
 
    tg.ready();
+
    tg.expand();
 
    try{
@@ -1305,27 +1486,34 @@ async function api(action,data={}){
 
  }
 
- const response = await fetch(API,{
+ const response =
+  await fetch(API,{
 
-  method:"POST",
+   method:"POST",
 
-  headers:{
-   "Content-Type":"application/json"
-  },
+   headers:{
+    "Content-Type":"application/json"
+   },
 
-  body:JSON.stringify({
+   body:JSON.stringify({
 
-   action,
-   initData,
-   ...data
+    action,
+    initData,
+    ...data
 
-  })
+   })
 
- });
+  });
 
- const result = await response.json();
 
- if(!response.ok || result.success === false){
+ const result =
+  await response.json();
+
+
+ if(
+  !response.ok ||
+  result.success === false
+ ){
 
   throw new Error(
    result.error ||
@@ -1345,9 +1533,14 @@ function openPage(page){
 
  document
  .querySelectorAll(".page")
- .forEach(x=>x.classList.remove("active"));
+ .forEach(x =>
+  x.classList.remove("active")
+ );
 
- $("page-"+page).classList.add("active");
+
+ $("page-"+page)
+ .classList.add("active");
+
 
  document
  .querySelectorAll("[data-page]")
@@ -1359,6 +1552,7 @@ function openPage(page){
   );
 
  });
+
 
  const titles = {
 
@@ -1374,21 +1568,22 @@ function openPage(page){
 
  };
 
+
  $("pageTitle").textContent =
- titles[page] || page;
+  titles[page] || page;
 
 
  if(page==="dashboard")
- loadDashboard();
+  loadDashboard();
 
  if(page==="users")
- loadUsers();
+  loadUsers();
 
  if(page==="upgrades")
- loadUpgrades();
+  loadUpgrades();
 
  if(page==="withdrawals")
- loadWithdrawals();
+  loadWithdrawals();
 
  if(page==="tasks"){
 
@@ -1398,10 +1593,10 @@ function openPage(page){
  }
 
  if(page==="mining")
- loadMining();
+  loadMining();
 
  if(page==="ads")
- loadAds();
+  loadAds();
 
  if(page==="referrals"){
 
@@ -1411,7 +1606,7 @@ function openPage(page){
  }
 
  if(page==="settings")
- loadSettings();
+  loadSettings();
 
 }
 
@@ -1437,11 +1632,6 @@ async function init(){
 
  try{
 
-  /*
-   * Wait briefly for Telegram's WebApp
-   * object to be available.
-   */
-
   let attempts = 0;
 
   while(
@@ -1451,7 +1641,8 @@ async function init(){
   ){
 
    await new Promise(
-    resolve => setTimeout(resolve,100)
+    resolve =>
+     setTimeout(resolve,100)
    );
 
    attempts++;
@@ -1468,6 +1659,7 @@ async function init(){
    !!window.Telegram?.WebApp
   );
 
+
   console.log(
    "Telegram initData length:",
    initData.length
@@ -1478,6 +1670,7 @@ async function init(){
 
    showModal(
     "Open From Telegram",
+
     `
     <p style="color:#9aadc1;line-height:1.6">
     Telegram did not provide a valid
@@ -1526,11 +1719,14 @@ async function init(){
    error
   );
 
+
   $("adminName").textContent =
    "Access denied";
 
+
   showModal(
    "Admin Access Error",
+
    `<p style="color:#ff7180">
    ${escapeHTML(error.message)}
    </p>`
@@ -1580,6 +1776,7 @@ function renderDashboard(data){
 
 }
 
+
 async function loadDashboard(){
 
  try{
@@ -1604,7 +1801,9 @@ async function loadDashboard(){
 
 async function loadUsers(){
 
- const body = $("usersBody");
+ const body =
+  $("usersBody");
+
 
  body.innerHTML =
  `<tr>
@@ -1612,6 +1811,7 @@ async function loadUsers(){
  Loading users...
  </td>
  </tr>`;
+
 
  try{
 
@@ -1646,19 +1846,23 @@ async function loadUsers(){
    <tr>
 
    <td>
+
     <b>
     ${escapeHTML(
      (user.first_name||"")+" "+
      (user.last_name||"")
     )}
     </b>
+
     <br>
+
     <small style="color:#72869d">
     @${escapeHTML(
      user.username||
      "no_username"
     )}
     </small>
+
    </td>
 
    <td>
@@ -1684,6 +1888,7 @@ async function loadUsers(){
    </td>
 
    <td>
+
     ${number(
      user.tasks_completed_today
     )}
@@ -1693,28 +1898,36 @@ async function loadUsers(){
      user.videos_watched_today
     )}
     videos
+
    </td>
 
    <td>
+
     ${
      user.is_blocked
      ?badge("blocked")
      :badge("active")
     }
+
    </td>
 
    <td>
+
     <button
     class="btn"
     onclick="manageUser(${user.telegram_id})">
+
     Manage
+
     </button>
+
    </td>
 
    </tr>
 
    `)
    .join("");
+
 
  }catch(e){
 
@@ -1744,7 +1957,9 @@ async function manageUser(id){
     }
    );
 
-  const u = result.user;
+
+  const u =
+   result.user;
 
 
   showModal(
@@ -1806,6 +2021,7 @@ async function manageUser(id){
    <div class="form-grid">
 
    <div class="field">
+
    <label>Balance XCOIN</label>
 
    <input
@@ -1815,10 +2031,12 @@ async function manageUser(id){
    value="${escapeHTML(
     u.balance_xcoin
    )}">
+
    </div>
 
 
    <div class="field">
+
    <label>Tier</label>
 
    <select
@@ -1937,6 +2155,7 @@ async function manageUser(id){
    `
   );
 
+
  }catch(e){
 
   alert(e.message);
@@ -1968,11 +2187,13 @@ async function saveUser(id){
    }
   );
 
+
   closeModal();
 
   loadUsers();
 
   toast("User updated");
+
 
  }catch(e){
 
@@ -2003,11 +2224,13 @@ async function changeUser(
    }
   );
 
+
   closeModal();
 
   loadUsers();
 
   toast("User updated");
+
 
  }catch(e){
 
@@ -2029,11 +2252,13 @@ async function resetDaily(id){
    }
   );
 
+
   closeModal();
 
   loadUsers();
 
   toast("Daily limits reset");
+
 
  }catch(e){
 
@@ -2051,6 +2276,7 @@ async function loadUpgrades(){
  const body =
   $("upgradesBody");
 
+
  body.innerHTML =
  `<tr>
  <td colspan="9"
@@ -2058,6 +2284,7 @@ async function loadUpgrades(){
  Loading...
  </td>
  </tr>`;
+
 
  try{
 
@@ -2127,10 +2354,12 @@ async function loadUpgrades(){
    <td title="${escapeHTML(
     order.txid||""
    )}">
+
    ${escapeHTML(
     (order.txid||"")
     .slice(0,16)
    )||"—"}
+
    </td>
 
    <td>
@@ -2140,26 +2369,34 @@ async function loadUpgrades(){
    <td>
 
    ${
-    order.status==="pending"
+    String(order.status||"")
+    .trim()
+    .toLowerCase()==="pending"
 
     ?
 
     `
+
     <div class="actions">
 
     <button
     class="btn green"
     onclick="approveUpgrade('${order.id}')">
+
     Approve
+
     </button>
 
     <button
     class="btn red"
     onclick="rejectUpgrade('${order.id}')">
+
     Reject
+
     </button>
 
     </div>
+
     `
 
     :"—"
@@ -2171,6 +2408,7 @@ async function loadUpgrades(){
 
    `)
    .join("");
+
 
  }catch(e){
 
@@ -2195,7 +2433,9 @@ async function approveUpgrade(id){
    "Payment verified"
   );
 
+
  if(note===null)return;
+
 
  try{
 
@@ -2207,9 +2447,11 @@ async function approveUpgrade(id){
    }
   );
 
+
   loadUpgrades();
 
   toast("Upgrade approved");
+
 
  }catch(e){
 
@@ -2227,7 +2469,9 @@ async function rejectUpgrade(id){
    "Reason for rejection:"
   );
 
+
  if(note===null)return;
+
 
  try{
 
@@ -2239,9 +2483,11 @@ async function rejectUpgrade(id){
    }
   );
 
+
   loadUpgrades();
 
   toast("Upgrade rejected");
+
 
  }catch(e){
 
@@ -2252,20 +2498,25 @@ async function rejectUpgrade(id){
 }
 
 
-/* WITHDRAWALS */
+/* =========================================================
+   WITHDRAWALS
+   FIXED SECTION
+   ========================================================= */
 
 async function loadWithdrawals(){
 
  const body =
   $("withdrawalsBody");
 
- body.innerHTML =
- `<tr>
- <td colspan="9"
- class="empty">
+
+ body.innerHTML = `
+ <tr>
+ <td colspan="9" class="empty">
  Loading...
  </td>
- </tr>`;
+ </tr>
+ `;
+
 
  try{
 
@@ -2279,15 +2530,18 @@ async function loadWithdrawals(){
    );
 
 
-  if(!result.withdrawals.length){
+  if(
+   !result.withdrawals ||
+   !result.withdrawals.length
+  ){
 
-   body.innerHTML =
-   `<tr>
-   <td colspan="9"
-   class="empty">
+   body.innerHTML = `
+   <tr>
+   <td colspan="9" class="empty">
    No withdrawals
    </td>
-   </tr>`;
+   </tr>
+   `;
 
    return;
 
@@ -2301,90 +2555,181 @@ async function loadWithdrawals(){
     const u =
      w.users || {};
 
+
+    /*
+     * IMPORTANT:
+     * Normalize the status.
+     *
+     * This means:
+     * pending
+     * Pending
+     * PENDING
+     * " pending "
+     *
+     * will all be treated as pending.
+     */
+
+    const status =
+     String(w.status || "")
+     .trim()
+     .toLowerCase();
+
+
+    /*
+     * Keep the real database ID.
+     */
+
+    const withdrawalId =
+     String(w.id || "");
+
+
     return `
 
     <tr>
 
     <td>
+
     ${escapeHTML(
-     u.first_name||
+     u.first_name ||
      "User"
     )}
+
     <br>
-    <small>
+
+    <small style="color:#8297ae">
+
     ${escapeHTML(
-     u.telegram_id||""
+     u.telegram_id || ""
     )}
+
     </small>
+
     </td>
 
+
     <td>
+
     ${number(
      w.amount_xcoin
     )}
+
     </td>
 
+
     <td>
+
     ${number(
      w.fee_xcoin
     )}
+
     </td>
+
 
     <td>
+
     ${escapeHTML(
-     w.usdt_amount
+     w.usdt_amount ??
+     "—"
     )}
+
     </td>
 
-    <td title="${escapeHTML(
-     w.address
-    )}">
+
+    <td
+    title="${escapeHTML(
+     w.address || ""
+    )}"
+    style="
+    max-width:180px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    "
+    >
+
     ${escapeHTML(
-     (w.address||"")
+     (w.address || "")
      .slice(0,18)
     )}
+
     </td>
 
+
     <td>
+
     ${escapeHTML(
-     w.network
+     w.network ||
+     "—"
     )}
+
     </td>
 
-    <td>
-    ${badge(w.status)}
-    </td>
 
     <td>
-    ${date(w.created_at)}
+
+    ${badge(status)}
+
     </td>
+
+
+    <td>
+
+    ${date(
+     w.created_at
+    )}
+
+    </td>
+
 
     <td>
 
     ${
-     w.status==="pending"
+     status === "pending"
 
      ?
 
      `
-     <div class="actions">
 
-     <button
-     class="btn green"
-     onclick="markPaid('${w.id}')">
-     Paid
-     </button>
+     <div class="withdraw-action">
 
-     <button
-     class="btn red"
-     onclick="cancelWithdrawal('${w.id}')">
-     Cancel
-     </button>
+       <button
+       type="button"
+       class="btn paid-btn"
+       onclick="markPaid('${escapeHTML(withdrawalId)}')">
+
+       ✓ Paid
+
+       </button>
+
+
+       <button
+       type="button"
+       class="btn cancel-btn"
+       onclick="cancelWithdrawal('${escapeHTML(withdrawalId)}')">
+
+       ✕ Cancel
+
+       </button>
 
      </div>
+
      `
 
-     :"—"
+     :
+
+     `
+
+     <span style="
+     color:#8297ae;
+     font-size:10px;
+     ">
+
+     ${escapeHTML(
+      status || "—"
+     )}
+
+     </span>
+
+     `
     }
 
     </td>
@@ -2396,20 +2741,33 @@ async function loadWithdrawals(){
    })
    .join("");
 
+
  }catch(e){
 
-  body.innerHTML =
-  `<tr>
-  <td colspan="9"
-  class="empty">
-  ${escapeHTML(e.message)}
+  console.error(
+   "Withdrawal loading error:",
+   e
+  );
+
+
+  body.innerHTML = `
+  <tr>
+  <td colspan="9" class="empty">
+
+  ${escapeHTML(
+   e.message
+  )}
+
   </td>
-  </tr>`;
+  </tr>
+  `;
 
  }
 
 }
 
+
+/* MARK WITHDRAWAL AS PAID */
 
 async function markPaid(id){
 
@@ -2419,7 +2777,20 @@ async function markPaid(id){
    "Payment completed"
   );
 
+
  if(note===null)return;
+
+
+ if(!id){
+
+  toast(
+   "Withdrawal ID is missing."
+  );
+
+  return;
+
+ }
+
 
  try{
 
@@ -2432,18 +2803,35 @@ async function markPaid(id){
    }
   );
 
-  loadWithdrawals();
 
-  toast("Withdrawal marked as paid");
+  await loadWithdrawals();
+
+  await loadDashboard();
+
+
+  toast(
+   "Withdrawal marked as paid"
+  );
+
 
  }catch(e){
 
-  toast(e.message);
+  console.error(
+   "Mark paid error:",
+   e
+  );
+
+
+  toast(
+   e.message
+  );
 
  }
 
 }
 
+
+/* CANCEL WITHDRAWAL */
 
 async function cancelWithdrawal(id){
 
@@ -2452,7 +2840,20 @@ async function cancelWithdrawal(id){
    "Cancellation reason:"
   );
 
+
  if(note===null)return;
+
+
+ if(!id){
+
+  toast(
+   "Withdrawal ID is missing."
+  );
+
+  return;
+
+ }
+
 
  try{
 
@@ -2465,13 +2866,28 @@ async function cancelWithdrawal(id){
    }
   );
 
-  loadWithdrawals();
 
-  toast("Withdrawal cancelled");
+  await loadWithdrawals();
+
+  await loadDashboard();
+
+
+  toast(
+   "Withdrawal cancelled"
+  );
+
 
  }catch(e){
 
-  toast(e.message);
+  console.error(
+   "Cancel withdrawal error:",
+   e
+  );
+
+
+  toast(
+   e.message
+  );
 
  }
 
@@ -2485,10 +2901,12 @@ async function loadTasks(){
  const body =
   $("tasksBody");
 
+
  try{
 
   const result =
    await api("tasks");
+
 
   if(!result.tasks.length){
 
@@ -2552,13 +2970,17 @@ async function loadTasks(){
    <button
    class="btn"
    onclick='editTask(${JSON.stringify(t)})'>
+
    Edit
+
    </button>
 
    <button
    class="btn red"
    onclick="deleteTask('${t.id}')">
+
    Delete
+
    </button>
 
    </div>
@@ -2569,6 +2991,7 @@ async function loadTasks(){
 
    `)
    .join("");
+
 
  }catch(e){
 
@@ -2645,6 +3068,7 @@ async function createTask(){
 
   toast("Task created");
 
+
  }catch(e){
 
   toast(e.message);
@@ -2664,98 +3088,170 @@ function editTask(t){
   <div class="form-grid">
 
   <div class="field">
+
   <label>Title</label>
+
   <input
   class="input"
   id="editTitle"
   value="${escapeHTML(t.title)}">
+
   </div>
 
+
   <div class="field">
+
   <label>Type</label>
+
   <input
   class="input"
   id="editType"
   value="${escapeHTML(t.task_type)}">
+
   </div>
 
+
   <div class="field full">
+
   <label>Description</label>
+
   <textarea
   class="textarea"
   id="editDescription">${escapeHTML(t.description||"")}</textarea>
+
   </div>
 
+
   <div class="field full">
+
   <label>URL</label>
+
   <input
   class="input"
   style="width:100%"
   id="editUrl"
   value="${escapeHTML(t.url||"")}">
+
   </div>
 
+
   <div class="field">
+
   <label>Reward</label>
+
   <input
   class="input"
   id="editReward"
   type="number"
   value="${t.reward_xcoin}">
+
   </div>
 
+
   <div class="field">
+
   <label>Daily limit</label>
+
   <input
   class="input"
   id="editDaily"
   type="number"
   value="${t.daily_limit}">
+
   </div>
 
+
   <div class="field">
+
   <label>Total limit</label>
+
   <input
   class="input"
   id="editTotal"
   type="number"
   value="${t.total_limit}">
+
   </div>
 
+
   <div class="field">
+
   <label>Enabled</label>
-  <select class="select" id="editEnabled">
-  <option value="true" ${
+
+  <select
+  class="select"
+  id="editEnabled">
+
+  <option value="true"
+  ${
    t.enabled?"selected":""
-  }>Yes</option>
-  <option value="false" ${
+  }>
+  Yes
+  </option>
+
+  <option value="false"
+  ${
    !t.enabled?"selected":""
-  }>No</option>
+  }>
+  No
+  </option>
+
   </select>
+
   </div>
 
+
   <div class="field">
+
   <label>Requires proof</label>
-  <select class="select" id="editProof">
-  <option value="true" ${
+
+  <select
+  class="select"
+  id="editProof">
+
+  <option value="true"
+  ${
    t.requires_proof?"selected":""
-  }>Yes</option>
-  <option value="false" ${
+  }>
+  Yes
+  </option>
+
+  <option value="false"
+  ${
    !t.requires_proof?"selected":""
-  }>No</option>
+  }>
+  No
+  </option>
+
   </select>
+
   </div>
 
+
   <div class="field">
+
   <label>Auto approve</label>
-  <select class="select" id="editAuto">
-  <option value="true" ${
+
+  <select
+  class="select"
+  id="editAuto">
+
+  <option value="true"
+  ${
    t.auto_approve?"selected":""
-  }>Yes</option>
-  <option value="false" ${
+  }>
+  Yes
+  </option>
+
+  <option value="false"
+  ${
    !t.auto_approve?"selected":""
-  }>No</option>
+  }>
+  No
+  </option>
+
   </select>
+
   </div>
 
   </div>
@@ -2765,7 +3261,9 @@ function editTask(t){
   <button
   class="btn primary"
   onclick="saveTask('${t.id}')">
+
   Save Changes
+
   </button>
 
   `
@@ -2825,11 +3323,13 @@ async function saveTask(id){
    }
   );
 
+
   closeModal();
 
   loadTasks();
 
   toast("Task updated");
+
 
  }catch(e){
 
@@ -2846,6 +3346,7 @@ async function deleteTask(id){
   "Delete this task?"
  ))return;
 
+
  try{
 
   await api(
@@ -2855,9 +3356,11 @@ async function deleteTask(id){
    }
   );
 
+
   loadTasks();
 
   toast("Task deleted");
+
 
  }catch(e){
 
@@ -2875,8 +3378,10 @@ async function loadSubmissions(){
  const box =
   $("submissions");
 
+
  box.innerHTML =
   "Loading...";
+
 
  try{
 
@@ -2915,10 +3420,12 @@ async function loadSubmissions(){
    ">
 
    <b>
+
    ${escapeHTML(
     s.tasks?.title||
     "Task"
    )}
+
    </b>
 
    <br>
@@ -2954,20 +3461,25 @@ async function loadSubmissions(){
     color:#b9c8d8;
     word-break:break-word;
     ">
+
     Proof:
     ${escapeHTML(s.proof)}
+
     </div>
     `
     :""
    }
 
    ${
-    s.status==="pending"
+    String(s.status||"")
+    .trim()
+    .toLowerCase()==="pending"
 
     ?
 
     `
-    <div class="actions"
+    <div
+    class="actions"
     style="margin-top:9px">
 
     <button
@@ -2976,7 +3488,9 @@ async function loadSubmissions(){
      '${s.id}',
      'approved'
     )">
+
     Approve
+
     </button>
 
     <button
@@ -2985,7 +3499,9 @@ async function loadSubmissions(){
      '${s.id}',
      'rejected'
     )">
+
     Reject
+
     </button>
 
     </div>
@@ -2998,6 +3514,7 @@ async function loadSubmissions(){
 
    `)
    .join("");
+
 
  }catch(e){
 
@@ -3023,7 +3540,9 @@ async function reviewSubmission(
    :"Reason for rejection:"
   );
 
+
  if(note===null)return;
+
 
  try{
 
@@ -3036,12 +3555,14 @@ async function reviewSubmission(
    }
   );
 
+
   loadSubmissions();
 
   toast(
    "Submission "+
    status
   );
+
 
  }catch(e){
 
@@ -3063,6 +3584,7 @@ async function loadMining(){
     "mining_settings"
    );
 
+
   const s =
    result.settings;
 
@@ -3072,13 +3594,18 @@ async function loadMining(){
   `
 
   <div class="toggle">
-  <span>Mining enabled</span>
+
+  <span>
+  Mining enabled
+  </span>
 
   <input
   id="mineEnabled"
   type="checkbox"
   ${s.enabled?"checked":""}>
+
   </div>
+
 
   <div class="form-grid">
 
@@ -3143,7 +3670,9 @@ async function loadMining(){
   <button
   class="btn primary"
   onclick="saveMining()">
+
   Save Mining Settings
+
   </button>
 
   `;
@@ -3243,9 +3772,11 @@ async function saveMining(){
    }
   );
 
+
   toast(
    "Mining settings saved"
   );
+
 
  }catch(e){
 
@@ -3267,6 +3798,7 @@ async function loadAds(){
     "ad_settings"
    );
 
+
   const s =
    result.settings;
 
@@ -3287,6 +3819,7 @@ async function loadAds(){
   ${s.enabled?"checked":""}>
 
   </div>
+
 
   <div class="form-grid">
 
@@ -3345,7 +3878,9 @@ async function loadAds(){
   <button
   class="btn primary"
   onclick="saveAds()">
+
   Save Ad Settings
+
   </button>
 
   `;
@@ -3415,9 +3950,11 @@ async function saveAds(){
    }
   );
 
+
   toast(
    "Ad settings saved"
   );
+
 
  }catch(e){
 
@@ -3438,6 +3975,7 @@ async function loadReferralSettings(){
    await api(
     "referral_settings"
    );
+
 
   const s =
    result.settings;
@@ -3460,11 +3998,13 @@ async function loadReferralSettings(){
 
   </div>
 
+
   ${field(
    "Referral reward XCOIN",
    "refReward",
    s.reward_xcoin
   )}
+
 
   ${field(
    "Minimum referred tasks",
@@ -3472,12 +4012,15 @@ async function loadReferralSettings(){
    s.minimum_referred_tasks
   )}
 
+
   <br>
 
   <button
   class="btn primary"
   onclick="saveReferralSettings()">
+
   Save
+
   </button>
 
   `;
@@ -3517,9 +4060,11 @@ async function saveReferralSettings(){
    }
   );
 
+
   toast(
    "Referral settings saved"
   );
+
 
  }catch(e){
 
@@ -3534,6 +4079,7 @@ async function loadReferrals(){
 
  const body =
   $("referralsBody");
+
 
  try{
 
@@ -3599,6 +4145,7 @@ async function loadReferrals(){
    `)
    .join("");
 
+
  }catch(e){
 
   body.innerHTML =
@@ -3625,7 +4172,9 @@ async function loadSettings(){
     "settings"
    );
 
+
   const settings = {};
+
 
   result.settings
   .forEach(s=>{
@@ -3648,18 +4197,23 @@ async function loadSettings(){
    settings.xcoin_per_usdt||1300
   )}
 
+
   ${field(
    "Referral reward XCOIN",
    "globalReferral",
    settings.referral_reward_xcoin||0
   )}
 
+
   <br>
+
 
   <button
   class="btn primary"
   onclick="saveEconomy()">
+
   Save Economy
+
   </button>
 
   `;
@@ -3675,18 +4229,23 @@ async function loadSettings(){
    settings.minimum_withdraw_xcoin||13000
   )}
 
+
   ${field(
    "Withdrawal fee XCOIN",
    "withdrawalFee",
    settings.withdrawal_fee_xcoin||1300
   )}
 
+
   <br>
+
 
   <button
   class="btn primary"
   onclick="saveWithdrawalSettings()">
+
   Save Withdrawals
+
   </button>
 
   `;
@@ -3752,12 +4311,16 @@ async function loadSettings(){
 
   </div>
 
+
   <br>
+
 
   <button
   class="btn primary"
   onclick="saveGlobalSettings()">
+
   Save Controls
+
   </button>
 
   `;
@@ -3799,15 +4362,18 @@ async function saveEconomy(){
    "number"
   );
 
+
   await updateSetting(
    "referral_reward_xcoin",
    $("globalReferral").value,
    "number"
   );
 
+
   toast(
    "Economy settings saved"
   );
+
 
  }catch(e){
 
@@ -3828,15 +4394,18 @@ async function saveWithdrawalSettings(){
    "number"
   );
 
+
   await updateSetting(
    "withdrawal_fee_xcoin",
    $("withdrawalFee").value,
    "number"
   );
 
+
   toast(
    "Withdrawal settings saved"
   );
+
 
  }catch(e){
 
@@ -3857,11 +4426,13 @@ async function saveGlobalSettings(){
    "boolean"
   );
 
+
   await updateSetting(
    "maintenance_mode",
    $("maintenance").checked,
    "boolean"
   );
+
 
   await updateSetting(
    "withdrawals_enabled",
@@ -3869,9 +4440,11 @@ async function saveGlobalSettings(){
    "boolean"
   );
 
+
   toast(
    "Global controls saved"
   );
+
 
  }catch(e){
 
